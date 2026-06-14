@@ -82,6 +82,57 @@ export class UIManager {
             }
         };
 
+        this.defenderInfo = {
+            mailfilter: {
+                name: "メールフィルター",
+                icon: "✉️",
+                cost: 800,
+                desc: "メール系の攻撃（フィッシング）をブロックします。フィッシング攻撃に対して高い攻撃力を持ちます。"
+            },
+            education: {
+                name: "セキュリティ教育",
+                icon: "👥",
+                cost: 600,
+                desc: "人間に起因する攻撃（フィッシングや内部不正）を遅延させ、進行速度を低下させます。攻撃力はありません。"
+            },
+            edr: {
+                name: "EDR",
+                icon: "🛡️",
+                cost: 900,
+                desc: "ホストPC上の挙動検知を行います。ランサムウェア等のマルウェアに対して非常に強力です。"
+            },
+            waf: {
+                name: "WAF",
+                icon: "🌐",
+                cost: 1000,
+                desc: "Webサーバの手前に配置し、SQLインジェクションなどのWeb脆弱性攻撃を検知・遮断します。"
+            },
+            firewall: {
+                name: "ファイアウォール",
+                icon: "🛡️",
+                cost: 700,
+                desc: "もっとも基本的な境界防御。インターネットとDMZ間、または内部セグメント間の不要なポート通信を遮断します。"
+            },
+            mfa: {
+                name: "MFA (多要素認証)",
+                icon: "🔑",
+                cost: 800,
+                desc: "認証・ADノード等に設置。ブルートフォース等の認証突破試行を強力に遅延・ブロックします。"
+            },
+            siem: {
+                name: "SIEM",
+                icon: "🖥️",
+                cost: 1200,
+                desc: "全ノードからのログを集約監視し、潜伏するAPT攻撃などの検知率・撃退力を高めます。"
+            },
+            backup: {
+                name: "バックアップ",
+                icon: "💾",
+                cost: 600,
+                desc: "ランサムウェアで暗号化被害に遭ったサーバーのデータを、人員を割くことなく自動かつ安全に復旧させます。"
+            }
+        };
+
         this.initStaticEvents();
     }
 
@@ -179,6 +230,24 @@ export class UIManager {
             });
             threatsList.addEventListener("mouseout", (e) => {
                 const item = e.target.closest(".threat-list-item");
+                if (item) {
+                    this.showSelectionDetails(this.currentEntity);
+                }
+            });
+        }
+
+        // 防御手法（ショップカード）のホバーイベント (右下に概要を表示)
+        const towerPalette = document.getElementById("tower-palette");
+        if (towerPalette) {
+            towerPalette.addEventListener("mouseover", (e) => {
+                const item = e.target.closest(".palette-item");
+                if (item) {
+                    const type = item.dataset.towerType;
+                    this.showDefenderShopDetails(type);
+                }
+            });
+            towerPalette.addEventListener("mouseout", (e) => {
+                const item = e.target.closest(".palette-item");
                 if (item) {
                     this.showSelectionDetails(this.currentEntity);
                 }
@@ -507,6 +576,29 @@ export class UIManager {
                 }
             }
         });
+    }
+
+    // 防御手法の概要を一時的に表示する
+    showDefenderShopDetails(type) {
+        const info = this.defenderInfo[type];
+        if (!info) return;
+
+        const container = this.dom.selectionDetails;
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="detail-section">
+                <div class="detail-title">${info.icon} ${info.name}</div>
+                <div class="detail-subtitle">防御モジュールの概要</div>
+                <div class="detail-row">
+                    <span class="lbl">導入コスト:</span>
+                    <span class="val" style="color: var(--neon-gold); text-shadow: 0 0 5px rgba(255, 204, 0, 0.4);">🪙 ${info.cost.toLocaleString()}</span>
+                </div>
+                <div style="margin-top: 12px; font-size: 11.5px; line-height: 1.5; color: var(--text-dim); white-space: normal; word-break: break-all;">
+                    ${info.desc}
+                </div>
+            </div>
+        `;
     }
 
     // 敵（攻撃手法）の詳細概要を一時的に表示する
