@@ -52,15 +52,17 @@ export class UIManager {
         this.dom.speed2x.addEventListener("click", () => this.setGameSpeed(2));
 
         // 全画面表示の切り替え
-        this.dom.btnFullscreen.addEventListener("click", () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    this.log(`[エラー] 全画面表示に切り替えられません: ${err.message}`, "alert");
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        });
+        if (this.dom.btnFullscreen) {
+            this.dom.btnFullscreen.addEventListener("click", () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        this.log(`[エラー] 全画面表示に切り替えられません: ${err.message}`, "alert");
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+        }
 
         // 技術ツリー開閉 (⚙ギアアイコン)
         this.dom.btnTechTree.addEventListener("click", () => this.openTechTree());
