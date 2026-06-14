@@ -392,6 +392,7 @@ body.cyber-theme {
     gap: 15px;
     z-index: 5;
     backdrop-filter: blur(10px);
+    pointer-events: none;
 }
 
 .wave-progress-box {

@@ -402,7 +402,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillStyle = "#020308";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 1. 背景グリッドは廃止（画像背景に置き換え）
+        // 1. マップ（ノード・スロット）および背景の描画
+        map.draw(ctx, hoveredSlot, selectedSlot);
 
         // 2. タワー配置プレビュー射程円の描画
         // パレットで選択されており、かつ空きスロットにホバーしている場合
@@ -436,9 +437,6 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.stroke();
             ctx.restore();
         }
-
-        // 4. マップ（ノード・スロット）の描画
-        map.draw(ctx, hoveredSlot, selectedSlot);
 
         // 5. 防御タワーのレーザービーム描画 (敵やサーバーの上に重なる)
         game.defenders.forEach(def => {
