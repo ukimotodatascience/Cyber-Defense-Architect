@@ -32,7 +32,7 @@ export class UIManager {
             modalTechTree: document.getElementById("modal-tech-tree"),
             modalGameEnd: document.getElementById("modal-game-end"),
 
-            overlayMessage: document.getElementById("canvas-overlay-message"),
+            overlayMessage: document.getElementById("sidebar-wave-control"),
             overlayTitle: document.getElementById("overlay-title"),
             btnStartWave: document.getElementById("btn-start-wave"),
 
@@ -227,28 +227,62 @@ export class UIManager {
         });
 
         const ATTACKER_INFO = {
-            phishing: { name: "フィッシングメール", icon: "✉️", desc: "認証回避・社会工学" },
-            bruteforce: { name: "ブルートフォース攻撃", icon: "🔑", desc: "認証攻撃・パスワードリスト" },
-            sqlinjection: { name: "SQLインジェクション", icon: "💻", desc: "脆弱性攻撃・DBバイパス" },
-            ransomware: { name: "ランサムウェア", icon: "💀", desc: "マルウェア・暗号化・横展開" },
-            apt: { name: "APT (持続的標的型)", icon: "🕵️", desc: "標的型攻撃・潜伏偵察" },
-            insider: { name: "内部不正", icon: "👤", desc: "権限悪用・情報持ち出し" }
+            phishing: {
+                name: "フィッシングメール",
+                icon: "✉️",
+                shortDesc: "認証回避・社会工学",
+                desc: "境界防御(FW)を無効化し、DMZをスキップして内部サーバに直接侵入します。フィッシング攻撃に対してはメールフィルターが有効です。"
+            },
+            bruteforce: {
+                name: "ブルートフォース攻撃",
+                icon: "🔑",
+                shortDesc: "認証攻撃・パスワードリスト",
+                desc: "総当たりで認証突破を狙う。認証強化が無いノードでは急加速します。多要素認証(MFA)による鈍化・防御が効果的です。"
+            },
+            sqlinjection: {
+                name: "SQLインジェクション",
+                icon: "💻",
+                shortDesc: "脆弱性攻撃・DBバイパス",
+                desc: "WebサーバからDBサーバへ直接バイパス・侵入する特性を持ちます。Webサーバ保護のためにWAFの設置が推奨されます。"
+            },
+            ransomware: {
+                name: "ランサムウェア",
+                icon: "💀",
+                shortDesc: "マルウェア・暗号化",
+                desc: "到達したサーバ内のファイルを暗号化してシステムを停止させます。EDRによる撃退やバックアップによる緊急復旧が必要です。"
+            },
+            apt: {
+                name: "APT (持続的標的型)",
+                icon: "🕵️",
+                shortDesc: "標的型攻撃・潜伏偵察",
+                desc: "高度なステルス（検知回避）能力を持つ、潜伏型の組織的・持続的攻撃。検知能力を高めるセキュリティ対策が求められます。"
+            },
+            insider: {
+                name: "内部不正",
+                icon: "👤",
+                shortDesc: "権限悪用・情報持ち出し",
+                desc: "境界防御をバイパスしてDMZ以降の内部から直接出現する。セキュリティ教育やMFA、内部監視等が有効です。"
+            }
         };
 
         const activeTypes = new Set(this.game.attackers.map(a => a.type));
 
         Object.keys(counts).forEach(type => {
-            const info = ATTACKER_INFO[type] || { name: type, icon: "👾", desc: "未知のサイバー攻撃" };
+            const info = ATTACKER_INFO[type] || { name: type, icon: "👾", shortDesc: "未知のサイバー攻撃", desc: "詳細不明のセキュリティ脅威。" };
             const isActive = activeTypes.has(type) && this.game.waveInProgress;
 
             const itemHtml = `
-                <div class="threat-list-item ${isActive ? 'active-now' : ''}">
+                <div class="threat-list-item ${isActive ? 'active-now' : ''}" style="position: relative; cursor: help;">
                     <div class="threat-item-icon">${info.icon}</div>
                     <div class="threat-item-details">
                         <span class="threat-item-name">${info.name}</span>
-                        <span class="threat-item-desc">${info.desc}</span>
+                        <span class="threat-item-desc">${info.shortDesc}</span>
                     </div>
                     <div class="threat-item-count">x${counts[type]}</div>
+                    <div class="custom-tooltip" style="bottom: auto; top: 0; left: 105%; transform: translateX(10px) translateY(0); pointer-events: none; opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;">
+                        <h5>${info.icon} ${info.name}</h5>
+                        <p>${info.desc}</p>
+                    </div>
                 </div>
             `;
             listEl.insertAdjacentHTML("beforeend", itemHtml);
@@ -299,58 +333,6 @@ export class UIManager {
         this.dom.overlayTitle.textContent = title;
         this.dom.overlayTitle.classList.remove("neon-text-red");
         this.dom.btnStartWave.classList.remove("hidden");
-
-        // 次のウェーブ情報を取得
-        const waveIndex = this.game.currentWaveIndex;
-        const stage = this.game.stage;
-
-        let infoHtml = "";
-        if (stage && stage.waves && stage.waves[waveIndex]) {
-            const waveData = stage.waves[waveIndex];
-            infoHtml += `<div class="upcoming-threats">`;
-            infoHtml += `<h4>🛡️ 接近中の脅威:</h4>`;
-            infoHtml += `<ul>`;
-
-            // 敵タイプごとに出現数を集計
-            const counts = {};
-            waveData.spawnList.forEach(item => {
-                counts[item.type] = (counts[item.type] || 0) + item.count;
-            });
-
-            const ATTACKER_INFO = {
-                bruteforce: { name: "ブルートフォース", icon: "🔑", desc: "総当たりで認証突破を狙う。認証強化が無いノードでは急加速します。" },
-                sqlinjection: { name: "SQLインジェクション", icon: "💻", desc: "WebサーバからDBサーバへ直接バイパス・侵入する特性を持ちます。" },
-                phishing: { name: "フィッシングメール", icon: "✉️", desc: "境界防御(FW)を無効化し、DMZをスキップして内部サーバに直接侵入します。" },
-                ransomware: { name: "ランサムウェア", icon: "💀", desc: "到達したサーバ内のファイルを暗号化してシステムを停止させます。" },
-                apt: { name: "APT (標的型攻撃)", icon: "🕵️", desc: "高度なステルス（検知回避）能力を持つ、潜伏型の組織的・持続的攻撃。" },
-                insider: { name: "内部不正", icon: "👤", desc: "境界防御をバイパスしてDMZ以降の内部から直接出現する。セキュリティ教育やMFA等が有効です。" }
-            };
-
-            Object.keys(counts).forEach(type => {
-                const info = ATTACKER_INFO[type] || { name: type, icon: "", desc: "" };
-                infoHtml += `
-                    <li class="threat-item" data-threat-type="${type}">
-                        <div class="threat-header">
-                            <span>${info.icon} ${info.name}</span>
-                            <span class="neon-text-cyan">x${counts[type]}</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>${info.icon} ${info.name}</h5>
-                            <p>${info.desc}</p>
-                        </div>
-                    </li>
-                `;
-            });
-            infoHtml += `</ul></div>`;
-        }
-
-        const container = this.dom.overlayMessage;
-        const infoDiv = container.querySelector(".upcoming-threats");
-        if (infoDiv) {
-            infoDiv.remove();
-        }
-
-        this.dom.overlayTitle.insertAdjacentHTML("afterend", infoHtml);
         this.dom.overlayMessage.classList.remove("hidden");
     }
 

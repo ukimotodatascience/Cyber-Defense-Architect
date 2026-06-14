@@ -58,6 +58,15 @@
     <div class="game-container">
         <!-- 独立した左サイドバー -->
         <aside class="sidebar-left-panel" id="sidebar-left-panel">
+            <!-- WAVE制御セクション -->
+            <div class="wave-control-box" id="sidebar-wave-control">
+                <div class="wave-status-header">
+                    <span class="warning-icon">⚠</span>
+                    <span id="overlay-title" class="wave-status-title">作戦準備完了</span>
+                </div>
+                <button id="btn-start-wave" class="btn-cyber-start">ウェーブ開始</button>
+            </div>
+
             <!-- Wave Progress -->
             <div class="wave-progress-box">
                 <div class="wave-header">
@@ -103,13 +112,6 @@
             <!-- Canvas Area -->
             <div class="canvas-wrapper">
                 <canvas id="game-canvas" width="1200" height="540"></canvas>
-
-                <!-- 中央上部の警告バナー -->
-                <div id="canvas-overlay-message" class="hidden">
-                    <span class="warning-icon">⚠</span>
-                    <span id="overlay-title">ランサムウェアが侵入中！</span>
-                    <button id="btn-start-wave" class="btn-cyber-start">ウェーブ開始</button>
-                </div>
 
                 <!-- 右上の「脅威情報」ボタン -->
                 <button id="btn-threat-info" class="btn-threat-info-panel">💀 脅威情報</button>

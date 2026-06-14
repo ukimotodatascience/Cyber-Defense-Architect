@@ -342,105 +342,61 @@ body.cyber-theme {
     display: block;
 }
 
-/* Central Warning Overlay styled to match the sidebar visual theme */
-#canvas-overlay-message {
-    position: absolute;
-    top: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 680px;
-    max-width: calc(100% - 40px);
-    background: var(--bg-panel-warn);
-    border: 2px solid rgba(255, 0, 85, 0.7);
-    box-shadow: 0 0 30px rgba(255, 0, 85, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-    padding: 14px 25px;
+/* Sidebar Integrated Wave Control box */
+.wave-control-box {
+    background: rgba(255, 0, 85, 0.04);
+    border: 2px solid rgba(255, 0, 85, 0.4);
+    box-shadow: 0 0 15px rgba(255, 0, 85, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    backdrop-filter: blur(16px) saturate(180%);
-    z-index: 8;
+    padding: 15px 20px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    animation: pulseBorder 2s infinite alternate;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    animation: pulseBorder 3s infinite alternate;
 }
 
 @keyframes pulseBorder {
-    0% { border-color: var(--border-dim); box-shadow: 0 0 10px rgba(0, 240, 255, 0.1); }
-    100% { border-color: var(--border-cyber); box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); }
+    0% { border-color: rgba(255, 0, 85, 0.25); box-shadow: 0 0 8px rgba(255, 0, 85, 0.1); }
+    100% { border-color: rgba(255, 0, 85, 0.75); box-shadow: 0 0 20px rgba(255, 0, 85, 0.3); }
 }
 
-#canvas-overlay-message h2 {
-    font-family: var(--font-mono);
-    font-size: 20px;
-    margin-bottom: 0;
-    letter-spacing: 1.5px;
-    color: #fff;
-    text-shadow: 0 0 10px var(--neon-blue);
-    white-space: nowrap;
-}
-
-/* Threat intelligence HUD styling */
-#canvas-overlay-message .upcoming-threats {
-    flex-grow: 1;
+.wave-status-header {
     display: flex;
     align-items: center;
-    gap: 15px;
-}
-
-#canvas-overlay-message .upcoming-threats h4 {
-    font-size: 14px;
-    color: var(--neon-gold);
-    white-space: nowrap;
-    font-family: var(--font-mono);
-}
-
-#canvas-overlay-message .upcoming-threats ul {
-    display: flex;
     gap: 10px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-wrap: wrap;
+    justify-content: center;
 }
 
-#canvas-overlay-message .upcoming-threats li {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(0, 240, 255, 0.15);
-    border-radius: 4px;
-    padding: 4px 10px;
-    display: flex;
-    flex-direction: column;
-    font-size: 13px;
-    min-width: 120px;
-    position: relative;
-    cursor: help;
-}
-
-/* 攻撃手法ツールチップの配置調整（下方向に表示） */
-.threat-item .custom-tooltip {
-    bottom: auto;
-    top: 120%;
-    transform: translateX(-50%) translateY(-10px);
-}
-
-.threat-item:hover .custom-tooltip,
-.threat-item.touch-active .custom-tooltip {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-    pointer-events: auto;
-}
-
-#canvas-overlay-message .threat-header {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
+.wave-status-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
     color: #fff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(255, 0, 85, 0.4);
+    text-transform: uppercase;
 }
 
-#canvas-overlay-message .threat-tip {
-    font-size: 12px;
-    color: var(--neon-green);
-    margin-top: 1px;
+.wave-control-box .btn-cyber-start {
+    font-weight: 800;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #ff0055;
+    border: none;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(255, 0, 85, 0.5);
+    font-size: 16px;
+    width: 100%;
+    transition: all 0.25s ease;
+}
+
+.wave-control-box .btn-cyber-start:hover {
+    background: #fff;
+    color: #ff0055;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    transform: translateY(-1px);
 }
 
 
@@ -1402,6 +1358,12 @@ body.cyber-theme {
 .palette-item.touch-active .custom-tooltip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+}
+
+.threat-list-item:hover .custom-tooltip {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+    pointer-events: auto;
 }
 
 /* ==========================================================
