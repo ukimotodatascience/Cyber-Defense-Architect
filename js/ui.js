@@ -16,14 +16,17 @@ export class UIManager {
             budgetVal: document.getElementById("stat-budget"),
             staffVal: document.getElementById("stat-staff"),
             stageName: document.getElementById("current-stage-name"),
-            waveInfo: document.getElementById("current-wave-info"),
+
+            currentWaveText: document.getElementById("current-wave-text"),
+            waveTrack: document.getElementById("wave-track"),
+            activeThreatsList: document.getElementById("active-threats-list"),
+            nextWavePreviewIcons: document.getElementById("next-wave-preview-icons"),
+            floatingDetailPanel: document.getElementById("floating-detail-panel"),
+            selectionDetails: document.getElementById("selection-details"),
 
             speedPause: document.getElementById("btn-speed-pause"),
             speed1x: document.getElementById("btn-speed-1x"),
             speed2x: document.getElementById("btn-speed-2x"),
-
-            socLog: document.getElementById("soc-log"),
-            selectionDetails: document.getElementById("selection-details"),
 
             modalStageSelect: document.getElementById("modal-stage-select"),
             modalTechTree: document.getElementById("modal-tech-tree"),
@@ -35,7 +38,8 @@ export class UIManager {
 
             btnTechTree: document.getElementById("btn-tech-tree"),
             btnCloseTech: document.getElementById("btn-close-tech"),
-            btnFullscreen: document.getElementById("btn-fullscreen")
+            btnFullscreen: document.getElementById("btn-fullscreen"),
+            btnThreatInfo: document.getElementById("btn-threat-info")
         };
 
         this.initStaticEvents();
@@ -58,7 +62,7 @@ export class UIManager {
             }
         });
 
-        // 技術ツリー開閉
+        // 技術ツリー開閉 (⚙ギアアイコン)
         this.dom.btnTechTree.addEventListener("click", () => this.openTechTree());
         this.dom.btnCloseTech.addEventListener("click", () => this.closeTechTree());
 
@@ -102,6 +106,34 @@ export class UIManager {
                 }
             });
         });
+
+        // ショップパレットカテゴリーフィルタータブ
+        document.querySelectorAll(".tab-btn").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".tab-btn").forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+                const category = tab.dataset.category;
+                this.filterPalette(category);
+            });
+        });
+
+        // 脅威情報ボタン
+        if (this.dom.btnThreatInfo) {
+            this.dom.btnThreatInfo.addEventListener("click", () => {
+                this.log(`[脅威インテル] 現在のステージ: ${this.game.stage ? this.game.stage.name : '未選択'}. 侵入経路を監視し、多層防御を構築してください。`, "system");
+                alert(`【現在の脅威情報】\n・フィッシングメール: 境界(FW)をスルーして直接Webや認証に到達。\n・ブルートフォース: MFAで大幅遅延可能。\n・SQLインジェクション: WebサーバーからDBへバイパス。\n・ランサムウェア: 到達するとサーバーを暗号化(停止)。EDRが特効。\n・内部不正: 境界(FW, WAF)を全てバイパスし、内部から出現。`);
+            });
+        }
+    }
+
+    filterPalette(category) {
+        document.querySelectorAll(".bottom-palette-panel .palette-item").forEach(item => {
+            if (category === "all" || item.dataset.category === category) {
+                item.classList.remove("hidden");
+            } else {
+                item.classList.add("hidden");
+            }
+        });
     }
 
     setGameSpeed(speed) {
@@ -117,14 +149,8 @@ export class UIManager {
     }
 
     log(message, type = "normal") {
-        const entry = document.createElement("div");
-        entry.className = `log-entry ${type}`;
-
-        const timestamp = new Date().toLocaleTimeString();
-        entry.textContent = `[${timestamp}] ${message}`;
-
-        this.dom.socLog.appendChild(entry);
-        this.dom.socLog.scrollTop = this.dom.socLog.scrollHeight;
+        // SOCログはコンソールに流す、もしくは画面外の裏ログにする
+        console.log(`[LOG - ${type}] ${message}`);
     }
 
     updateHUD() {
@@ -134,35 +160,134 @@ export class UIManager {
         const trust = Math.round(this.game.trust);
         this.dom.trustVal.textContent = `${trust}%`;
         this.dom.trustBar.style.width = `${trust}%`;
-        setNeonClass(this.dom.trustVal, trust, "green", "red", 35);
-        setBarFillClass(this.dom.trustBar, trust, "green", "red", 35);
 
         // 事業継続
         const continuity = Math.round(this.game.continuity);
         this.dom.continuityVal.textContent = `${continuity}%`;
         this.dom.continuityBar.style.width = `${continuity}%`;
-        setNeonClass(this.dom.continuityVal, continuity, "blue", "red", 40);
-        setBarFillClass(this.dom.continuityBar, continuity, "blue", "red", 40);
 
         // 予算と人員
-        this.dom.budgetVal.textContent = `$${this.game.budget}`;
+        this.dom.budgetVal.textContent = this.game.budget.toLocaleString();
         this.dom.staffVal.textContent = `${this.game.staffAvailable} / ${this.game.staffMax}`;
 
         // ステージとウェーブ情報
         this.dom.stageName.textContent = this.game.stage.name;
 
-        const currentWave = this.game.currentWaveIndex + (this.game.waveInProgress ? 1 : 0);
         const maxWave = this.game.stage.waves.length;
-        this.dom.waveInfo.textContent = `WAVE: ${Math.min(maxWave, currentWave)} / ${maxWave}`;
+        const currentWave = Math.min(maxWave, this.game.currentWaveIndex + (this.game.waveInProgress ? 1 : 0));
+        this.dom.currentWaveText.textContent = `${currentWave} / ${maxWave}`;
+
+        // Wave進捗トラック（丸ノード）の更新
+        const nodes = this.dom.waveTrack.querySelectorAll(".wave-node");
+        nodes.forEach(node => {
+            const wNum = parseInt(node.dataset.wave);
+            node.className = "wave-node";
+            if (wNum === currentWave) {
+                node.classList.add("active");
+            } else if (wNum < currentWave) {
+                node.classList.add("completed");
+            }
+        });
+
+        // 出現中の敵リストと次のウェーブプレビューを更新
+        this.updateThreatsList();
+        this.updateNextWavePreview();
 
         // ウェーブが開始していないかつ、ゲームオーバーでなければオーバーレイを出す
         if (!this.game.waveInProgress && this.game.status === "playing" &&
             (this.dom.overlayMessage.classList.contains("hidden") || this.dom.btnStartWave.classList.contains("hidden"))) {
             const nextWaveNum = this.game.currentWaveIndex + 1;
             if (nextWaveNum <= maxWave) {
-                this.showOverlayMessage(`ウェーブ ${nextWaveNum} 準備完了`);
+                this.showOverlayMessage(`WAVE ${nextWaveNum} 準備完了`);
             }
         }
+    }
+
+    updateThreatsList() {
+        const listEl = this.dom.activeThreatsList;
+        if (!listEl) return;
+        listEl.innerHTML = "";
+
+        const stage = this.game.stage;
+        if (!stage) return;
+
+        // 現在のWaveインデックス
+        const waveIndex = Math.min(stage.waves.length - 1, this.game.currentWaveIndex);
+        const waveData = stage.waves[waveIndex];
+        if (!waveData) return;
+
+        const counts = {};
+        waveData.spawnList.forEach(item => {
+            counts[item.type] = (counts[item.type] || 0) + item.count;
+        });
+
+        const ATTACKER_INFO = {
+            phishing: { name: "フィッシングメール", icon: "✉️", desc: "認証回避・社会工学" },
+            bruteforce: { name: "ブルートフォース攻撃", icon: "🔑", desc: "認証攻撃・パスワードリスト" },
+            sqlinjection: { name: "SQLインジェクション", icon: "💻", desc: "脆弱性攻撃・DBバイパス" },
+            ransomware: { name: "ランサムウェア", icon: "💀", desc: "マルウェア・暗号化・横展開" },
+            apt: { name: "APT (持続的標的型)", icon: "🕵️", desc: "標的型攻撃・潜伏偵察" },
+            insider: { name: "内部不正", icon: "👤", desc: "権限悪用・情報持ち出し" }
+        };
+
+        const activeTypes = new Set(this.game.attackers.map(a => a.type));
+
+        Object.keys(counts).forEach(type => {
+            const info = ATTACKER_INFO[type] || { name: type, icon: "👾", desc: "未知のサイバー攻撃" };
+            const isActive = activeTypes.has(type) && this.game.waveInProgress;
+
+            const itemHtml = `
+                <div class="threat-list-item ${isActive ? 'active-now' : ''}">
+                    <div class="threat-item-icon">${info.icon}</div>
+                    <div class="threat-item-details">
+                        <span class="threat-item-name">${info.name}</span>
+                        <span class="threat-item-desc">${info.desc}</span>
+                    </div>
+                    <div class="threat-item-count">x${counts[type]}</div>
+                </div>
+            `;
+            listEl.insertAdjacentHTML("beforeend", itemHtml);
+        });
+    }
+
+    updateNextWavePreview() {
+        const container = this.dom.nextWavePreviewIcons;
+        if (!container) return;
+        container.innerHTML = "";
+
+        const stage = this.game.stage;
+        if (!stage) return;
+
+        const nextWaveIndex = this.game.currentWaveIndex + 1;
+        if (nextWaveIndex >= stage.waves.length) {
+            container.innerHTML = "<span style='font-size:10px;color:#39ff14;'>FINAL WAVE</span>";
+            return;
+        }
+
+        const nextWaveData = stage.waves[nextWaveIndex];
+        if (!nextWaveData) return;
+
+        const ATTACKER_ICONS = {
+            phishing: "✉️",
+            bruteforce: "🔑",
+            sqlinjection: "💻",
+            ransomware: "💀",
+            apt: "🕵️",
+            insider: "👤"
+        };
+
+        const typesAdded = new Set();
+        nextWaveData.spawnList.forEach(item => {
+            if (!typesAdded.has(item.type)) {
+                typesAdded.add(item.type);
+                const icon = ATTACKER_ICONS[item.type] || "👾";
+                const node = document.createElement("div");
+                node.className = "next-preview-icon";
+                node.textContent = icon;
+                node.title = item.type;
+                container.appendChild(node);
+            }
+        });
     }
 
     showOverlayMessage(title) {
@@ -298,14 +423,11 @@ export class UIManager {
         container.innerHTML = "";
 
         if (!entity) {
-            container.innerHTML = `
-                <div class="empty-selection">
-                    <p>マップ上のノードやタワーを選択すると、詳細が表示されます。</p>
-                    <p class="hint">下部のパレットから防御ユニットを選択し、マップの対応するスロット（◯）に配置してください。</p>
-                </div>
-            `;
+            this.dom.floatingDetailPanel.classList.add("hidden");
             return;
         }
+
+        this.dom.floatingDetailPanel.classList.remove("hidden");
 
         // 1. スロット/タワーの選択時
         if (entity.parentNodeId !== undefined) {
@@ -321,7 +443,7 @@ export class UIManager {
                 container.innerHTML = `
                     <div class="detail-section">
                         <div class="detail-title">${tower.name} (Lv.${tower.level})</div>
-                        <div class="detail-subtitle">セキュリティ防御モジュール</div>
+                        <div class="detail-subtitle">セキュリティ防衛モジュール</div>
                         <div class="detail-row">
                             <span class="lbl">配置先:</span>
                             <span class="val">${parentNode.name}</span>
@@ -341,18 +463,18 @@ export class UIManager {
                         </div>
                         ` : `
                         <div class="detail-row">
-                            <span class="lbl">修復力:</span>
-                            <span class="val">${tower.level * 8}% 復旧/秒</span>
+                            <span class="lbl">効果:</span>
+                            <span class="val">${tower.type === 'education' ? '敵の進行速度 -35%' : '自動復旧ビーム照射'}</span>
                         </div>
                         `}
                     </div>
                     <div class="detail-actions">
                         ${tower.level < 3 ? `
                             <button id="btn-tower-upgrade" class="btn-cyber" ${!canUpgrade ? 'disabled' : ''}>
-                                アップグレード (コスト: $${nextLevelCost})
+                                強化 🪙 ${nextLevelCost.toLocaleString()}
                             </button>
-                        ` : `<button class="btn-cyber" disabled>最大レベルに達しました</button>`}
-                        <button id="btn-tower-sell" class="btn-cyber-danger">撤去 (返還: $${Math.round(tower.cost * 0.5)})</button>
+                        ` : `<button class="btn-cyber" disabled>最大レベルです</button>`}
+                        <button id="btn-tower-sell" class="btn-cyber-danger">設備を売却 (返還: 🪙 ${Math.round(tower.cost * 0.5)})</button>
                     </div>
                 `;
 
@@ -374,7 +496,7 @@ export class UIManager {
                     this.game.defenders = this.game.defenders.filter(d => d !== tower);
                     this.showSelectionDetails(null);
                     this.updateHUD();
-                    this.log(`[防衛] ${tower.name} を撤去しました。`, "system");
+                    this.log(`[防衛] ${tower.name} を売却・撤去しました。`, "system");
                 });
 
             } else {
@@ -383,7 +505,7 @@ export class UIManager {
                     <div class="detail-section">
                         <div class="detail-title">空き防御スロット</div>
                         <div class="detail-subtitle">${parentNode.name} 周辺</div>
-                        <p class="empty-selection">下部の防衛モジュール（Firewall等）を選択した状態で、このスロットをクリックして配置します。</p>
+                        <p class="empty-selection">下部ショップから防御ユニットを選択し、配置してください。</p>
                     </div>
                 `;
             }
@@ -393,21 +515,18 @@ export class UIManager {
             const node = entity;
             const hasBackup = this.game.defenders.some(d => d.type === "backup" && d.parentNodeId === node.id);
 
-            // 人員による手動復旧がアサインされているか確認
-            const isManuallyRecovering = node.isStaffAssigned;
-
             container.innerHTML = `
                 <div class="detail-section">
                     <div class="detail-title">${node.name}</div>
-                    <div class="detail-subtitle">ネットワーク・アセット</div>
+                    <div class="detail-subtitle">保護対象システム</div>
                     <div class="detail-row">
-                        <span class="lbl">役割:</span>
+                        <span class="lbl">種別:</span>
                         <span class="val">${node.type.toUpperCase()}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="lbl">ステータス:</span>
+                        <span class="lbl">状態:</span>
                         <span class="val ${node.status === 'nominal' ? 'neon-text-green' : 'neon-text-red'}">
-                            ${node.status === 'nominal' ? '正常稼働' : node.status === 'infected' ? '⚠️ 暗号化 (ランサムウェア)' : '❌ 停止'}
+                            ${node.status === 'nominal' ? '正常' : node.status === 'infected' ? '⚠️ 暗号化被害' : '❌ 停止'}
                         </span>
                     </div>
                     ${node.status === 'infected' ? `
@@ -418,7 +537,7 @@ export class UIManager {
                     <div class="detail-row">
                         <span class="lbl">バックアップ保護:</span>
                         <span class="val ${hasBackup ? 'neon-text-green' : 'neon-text-red'}">
-                            ${hasBackup ? '有効 (自動復旧中)' : '無効'}
+                            ${hasBackup ? '自動復旧稼働中' : '未設定'}
                         </span>
                     </div>
                     ` : ''}
@@ -428,11 +547,11 @@ export class UIManager {
                 <div class="detail-actions">
                     ${!node.isStaffAssigned ? `
                         <button id="btn-assign-staff" class="btn-cyber" ${this.game.staffAvailable <= 0 ? 'disabled' : ''}>
-                            人員を緊急復旧へ配置 (要 👨‍💻1)
+                            人員を復旧へ配置 (要 👤1)
                         </button>
                     ` : `
                         <button id="btn-unassign-staff" class="btn-cyber-outline">
-                            緊急人員を引き揚げる
+                            要員を引き揚げる
                         </button>
                     `}
                 </div>
@@ -448,7 +567,6 @@ export class UIManager {
                         node.isStaffAssigned = true;
                         this.showSelectionDetails(node);
                         this.updateHUD();
-                        this.log(`[緊急対応] ${node.name} の緊急復旧にセキュリティ要員を派遣しました。`, "warn");
                     }
                 });
             }
@@ -461,7 +579,6 @@ export class UIManager {
                         node.isStaffAssigned = false;
                         this.showSelectionDetails(node);
                         this.updateHUD();
-                        this.log(`[緊急対応] ${node.name} からセキュリティ要員を回収しました。`, "system");
                     }
                 });
             }

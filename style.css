@@ -80,11 +80,14 @@ body.cyber-theme {
     background: var(--border-cyber);
 }
 
+/* ==========================================================
+   GAME HUD Redesign
+   ========================================================== */
 .game-hud {
-    height: 80px;
-    background: rgba(8, 10, 24, 0.85);
-    border-bottom: 2px solid var(--border-cyber);
-    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.15);
+    height: 70px;
+    background: rgba(10, 12, 28, 0.9);
+    border-bottom: 2px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -93,105 +96,153 @@ body.cyber-theme {
     backdrop-filter: blur(10px);
 }
 
-.hud-brand {
+.hud-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.hud-logo {
+    font-size: 24px;
+    filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.6));
+}
+
+.hud-stage-info {
     display: flex;
     flex-direction: column;
 }
 
-.brand-sub {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--neon-cyan);
-    letter-spacing: 2px;
-}
-
-.brand-title {
-    font-size: 22px;
+.hud-stage-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
     font-weight: 800;
-    letter-spacing: 1px;
-    background: linear-gradient(90deg, #fff, var(--neon-blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #fff;
+    letter-spacing: 0.5px;
 }
 
-.hud-stage-info {
-    font-family: var(--font-mono);
-    font-size: 18px;
-    border-left: 2px solid var(--border-dim);
-    border-right: 2px solid var(--border-dim);
-    padding: 0 24px;
-    display: flex;
-    gap: 18px;
-}
-
-.hud-stats {
+.hud-center {
     display: flex;
     gap: 30px;
     flex-grow: 1;
     justify-content: center;
+    max-width: 600px;
 }
 
-.stat-box {
+.hud-center .stat-box {
     display: flex;
     flex-direction: column;
-    min-width: 110px;
+    width: 220px;
 }
 
-.stat-label {
-    font-size: 12px;
+.stat-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 4px;
+}
+
+.hud-center .stat-label {
+    font-size: 11px;
     text-transform: uppercase;
     color: var(--text-dim);
-    font-family: var(--font-mono);
-}
-
-.stat-value {
-    font-size: 22px;
     font-weight: 600;
+}
+
+.hud-center .stat-value {
+    font-size: 14px;
+    font-weight: 800;
     font-family: var(--font-mono);
 }
 
-.stat-bar {
+.text-orange {
+    color: #ff9900;
+    text-shadow: 0 0 8px rgba(255, 153, 0, 0.6);
+}
+
+.text-blue {
+    color: #00ffd5;
+    text-shadow: 0 0 8px rgba(0, 255, 213, 0.6);
+}
+
+.hud-center .stat-bar {
     width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 4px;
-}
-
-.bar-fill {
-    height: 100%;
-    transition: width 0.3s ease;
-}
-.bg-green { background-color: var(--neon-green); box-shadow: 0 0 5px var(--neon-green); }
-.bg-blue  { background-color: var(--neon-blue);  box-shadow: 0 0 5px var(--neon-blue);  }
-.bg-red   { background-color: var(--neon-red);   box-shadow: 0 0 5px var(--neon-red);   }
-
-.hud-controls {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-ctrl {
+    height: 5px;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-dim);
-    color: var(--text-main);
-    width: 42px;
-    height: 42px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.bg-orange {
+    background-color: #ff9900;
+    box-shadow: 0 0 5px #ff9900;
+}
+
+.hud-right {
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+    gap: 20px;
 }
 
-.btn-ctrl:hover, .btn-ctrl.active {
-    background: rgba(0, 240, 255, 0.2);
+.hud-currency, .hud-staff {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.currency-icon {
+    font-size: 18px;
+}
+
+.currency-val {
+    color: #ffcc00;
+    text-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
+}
+
+.staff-icon {
+    font-size: 16px;
+}
+
+.staff-val {
+    color: #bd00ff;
+    text-shadow: 0 0 8px rgba(189, 0, 255, 0.5);
+}
+
+.btn-hud-ctrl {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-hud-ctrl:hover, .btn-hud-ctrl.active {
+    background: rgba(0, 240, 255, 0.15);
     border-color: var(--neon-blue);
     color: #fff;
-    box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+
+.speed-indicator {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.settings-btn {
+    font-size: 16px;
 }
 
 /* Main Container */
@@ -322,82 +373,264 @@ body.cyber-theme {
 
 
 /* Sidebar Details */
-.detail-sidebar {
-    width: 350px;
-    border-left: 2px solid var(--border-dim);
-    background: var(--bg-panel);
+/* ==========================================================
+   FLOATING LEFT PANEL (Wave info & active threats)
+   ========================================================== */
+.floating-left-panel {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    bottom: 165px; /* 下部パレットと被らないように */
+    width: 270px;
+    background: rgba(8, 10, 22, 0.85);
+    border: 1.5px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    border-radius: 6px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
+    gap: 15px;
+    z-index: 5;
     backdrop-filter: blur(10px);
 }
 
-.panel-header {
-    height: 48px;
-    border-bottom: 1px solid var(--border-dim);
-    display: flex;
-    align-items: center;
-    padding: 0 18px;
-    font-family: var(--font-mono);
-    font-size: 15px;
-    letter-spacing: 1.5px;
-    color: var(--neon-blue);
-    background: rgba(0, 240, 255, 0.05);
+.wave-progress-box {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.panel-body {
-    flex-grow: 1;
-    padding: 15px;
-    overflow-y: auto;
-}
-
-.empty-selection {
-    color: var(--text-dim);
-    font-size: 15px;
-    text-align: center;
-    margin-top: 40px;
-    line-height: 1.6;
-}
-
-.empty-selection .hint {
-    margin-top: 15px;
-    font-style: italic;
-    font-size: 13px;
-    color: var(--neon-cyan);
-}
-
-/* Detail panel content styled */
-.detail-section {
-    margin-bottom: 24px;
-}
-.detail-title {
-    font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    color: #fff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 6px;
-}
-.detail-subtitle {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--neon-cyan);
-    margin-bottom: 18px;
-    text-transform: uppercase;
-}
-.detail-row {
+.wave-header {
     display: flex;
     justify-content: space-between;
-    font-size: 15px;
-    margin-bottom: 10px;
+    align-items: baseline;
+    margin-bottom: 12px;
 }
-.detail-row .lbl { color: var(--text-dim); }
-.detail-row .val { font-family: var(--font-mono); font-weight: 600; }
 
-.detail-actions {
+.wave-label-main {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: bold;
+}
+
+.wave-val-main {
+    font-size: 18px;
+    font-family: var(--font-mono);
+    color: #ff0055;
+    text-shadow: 0 0 8px rgba(255, 0, 85, 0.5);
+    font-weight: 800;
+}
+
+.wave-track {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding: 0 5px;
+}
+
+.wave-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.wave-node, .wave-node-end {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #111424;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+    z-index: 2;
+    position: relative;
+}
+
+.wave-node.active {
+    background: #ff0055;
+    border-color: #ff0055;
+    color: #fff;
+    box-shadow: 0 0 8px #ff0055;
+}
+
+.wave-node.completed {
+    background: rgba(255, 0, 85, 0.3);
+    border-color: #ff0055;
+    color: #ff0055;
+}
+
+.wave-node-end {
+    background: #00ffd5;
+    border-color: #00ffd5;
+    color: #000;
+    font-size: 9px;
+    box-shadow: 0 0 8px rgba(0, 255, 213, 0.4);
+}
+
+.threats-box {
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 20px;
+    overflow: hidden;
+}
+
+.panel-section-title {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    border-left: 3px solid #ff0055;
+    padding-left: 8px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.panel-section-title-sm {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.active-threats-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.threat-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 8px 10px;
+    transition: all 0.2s ease;
+}
+
+.threat-list-item.active-now {
+    border-color: rgba(255, 0, 85, 0.4);
+    background: rgba(255, 0, 85, 0.05);
+    box-shadow: 0 0 8px rgba(255, 0, 85, 0.1) inset;
+}
+
+.threat-item-icon {
+    font-size: 20px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.threat-item-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.threat-item-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.threat-item-desc {
+    font-size: 9px;
+    color: var(--text-dim);
+}
+
+.threat-item-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    color: #ff0055;
+}
+
+.next-wave-box {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.next-wave-icons {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.next-preview-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+}
+
+.route-hint-box {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.route-hint-arrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #ff0055;
+    text-shadow: 0 0 6px rgba(255,0,85,0.4);
+    letter-spacing: 2px;
+}
+
+/* ==========================================================
+   FLOATING RIGHT BOTTOM PANEL (Selected module details)
+   ========================================================== */
+.floating-detail-panel {
+    position: absolute;
+    bottom: 165px;
+    right: 15px;
+    width: 320px;
+    background: rgba(8, 10, 22, 0.85);
+    border: 1.5px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    border-radius: 6px;
+    padding: 15px;
+    z-index: 5;
+    backdrop-filter: blur(10px);
+}
+
+.detail-panel-title {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--neon-blue);
+    text-shadow: 0 0 5px rgba(0,240,255,0.3);
+    border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 /* Cyber buttons */
@@ -477,44 +710,43 @@ body.cyber-theme {
 }
 
 /* Floating Tower Palette (HUD Overlay) */
-.floating-palette-panel {
+/* ==========================================================
+   BOTTOM PALETTE PANEL (Defense shop palette)
+   ========================================================== */
+.bottom-palette-panel {
     position: absolute;
     bottom: 15px;
     left: 15px;
     right: 15px;
-    background: rgba(8, 10, 24, 0.85);
-    border: 1px solid var(--border-cyber);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+    height: 135px;
+    background: rgba(8, 10, 22, 0.85);
+    border: 1.5px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
     border-radius: 6px;
-    padding: 12px 18px;
-    backdrop-filter: blur(10px);
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     z-index: 5;
-    animation: pulseBorder 2s infinite alternate;
+    backdrop-filter: blur(10px);
 }
 
-.palette-title {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    letter-spacing: 1px;
-    color: var(--neon-cyan);
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    text-shadow: 0 0 5px rgba(0, 255, 213, 0.4);
-}
-
-.tower-palette {
+.bottom-palette-panel .tower-palette {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: 8px;
+    flex-grow: 1;
+    overflow-x: auto;
 }
 
-.palette-item {
+.bottom-palette-panel .palette-item {
     flex: 1;
-    max-width: 180px;
-    height: 105px;
+    min-width: 100px;
+    max-width: 130px;
+    height: 72px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
+    border-radius: 4px;
     color: var(--text-main);
     cursor: pointer;
     display: flex;
@@ -526,39 +758,112 @@ body.cyber-theme {
     position: relative;
 }
 
-.palette-item:hover {
+.bottom-palette-panel .palette-item:hover {
     background: rgba(0, 240, 255, 0.05);
     border-color: var(--neon-blue);
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
     transform: translateY(-2px);
 }
 
-.palette-item.selected {
+.bottom-palette-panel .palette-item.selected {
     background: rgba(0, 240, 255, 0.15);
     border-color: var(--neon-blue);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
 }
 
-.item-icon {
-    font-size: 38px;
-    margin-bottom: 6px;
-    filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
+.bottom-palette-panel .item-icon {
+    font-size: 20px;
+    margin-bottom: 2px;
 }
 
-.item-info {
-    display: flex;
-    flex-direction: column;
+.bottom-palette-panel .item-name {
+    font-size: 11px;
+    font-weight: bold;
 }
 
-.item-name {
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.item-cost {
+.bottom-palette-panel .item-cost {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 10px;
     color: var(--neon-gold);
+}
+
+/* Category filter tabs style */
+.palette-tabs {
+    display: flex;
+    gap: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-dim);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #fff;
+    border-color: rgba(0, 240, 255, 0.4);
+}
+
+.tab-btn.active {
+    background: rgba(0, 255, 213, 0.1);
+    border-color: #00ffd5;
+    color: #00ffd5;
+    box-shadow: 0 0 6px rgba(0, 255, 213, 0.3);
+}
+
+/* Threat info button */
+.btn-threat-info-panel {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(10, 15, 30, 0.85);
+    border: 1.5px solid rgba(255, 0, 85, 0.4);
+    color: #ff0055;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 5;
+}
+
+.btn-threat-info-panel:hover {
+    background: #ff0055;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(255,0,85,0.5);
+}
+
+/* Flashing Alert banner */
+.btn-cyber-start {
+    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #ff0055;
+    border: none;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+    font-size: 12px;
+}
+
+.warning-icon {
+    font-size: 16px;
+    color: #ff0055;
+    animation: flash 1s infinite alternate;
+}
+
+@keyframes flash {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
 }
 
 /* Sidebar Split Layout */
@@ -987,355 +1292,155 @@ body.cyber-theme {
 /* ==========================================================
    TABLET: 768px ~ 1023px
    ========================================================== */
+/* ==========================================================
+   RESPONSIVE DESIGN (Adjustments for tablets and mobiles)
+   ========================================================== */
+
+/* TABLET: ~ 1023px */
 @media (max-width: 1023px) {
-    /* HUD: ステージ情報を縮小、統計を小さく */
     .game-hud {
-        height: 70px;
-        padding: 0 14px;
-        gap: 8px;
+        padding: 0 16px;
     }
 
-    .brand-title {
+    .hud-center {
+        gap: 15px;
+    }
+
+    .hud-center .stat-box {
+        width: 160px;
+    }
+
+    .floating-left-panel {
+        width: 230px;
+        bottom: 155px;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .floating-detail-panel {
+        width: 280px;
+        bottom: 155px;
+    }
+
+    .bottom-palette-panel {
+        height: 125px;
+    }
+
+    .bottom-palette-panel .palette-item {
+        min-width: 85px;
+        height: 64px;
+    }
+
+    .bottom-palette-panel .item-icon {
         font-size: 16px;
     }
 
-    .brand-sub {
-        font-size: 9px;
-    }
-
-    .hud-stage-info {
-        display: none;
-    }
-
-    .hud-stats {
-        gap: 12px;
-    }
-
-    .stat-box {
-        min-width: 80px;
-    }
-
-    .stat-value {
-        font-size: 16px;
-    }
-
-    .stat-label {
+    .bottom-palette-panel .item-name {
         font-size: 10px;
     }
 
-    /* サイドバー: 幅を縮小 */
-    .detail-sidebar {
-        width: 260px;
-    }
-
-    /* パレット: アイテムを少し小さく */
-    .palette-item {
-        height: 88px;
-    }
-
-    .item-icon {
-        font-size: 28px;
-        margin-bottom: 4px;
-    }
-
-    .item-name {
-        font-size: 12px;
-    }
-
-    .item-cost {
-        font-size: 11px;
-    }
-
-    /* モーダル幅の上限を画面幅に合わせる */
-    .modal-content {
-        width: min(650px, 92vw);
-    }
-
-    .modal-content.large {
-        width: min(1050px, 96vw);
-    }
-
-    /* 技術ツリー: 縦並びにする */
-    .tech-tree-grid {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .tech-column {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .tech-column h3 {
-        width: 100%;
-    }
-
-    .tech-arrow {
-        display: none;
-    }
-
-    .tech-node {
-        flex: 1;
-        min-width: 140px;
+    .bottom-palette-panel .item-cost {
+        font-size: 9px;
     }
 }
 
-/* ==========================================================
-   MOBILE: ~ 767px
-   ========================================================== */
+/* MOBILE: ~ 767px */
 @media (max-width: 767px) {
-
-    /* ---- HUD: 2行レイアウト ---- */
     .game-hud {
         height: auto;
-        min-height: 100px;
-        flex-wrap: wrap;
-        padding: 8px 10px;
-        gap: 6px 10px;
-        align-items: center;
-    }
-
-    .hud-brand {
-        flex: 0 0 auto;
-    }
-
-    .brand-title {
-        font-size: 14px;
-    }
-
-    .brand-sub {
-        font-size: 8px;
-    }
-
-    /* ステージ情報: 非表示（画面が狭すぎる） */
-    .hud-stage-info {
-        display: none;
-    }
-
-    /* 統計: 1行目の右側に寄せる */
-    .hud-stats {
-        order: 1;
-        flex: 1 1 auto;
-        gap: 6px;
-        justify-content: flex-end;
-    }
-
-    .stat-box {
-        min-width: 60px;
-    }
-
-    .stat-value {
-        font-size: 14px;
-    }
-
-    .stat-label {
-        font-size: 9px;
-    }
-
-    /* コントロールボタン: 2行目 */
-    .hud-controls {
-        order: 2;
-        width: 100%;
-        border-top: 1px solid var(--border-dim);
-        padding-top: 6px;
-        justify-content: flex-end;
-        gap: 6px;
-    }
-
-    .btn-ctrl {
-        width: 36px;
-        height: 36px;
-        font-size: 14px;
-    }
-
-    /* サイドバートグルボタン: モバイルで表示 */
-    .sidebar-toggle-btn {
-        display: flex;
-    }
-
-    /* ---- ゲームエリア: サイドバーをオーバーレイに ---- */
-    .game-container {
-        position: relative;
-    }
-
-    /* サイドバー: 通常時は画面外に隠す */
-    .detail-sidebar {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: min(320px, 85vw);
-        height: 100vh;
-        z-index: 50;
-        border-left: 2px solid var(--border-cyber);
-        box-shadow: -4px 0 30px rgba(0, 240, 255, 0.2);
-        transform: translateX(100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow-y: auto;
-    }
-
-    /* サイドバー: 開いた状態 */
-    .detail-sidebar.open {
-        transform: translateX(0);
-    }
-
-    .sidebar-overlay.active {
-        display: block;
-    }
-
-
-    /* ---- フローティングパレット: 横スクロール ---- */
-    .floating-palette-panel {
-        left: 8px;
-        right: 8px;
-        bottom: 8px;
-        padding: 8px 12px;
-    }
-
-    .palette-title {
-        font-size: 11px;
-        margin-bottom: 6px;
-    }
-
-    .tower-palette {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        gap: 8px;
-        /* スクロールバーを非表示にしてフリックで操作可能に */
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        padding-bottom: 2px;
-    }
-
-    .tower-palette::-webkit-scrollbar {
-        display: none;
-    }
-
-    .palette-item {
-        flex: 0 0 auto;
-        width: 80px;
-        height: 80px;
-        max-width: none;
-    }
-
-    .item-icon {
-        font-size: 24px;
-        margin-bottom: 2px;
-    }
-
-    .item-name {
-        font-size: 11px;
-    }
-
-    .item-cost {
-        font-size: 10px;
-    }
-
-    /* ---- モーダル ---- */
-    .modal-content {
-        width: 95vw;
-        max-height: 90vh;
-        padding: 20px 15px;
-    }
-
-    .modal-content.large {
-        width: 98vw;
-        max-height: 95vh;
-    }
-
-    .modal-content h1 {
-        font-size: 22px;
-        letter-spacing: 1px;
-    }
-
-    .modal-content h2 {
-        font-size: 18px;
-    }
-
-    .stage-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .how-to-play-quick li {
-        font-size: 11px;
-    }
-
-    /* 技術ツリー: 縦スクロール */
-    .tech-tree-grid {
         flex-direction: column;
+        align-items: stretch;
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .hud-left, .hud-right {
+        justify-content: space-between;
+    }
+
+    .hud-center {
+        max-width: none;
+        flex-direction: row;
+        justify-content: space-between;
         gap: 10px;
     }
 
-    .tech-column {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 8px;
+    .hud-center .stat-box {
+        flex: 1;
+        width: auto;
     }
 
-    .tech-column h3 {
-        width: 100%;
+    .hud-currency, .hud-staff {
+        font-size: 14px;
+        padding: 4px 8px;
+    }
+
+    .btn-hud-ctrl {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .floating-left-panel {
+        width: 170px;
+        bottom: 135px;
+        font-size: 10px;
+        padding: 8px;
+        gap: 6px;
+    }
+
+    .wave-val-main {
         font-size: 13px;
     }
 
-    .tech-arrow {
-        display: none;
+    .wave-node, .wave-node-end {
+        width: 14px;
+        height: 14px;
+        font-size: 8px;
     }
 
-    .tech-node {
-        flex: 1;
-        min-width: 120px;
+    .panel-section-title {
+        font-size: 10px;
+        margin-bottom: 4px;
     }
 
-    /* ゲームオーバー統計 */
-    .end-stats-box {
-        width: 100%;
+    .threat-item-icon {
+        font-size: 14px;
     }
 
-    .end-actions {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
+    .threat-item-name {
+        font-size: 9px;
     }
 
-    .end-actions .btn-cyber,
-    .end-actions .btn-cyber-outline {
-        width: 100%;
-        max-width: 280px;
+    .threat-item-count {
+        font-size: 10px;
     }
 
-    /* キャンバスオーバーレイメッセージ: モバイルで縦方向に調整 */
-    #canvas-overlay-message {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        padding: 8px 12px;
+    .floating-detail-panel {
+        width: 200px;
+        bottom: 135px;
+        font-size: 11px;
+        padding: 10px;
     }
 
-    #canvas-overlay-message h2 {
-        font-size: 15px;
+    .bottom-palette-panel {
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        height: 115px;
+        padding: 6px 10px;
     }
 
-    #canvas-overlay-message .upcoming-threats {
-        flex-direction: column;
-        gap: 6px;
-        width: 100%;
+    .bottom-palette-panel .tower-palette {
+        gap: 4px;
     }
 
-    #canvas-overlay-message .upcoming-threats ul {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 4px;
+    .bottom-palette-panel .palette-item {
+        min-width: 70px;
+        height: 58px;
     }
 
-    #canvas-overlay-message .upcoming-threats li {
-        flex: 0 0 auto;
-        min-width: 100px;
-    }
-
-    /* ツールチップ: 画面幅に合わせて縮小 */
-    .custom-tooltip {
-        width: min(300px, 85vw);
+    .tab-btn {
+        padding: 3px 6px;
+        font-size: 8px;
     }
 }

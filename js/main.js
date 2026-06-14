@@ -55,38 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // ---- サイドバートグル（モバイル用） ----
-    const sidebar = document.getElementById("detail-sidebar");
-    const sidebarOverlay = document.getElementById("sidebar-overlay");
-    const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
-
-    function openSidebar() {
-        if (window.innerWidth > 767) return;
-        sidebar.classList.add("open");
-        sidebarOverlay.classList.add("active");
-        if (btnToggleSidebar) btnToggleSidebar.title = "サイドパネルを閉じる";
-    }
-
-    function closeSidebar() {
-        if (window.innerWidth > 767) return;
-        sidebar.classList.remove("open");
-        sidebarOverlay.classList.remove("active");
-        if (btnToggleSidebar) btnToggleSidebar.title = "サイドパネルを開く";
-    }
-
-    if (btnToggleSidebar) {
-        btnToggleSidebar.addEventListener("click", () => {
-            if (sidebar.classList.contains("open")) {
-                closeSidebar();
-            } else {
-                openSidebar();
-            }
-        });
-    }
-
-    if (sidebarOverlay) {
-        sidebarOverlay.addEventListener("click", closeSidebar);
-    }
+    // ---- サイドバートグルはフローティング化に伴い廃止 ----
 
     // 2. ステージ選択イベントの設定
     document.querySelectorAll(".stage-card").forEach(card => {
@@ -288,9 +257,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } else {
                 selectedSlot = clickedSlot;
+            } else {
+                selectedSlot = clickedSlot;
                 ui.showSelectionDetails(clickedSlot);
-                // モバイルでサイドバーを自動的に開く
-                openSidebar();
             }
             return;
         }
@@ -307,9 +276,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (clickedNode) {
             selectedSlot = null;
             hoveredNode = clickedNode;
+        if (clickedNode) {
+            selectedSlot = null;
+            hoveredNode = clickedNode;
             ui.showSelectionDetails(clickedNode);
-            // モバイルでサイドバーを自動的に開く
-            openSidebar();
             return;
         }
 
@@ -350,6 +320,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         pathKey = Math.random() > 0.4 ? "authRoute" : "crossRoute";
                     } else if (nextSpawn.type === "apt") {
                         pathKey = "crossRoute";
+                    } else if (nextSpawn.type === "insider") {
+                        pathKey = Math.random() > 0.5 ? "authRoute" : "webRoute";
                     }
 
                     const newEnemy = new Attacker(nextSpawn.type, pathKey, map);
@@ -435,24 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillStyle = "#020308";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 1. グリッド背景の描画
-        ctx.save();
-        ctx.strokeStyle = "rgba(18, 24, 48, 0.25)";
-        ctx.lineWidth = 0.5;
-        const gridSize = 40;
-        for (let x = 0; x < canvas.width; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvas.height);
-            ctx.stroke();
-        }
-        for (let y = 0; y < canvas.height; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
-            ctx.stroke();
-        }
-        ctx.restore();
+        // 1. 背景グリッドは廃止（画像背景に置き換え）
 
         // 2. タワー配置プレビュー射程円の描画
         // パレットで選択されており、かつ空きスロットにホバーしている場合
