@@ -82,10 +82,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 // トグルオフ
                 selectedPaletteTower = null;
                 btn.classList.remove("selected");
+                ui.showSelectionDetails(null);
             } else {
                 paletteButtons.forEach(b => b.classList.remove("selected"));
                 selectedPaletteTower = towerType;
                 btn.classList.add("selected");
+                ui.showDefenderShopDetails(towerType);
             }
         });
 
@@ -123,8 +125,24 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".tab-btn").forEach(tab => {
         tab.addEventListener("click", () => {
             clearPaletteSelection();
+            ui.showSelectionDetails(null);
         });
     });
+
+    // 出現中の敵リストクリックイベント
+    const activeThreatsList = document.getElementById("active-threats-list");
+    if (activeThreatsList) {
+        activeThreatsList.addEventListener("click", (e) => {
+            const item = e.target.closest(".threat-list-item");
+            if (item) {
+                clearPaletteSelection();
+                selectedSlot = null;
+                hoveredNode = null;
+                const type = item.dataset.threatType;
+                ui.showThreatDetails(type);
+            }
+        });
+    }
 
     // パレット選択をクリアするヘルパー
     function clearPaletteSelection() {
@@ -190,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
 
                     clearPaletteSelection();
+                    ui.showSelectionDetails(null);
                     ui.updateHUD();
                 } else {
                     ui.log(`[エラー] 予算が不足しています。必要: $${tempDefender.cost}`, "alert");
@@ -254,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ui.log(`[配置] ${tempDefender.name} を ${map.getNodeById(clickedSlot.parentNodeId).name} 周辺に配置しました。`, "success");
                     game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
                     clearPaletteSelection();
+                    ui.showSelectionDetails(null);
                     ui.updateHUD();
                 } else {
                     ui.log(`[エラー] 予算が不足しています。必要: $${tempDefender.cost}`, "alert");

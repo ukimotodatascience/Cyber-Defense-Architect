@@ -218,41 +218,7 @@ export class UIManager {
             });
         }
 
-        // 出現中の敵のホバーイベント (右下に概要を表示)
-        const threatsList = this.dom.activeThreatsList;
-        if (threatsList) {
-            threatsList.addEventListener("mouseover", (e) => {
-                const item = e.target.closest(".threat-list-item");
-                if (item) {
-                    const type = item.dataset.threatType;
-                    this.showThreatDetails(type);
-                }
-            });
-            threatsList.addEventListener("mouseout", (e) => {
-                const item = e.target.closest(".threat-list-item");
-                if (item) {
-                    this.showSelectionDetails(this.currentEntity);
-                }
-            });
-        }
 
-        // 防御手法（ショップカード）のホバーイベント (右下に概要を表示)
-        const towerPalette = document.getElementById("tower-palette");
-        if (towerPalette) {
-            towerPalette.addEventListener("mouseover", (e) => {
-                const item = e.target.closest(".palette-item");
-                if (item) {
-                    const type = item.dataset.towerType;
-                    this.showDefenderShopDetails(type);
-                }
-            });
-            towerPalette.addEventListener("mouseout", (e) => {
-                const item = e.target.closest(".palette-item");
-                if (item) {
-                    this.showSelectionDetails(this.currentEntity);
-                }
-            });
-        }
     }
 
     filterPalette(category) {
