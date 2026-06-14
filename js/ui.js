@@ -384,7 +384,7 @@ export class UIManager {
             const isActive = activeTypes.has(type) && this.game.waveInProgress;
 
             const itemHtml = `
-                <div class="threat-list-item ${isActive ? 'active-now' : ''}" data-threat-type="${type}" style="position: relative; cursor: help;">
+                <div class="threat-list-item ${isActive ? 'active-now' : ''}" data-threat-type="${type}" style="position: relative; cursor: pointer;">
                     <div class="threat-item-icon">${info.icon}</div>
                     <div class="threat-item-details">
                         <span class="threat-item-name">${info.name}</span>
