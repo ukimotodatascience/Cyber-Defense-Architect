@@ -286,15 +286,17 @@ body.cyber-theme {
 #canvas-overlay-message {
     position: absolute;
     top: 15px;
-    left: 15px;
-    right: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 620px;
+    max-width: calc(100% - 30px);
     background: rgba(5, 7, 18, 0.95);
     border: 1px solid var(--border-cyber);
     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
     padding: 10px 20px;
     border-radius: 6px;
     backdrop-filter: blur(10px);
-    z-index: 5;
+    z-index: 8;
     display: flex;
     align-items: center;
     justify-content: space-between;
