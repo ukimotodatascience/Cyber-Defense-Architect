@@ -961,3 +961,383 @@ body.cyber-theme {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* ==========================================================
+   RESPONSIVE DESIGN
+   ========================================================== */
+
+/* ---- サイドバーオーバーレイ（モバイル用背景暗転） ---- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 49;
+    backdrop-filter: blur(2px);
+}
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* サイドバートグルボタン: デスクトップでは非表示 */
+.sidebar-toggle-btn {
+    display: none;
+}
+
+/* ==========================================================
+   TABLET: 768px ~ 1023px
+   ========================================================== */
+@media (max-width: 1023px) {
+    /* HUD: ステージ情報を縮小、統計を小さく */
+    .game-hud {
+        height: 70px;
+        padding: 0 14px;
+        gap: 8px;
+    }
+
+    .brand-title {
+        font-size: 16px;
+    }
+
+    .brand-sub {
+        font-size: 9px;
+    }
+
+    .hud-stage-info {
+        font-size: 13px;
+        padding: 0 12px;
+        gap: 10px;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .hud-stats {
+        gap: 12px;
+    }
+
+    .stat-box {
+        min-width: 80px;
+    }
+
+    .stat-value {
+        font-size: 16px;
+    }
+
+    .stat-label {
+        font-size: 10px;
+    }
+
+    /* サイドバー: 幅を縮小 */
+    .detail-sidebar {
+        width: 260px;
+    }
+
+    /* パレット: アイテムを少し小さく */
+    .palette-item {
+        height: 88px;
+    }
+
+    .item-icon {
+        font-size: 28px;
+        margin-bottom: 4px;
+    }
+
+    .item-name {
+        font-size: 12px;
+    }
+
+    .item-cost {
+        font-size: 11px;
+    }
+
+    /* モーダル幅の上限を画面幅に合わせる */
+    .modal-content {
+        width: min(650px, 92vw);
+    }
+
+    .modal-content.large {
+        width: min(1050px, 96vw);
+    }
+
+    /* 技術ツリー: 縦並びにする */
+    .tech-tree-grid {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .tech-column {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .tech-column h3 {
+        width: 100%;
+    }
+
+    .tech-arrow {
+        display: none;
+    }
+
+    .tech-node {
+        flex: 1;
+        min-width: 140px;
+    }
+}
+
+/* ==========================================================
+   MOBILE: ~ 767px
+   ========================================================== */
+@media (max-width: 767px) {
+
+    /* ---- HUD: 2行レイアウト ---- */
+    .game-hud {
+        height: auto;
+        min-height: 100px;
+        flex-wrap: wrap;
+        padding: 8px 10px;
+        gap: 6px 10px;
+        align-items: center;
+    }
+
+    .hud-brand {
+        flex: 0 0 auto;
+    }
+
+    .brand-title {
+        font-size: 14px;
+    }
+
+    .brand-sub {
+        font-size: 8px;
+    }
+
+    /* ステージ情報: 非表示（画面が狭すぎる） */
+    .hud-stage-info {
+        display: none;
+    }
+
+    /* 統計: 1行目の右側に寄せる */
+    .hud-stats {
+        order: 1;
+        flex: 1 1 auto;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+
+    .stat-box {
+        min-width: 60px;
+    }
+
+    .stat-value {
+        font-size: 14px;
+    }
+
+    .stat-label {
+        font-size: 9px;
+    }
+
+    /* コントロールボタン: 2行目 */
+    .hud-controls {
+        order: 2;
+        width: 100%;
+        border-top: 1px solid var(--border-dim);
+        padding-top: 6px;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    .btn-ctrl {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    /* サイドバートグルボタン: モバイルで表示 */
+    .sidebar-toggle-btn {
+        display: flex;
+    }
+
+    /* ---- ゲームエリア: サイドバーをオーバーレイに ---- */
+    .game-container {
+        position: relative;
+    }
+
+    /* サイドバー: 通常時は画面外に隠す */
+    .detail-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: min(320px, 85vw);
+        height: 100vh;
+        z-index: 50;
+        border-left: 2px solid var(--border-cyber);
+        box-shadow: -4px 0 30px rgba(0, 240, 255, 0.2);
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+    }
+
+    /* サイドバー: 開いた状態 */
+    .detail-sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* ---- フローティングパレット: 横スクロール ---- */
+    .floating-palette-panel {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        padding: 8px 12px;
+    }
+
+    .palette-title {
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+
+    .tower-palette {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        /* スクロールバーを非表示にしてフリックで操作可能に */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+
+    .tower-palette::-webkit-scrollbar {
+        display: none;
+    }
+
+    .palette-item {
+        flex: 0 0 auto;
+        width: 80px;
+        height: 80px;
+        max-width: none;
+    }
+
+    .item-icon {
+        font-size: 24px;
+        margin-bottom: 2px;
+    }
+
+    .item-name {
+        font-size: 11px;
+    }
+
+    .item-cost {
+        font-size: 10px;
+    }
+
+    /* ---- モーダル ---- */
+    .modal-content {
+        width: 95vw;
+        max-height: 90vh;
+        padding: 20px 15px;
+    }
+
+    .modal-content.large {
+        width: 98vw;
+        max-height: 95vh;
+    }
+
+    .modal-content h1 {
+        font-size: 22px;
+        letter-spacing: 1px;
+    }
+
+    .modal-content h2 {
+        font-size: 18px;
+    }
+
+    .stage-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .how-to-play-quick li {
+        font-size: 11px;
+    }
+
+    /* 技術ツリー: 縦スクロール */
+    .tech-tree-grid {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tech-column {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tech-column h3 {
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .tech-arrow {
+        display: none;
+    }
+
+    .tech-node {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    /* ゲームオーバー統計 */
+    .end-stats-box {
+        width: 100%;
+    }
+
+    .end-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .end-actions .btn-cyber,
+    .end-actions .btn-cyber-outline {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    /* キャンバスオーバーレイメッセージ: モバイルで縦方向に調整 */
+    #canvas-overlay-message {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+    }
+
+    #canvas-overlay-message h2 {
+        font-size: 15px;
+    }
+
+    #canvas-overlay-message .upcoming-threats {
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+    }
+
+    #canvas-overlay-message .upcoming-threats ul {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    #canvas-overlay-message .upcoming-threats li {
+        flex: 0 0 auto;
+        min-width: 100px;
+    }
+
+    /* ツールチップ: 画面幅に合わせて縮小 */
+    .custom-tooltip {
+        width: min(300px, 85vw);
+    }
+}

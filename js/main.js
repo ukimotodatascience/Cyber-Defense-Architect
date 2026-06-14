@@ -55,6 +55,37 @@ document.addEventListener("DOMContentLoaded", () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
+    // ---- サイドバートグル（モバイル用） ----
+    const sidebar = document.getElementById("detail-sidebar");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+
+    function openSidebar() {
+        sidebar.classList.add("open");
+        sidebarOverlay.classList.add("active");
+        if (btnToggleSidebar) btnToggleSidebar.title = "サイドパネルを閉じる";
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove("open");
+        sidebarOverlay.classList.remove("active");
+        if (btnToggleSidebar) btnToggleSidebar.title = "サイドパネルを開く";
+    }
+
+    if (btnToggleSidebar) {
+        btnToggleSidebar.addEventListener("click", () => {
+            if (sidebar.classList.contains("open")) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener("click", closeSidebar);
+    }
+
     // 2. ステージ選択イベントの設定
     document.querySelectorAll(".stage-card").forEach(card => {
         card.addEventListener("click", () => {
@@ -218,6 +249,66 @@ document.addEventListener("DOMContentLoaded", () => {
         hoveredNode = null;
         ui.showSelectionDetails(null);
     });
+
+    // Canvas タッチ操作（スマートフォン/タブレット用）
+    canvas.addEventListener("touchstart", (e) => {
+        // タッチ座標をキャンバス論理座標に変換してクリックと同様に処理
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = ((touch.clientX - rect.left) / rect.width) * canvas.width;
+        const mouseY = ((touch.clientY - rect.top) / rect.height) * canvas.height;
+
+        // スロットの判定
+        let clickedSlot = null;
+        map.slots.forEach(slot => {
+            const dist = Math.hypot(slot.x - mouseX, slot.y - mouseY);
+            // タッチ用に判定範囲を少し広めに取る
+            if (dist <= slot.radius * 1.5) {
+                clickedSlot = slot;
+            }
+        });
+
+        if (clickedSlot) {
+            if (selectedPaletteTower && !clickedSlot.tower) {
+                const tempDefender = new Defender(selectedPaletteTower, clickedSlot.x, clickedSlot.y, clickedSlot.parentNodeId, game);
+                if (game.budget >= tempDefender.cost) {
+                    game.budget -= tempDefender.cost;
+                    clickedSlot.tower = tempDefender;
+                    game.defenders.push(tempDefender);
+                    ui.log(`[配置] ${tempDefender.name} を ${map.getNodeById(clickedSlot.parentNodeId).name} 周辺に配置しました。`, "success");
+                    game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
+                    clearPaletteSelection();
+                    ui.updateHUD();
+                } else {
+                    ui.log(`[エラー] 予算が不足しています。必要: $${tempDefender.cost}`, "alert");
+                    game.effects.push(new FloatingText("予算不足!", clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
+                }
+            } else {
+                selectedSlot = clickedSlot;
+                ui.showSelectionDetails(clickedSlot);
+                // モバイルでサイドバーを自動的に開く
+                openSidebar();
+            }
+            return;
+        }
+
+        // ノードのタップ判定
+        let clickedNode = null;
+        map.nodes.forEach(node => {
+            const dist = Math.hypot(node.x - mouseX, node.y - mouseY);
+            if (dist <= node.size * 1.4) {
+                clickedNode = node;
+            }
+        });
+
+        if (clickedNode) {
+            selectedSlot = null;
+            hoveredNode = clickedNode;
+            ui.showSelectionDetails(clickedNode);
+            // モバイルでサイドバーを自動的に開く
+            openSidebar();
+        }
+    }, { passive: true });
 
     // 5. ゲームのメインアップデート＆描画ループ
     function gameLoop(time) {
