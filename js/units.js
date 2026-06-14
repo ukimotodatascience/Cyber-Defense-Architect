@@ -672,8 +672,8 @@ export class Defender {
     draw(ctx) {
         ctx.save();
 
-        const w = 56;
-        const h = 48;
+        const w = 64;
+        const h = 54;
         const x = this.x - w / 2;
         const y = this.y - h / 2 - 5; // Float slightly above the tower
         const r = 5;
@@ -711,29 +711,29 @@ export class Defender {
         else if (this.type === "mfa") shortName = "MFA";
         else if (this.type === "edr") shortName = "EDR";
         else if (this.type === "backup") shortName = "Backup";
-        else if (this.type === "mailfilter") shortName = "MailFilter";
+        else if (this.type === "mailfilter") shortName = "MailFltr";
         else if (this.type === "education") shortName = "Edu";
         else if (this.type === "siem") shortName = "SIEM";
 
         // 上段のテキスト（名前 ＋ レベル）
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.font = "bold 8px 'Share Tech Mono', sans-serif";
+        ctx.font = "bold 9px 'Share Tech Mono', sans-serif";
         ctx.fillStyle = "#fff";
 
         const textY = y + 5;
         ctx.fillText(`${shortName}  Lv.${this.level}`, this.x, textY);
 
         // 中段のアイコン（少し下にずらす）
-        ctx.font = "14px Arial";
+        ctx.font = "16px Arial";
         ctx.textBaseline = "middle";
-        ctx.fillText(this.icon, this.x, y + h / 2 + 1);
+        ctx.fillText(this.icon, this.x, y + h / 2);
 
         // 下部のレベルインジケータ（バッジ内の下部に横並びで描画）
-        const dotY = y + h - 6;
+        const dotY = y + h - 7;
         const maxDots = 4; // 4マスメーターに変更
-        const dotSize = 2.0;
-        const dotSpacing = 6;
+        const dotSize = 2.5;
+        const dotSpacing = 8;
         const startDotX = this.x - ((maxDots - 1) * dotSpacing) / 2;
 
         for (let i = 0; i < maxDots; i++) {

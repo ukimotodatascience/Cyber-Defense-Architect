@@ -29,18 +29,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let hoveredNode = null; // ホバー（またはタップ）されたノードオブジェクト
     let lastTime = performance.now();
 
-    // Canvasのリサイズとレイアウト更新処理
+    // Canvasの論理解像度固定化とレイアウト初期化
     function resizeCanvas() {
-        const wrapper = canvas.parentElement;
-        if (!wrapper) return;
-        const rect = wrapper.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        // 論理サイズは 1200x540 で固定！
+        canvas.width = 1200;
+        canvas.height = 540;
 
         // マップのレイアウト更新
         map.updateLayout(canvas.width, canvas.height);
 
-        // 既存の敵ユニットのパス参照と座標をリサイズ後のマップに同期
+        // 既存の敵ユニットのパス参照と座標を同期
         game.attackers.forEach(enemy => {
             enemy.path = map.paths[enemy.pathKey];
             const pos = getPointOnPath(enemy.path, enemy.progress);
@@ -51,9 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 初期起動時のリサイズ
+    // 初期起動時のレイアウト初期化
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
 
     // ---- サイドバートグルはフローティング化に伴い廃止 ----
 

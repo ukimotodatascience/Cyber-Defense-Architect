@@ -88,14 +88,14 @@ export class Node {
         ctx.shadowBlur = 5;
         ctx.shadowColor = color;
         ctx.fillStyle = "#fff";
-        ctx.font = "14px 'Share Tech Mono'";
+        ctx.font = "16px 'Share Tech Mono'";
         ctx.textAlign = "center";
         ctx.fillText(this.name, this.x, this.y - this.size - 10);
 
         // ステータス表示
         if (this.status === "infected") {
             ctx.fillStyle = varColor("neon-red");
-            ctx.font = "12px 'Share Tech Mono'";
+            ctx.font = "13px 'Share Tech Mono'";
             ctx.fillText("⚠️ CRITICAL INFECTED", this.x, this.y + this.size + 18);
 
             // 復旧プログレスバー
@@ -104,7 +104,7 @@ export class Node {
             }
         } else if (this.status === "offline") {
             ctx.fillStyle = "#64748b";
-            ctx.font = "12px 'Share Tech Mono'";
+            ctx.font = "13px 'Share Tech Mono'";
             ctx.fillText("❌ OFFLINE", this.x, this.y + this.size + 18);
         } else {
             // シールド値（NOMINAL時）
@@ -411,8 +411,8 @@ export class NetworkMap {
 
             // ゾーンタブの描画（画面上部）
             const tabMargin = 8;
-            const tabH = 22;
-            const tabY = 15;
+            const tabH = 25;
+            const tabY = 12;
             const tabW = zoneW - tabMargin * 2;
             const tabX = zX + tabMargin;
 
@@ -434,7 +434,7 @@ export class NetworkMap {
 
             // タブのテキスト
             ctx.fillStyle = "#fff";
-            ctx.font = "bold 10px sans-serif";
+            ctx.font = "bold 11px sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(zones[i].name, tabX + tabW / 2, tabY + tabH / 2 + 1);
