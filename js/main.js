@@ -122,6 +122,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, { passive: true });
 
+    // カテゴリフィルタータブ切り替え時に選択状態をクリア
+    document.querySelectorAll(".tab-btn").forEach(tab => {
+        tab.addEventListener("click", () => {
+            clearPaletteSelection();
+        });
+    });
+
     // パレット選択をクリアするヘルパー
     function clearPaletteSelection() {
         selectedPaletteTower = null;
