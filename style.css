@@ -1463,6 +1463,7 @@ body.cyber-theme {
 
 /* Custom Tooltip Styling - Upscaled */
 .custom-tooltip {
+    display: none; /* Hide completely when inactive to prevent layout overflow and scrollbars */
     position: absolute;
     bottom: 115%;
     left: 50%;
@@ -1471,12 +1472,12 @@ body.cyber-theme {
     border: 2px solid var(--border-cyber);
     box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
     color: var(--text-main);
-    padding: 18px;
+    padding: 14px 16px;
     border-radius: 8px;
-    width: 350px;
+    width: 310px; /* Slimmer to fit within the 385px sidebar perfectly */
     font-family: var(--font-heading);
-    font-size: 15px;
-    line-height: 1.6;
+    font-size: 14px;
+    line-height: 1.5;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.25s ease, transform 0.25s ease;
@@ -1486,33 +1487,34 @@ body.cyber-theme {
 }
 
 .custom-tooltip h5 {
-    font-size: 17px;
+    font-size: 16px;
     color: var(--neon-blue);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-family: var(--font-heading);
     border-bottom: 1px dashed var(--border-dim);
-    padding-bottom: 6px;
+    padding-bottom: 5px;
     font-weight: 800;
 }
 
 .custom-tooltip p {
     margin: 0;
     color: var(--text-dim);
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 /* Hover & Active touch states trigger tooltip */
 .palette-item:hover .custom-tooltip,
 .palette-item.touch-active .custom-tooltip {
+    display: block;
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
 
 .threat-list-item:hover .custom-tooltip {
-    opacity: 1;
-    transform: translateX(0) translateY(0);
+    display: block;
+    opacity: 0.95;
+    transform: translateX(-50%) translateY(0);
     pointer-events: auto;
-    opacity: 0.8;
 }
 
 /* Custom stage-desc inside HUD */

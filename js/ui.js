@@ -337,7 +337,7 @@ export class UIManager {
                         <span class="threat-item-desc">${info.shortDesc}</span>
                     </div>
                     <div class="threat-item-count">x${counts[type]}</div>
-                    <div class="custom-tooltip" style="bottom: auto; top: 0; left: 105%; transform: translateX(10px) translateY(0); pointer-events: none; opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;">
+                    <div class="custom-tooltip" style="bottom: 110%; left: 50%; transform: translateX(-50%) translateY(10px); pointer-events: none; opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;">
                         <h5>${info.icon} ${info.name}</h5>
                         <p>${info.desc}</p>
                     </div>
