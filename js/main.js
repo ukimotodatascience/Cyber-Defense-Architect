@@ -310,7 +310,13 @@ document.addEventListener("DOMContentLoaded", () => {
             ui.showSelectionDetails(clickedNode);
             // モバイルでサイドバーを自動的に開く
             openSidebar();
+            return;
         }
+
+        // 何もないところをタップした場合：選択解除
+        selectedSlot = null;
+        hoveredNode = null;
+        ui.showSelectionDetails(null);
     }, { passive: false });
 
     // 5. ゲームのメインアップデート＆描画ループ
