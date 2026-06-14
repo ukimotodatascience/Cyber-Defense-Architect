@@ -978,9 +978,6 @@ body.cyber-theme {
     z-index: 49;
     backdrop-filter: blur(2px);
 }
-.sidebar-overlay.active {
-    display: block;
-}
 
 /* サイドバートグルボタン: デスクトップでは非表示 */
 .sidebar-toggle-btn {
@@ -1186,6 +1183,11 @@ body.cyber-theme {
     .detail-sidebar.open {
         transform: translateX(0);
     }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
 
     /* ---- フローティングパレット: 横スクロール ---- */
     .floating-palette-panel {

@@ -61,12 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
 
     function openSidebar() {
+        if (window.innerWidth > 767) return;
         sidebar.classList.add("open");
         sidebarOverlay.classList.add("active");
         if (btnToggleSidebar) btnToggleSidebar.title = "サイドパネルを閉じる";
     }
 
     function closeSidebar() {
+        if (window.innerWidth > 767) return;
         sidebar.classList.remove("open");
         sidebarOverlay.classList.remove("active");
         if (btnToggleSidebar) btnToggleSidebar.title = "サイドパネルを開く";
