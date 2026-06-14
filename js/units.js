@@ -389,9 +389,10 @@ export class Defender {
         this.laserTargets = [];
 
         // 親ノードが感染またはオフラインの時、タワーは動作停止
+        // ただし Backup タワーは自ノードの感染時も動作させる（自身を復旧するため）
         const parentNode = game.map.getNodeById(this.parentNodeId);
         if (parentNode && (parentNode.status === "infected" || parentNode.status === "offline")) {
-            return;
+            if (this.type !== "backup") return;
         }
 
         const now = Date.now();
@@ -558,6 +559,8 @@ export class Defender {
 
             const dist = Math.hypot(def.x - target.x, def.y - target.y);
             if (dist <= def.range) {
+                // Firewallはフィッシングに実質ダメージ 0 なので深度ボーナスにカウントしない
+                if (def.type === "firewall" && target.type === "phishing") return;
                 targetingTowerTypes.add(def.type);
             }
         });
