@@ -257,8 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } else {
                 selectedSlot = clickedSlot;
-            } else {
-                selectedSlot = clickedSlot;
                 ui.showSelectionDetails(clickedSlot);
             }
             return;
