@@ -803,7 +803,7 @@ body.cyber-theme {
 
 .bottom-palette-panel .palette-item {
     flex: 1;
-    min-width: 130px;
+    min-width: 90px;
     max-width: 160px;
     height: 95px;
     background: rgba(255, 255, 255, 0.03);
@@ -892,8 +892,10 @@ body.cyber-theme {
 }
 
 .bottom-palette-panel .item-name {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 800;
+    line-height: 1.2;
+    padding: 0 4px;
 }
 
 .bottom-palette-panel .item-cost {
