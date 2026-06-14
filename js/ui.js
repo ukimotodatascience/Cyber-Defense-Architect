@@ -263,7 +263,7 @@ export class UIManager {
         const stage = this.game.stage;
         if (!stage) return;
 
-        const nextWaveIndex = this.game.currentWaveIndex + 1;
+        const nextWaveIndex = this.game.currentWaveIndex + (this.game.waveInProgress ? 1 : 0);
         if (nextWaveIndex >= stage.waves.length) {
             container.innerHTML = "<span style='font-size:10px;color:#39ff14;'>FINAL WAVE</span>";
             return;
