@@ -637,30 +637,9 @@ body.cyber-theme {
     box-sizing: border-box;
 }
 
-/* JS compatibility: When class "hidden" is active, display placeholder content instead of actual selection */
+/* JS compatibility: When nothing is selected, detail panel remains empty */
 .palette-detail-panel.hidden #selection-details {
     display: none;
-}
-.palette-detail-panel.hidden::before {
-    content: '選択中の防御設備';
-    font-family: var(--font-heading);
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--neon-blue);
-    text-shadow: 0 0 8px rgba(0,240,255,0.4);
-    border-bottom: 2px solid rgba(0, 240, 255, 0.15);
-    padding-bottom: 6px;
-    margin-bottom: 10px;
-    display: block;
-}
-.palette-detail-panel.hidden::after {
-    content: '防御設備またはサーバーを選択してください';
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 12px;
-    text-align: center;
-    margin: auto;
-    display: block;
-    font-family: var(--font-heading);
 }
 
 .detail-panel-title {

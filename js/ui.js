@@ -42,6 +42,46 @@ export class UIManager {
             btnThreatInfo: document.getElementById("btn-threat-info")
         };
 
+        this.currentEntity = null;
+        this.attackerInfo = {
+            phishing: {
+                name: "フィッシングメール",
+                icon: "✉️",
+                shortDesc: "認証回避・社会工学",
+                desc: "境界防御(FW)を無効化し、DMZをスキップして内部サーバに直接侵入します。フィッシング攻撃に対してはメールフィルターが有効です。"
+            },
+            bruteforce: {
+                name: "ブルートフォース攻撃",
+                icon: "🔑",
+                shortDesc: "認証攻撃・パスワードリスト",
+                desc: "総当たりで認証突破を狙う。認証強化が無いノードでは急加速します。多要素認証(MFA)による防御が効果的です。"
+            },
+            sqlinjection: {
+                name: "SQLインジェクション",
+                icon: "💻",
+                shortDesc: "脆弱性攻撃・DBバイパス",
+                desc: "WebサーバからDBサーバへ直接バイパス・侵入する特性を持ちます。Webサーバ保護のためにWAFの設置が推奨されます。"
+            },
+            ransomware: {
+                name: "ランサムウェア",
+                icon: "💀",
+                shortDesc: "マルウェア・暗号化",
+                desc: "到達したサーバ内のファイルを暗号化してシステムを停止させます。EDRによる撃退やバックアップによる緊急復旧が必要です。"
+            },
+            apt: {
+                name: "APT (持続的標的型)",
+                icon: "🕵️",
+                shortDesc: "標的型攻撃・潜伏偵察",
+                desc: "高度なステルス（検知回避）能力を持つ、潜伏型の組織的・持続的攻撃。検知能力を高めるセキュリティ対策が求められます。"
+            },
+            insider: {
+                name: "内部不正",
+                icon: "👤",
+                shortDesc: "権限悪用・情報持ち出し",
+                desc: "境界防御をバイパスしてDMZ以降の内部から直接出現する。セキュリティ教育やMFA、内部監視等が有効です。"
+            }
+        };
+
         this.initStaticEvents();
     }
 
@@ -124,6 +164,24 @@ export class UIManager {
             this.dom.btnThreatInfo.addEventListener("click", () => {
                 this.log(`[脅威インテル] 現在のステージ: ${this.game.stage ? this.game.stage.name : '未選択'}. 侵入経路を監視し、多層防御を構築してください。`, "system");
                 alert(`【現在の脅威情報】\n・フィッシングメール: 境界(FW)をスルーして直接Webや認証に到達。\n・ブルートフォース: MFAで大幅遅延可能。\n・SQLインジェクション: WebサーバーからDBへバイパス。\n・ランサムウェア: 到達するとサーバーを暗号化(停止)。EDRが特効。\n・内部不正: 境界(FW, WAF)を全てバイパスし、内部から出現。`);
+            });
+        }
+
+        // 出現中の敵のホバーイベント (右下に概要を表示)
+        const threatsList = this.dom.activeThreatsList;
+        if (threatsList) {
+            threatsList.addEventListener("mouseover", (e) => {
+                const item = e.target.closest(".threat-list-item");
+                if (item) {
+                    const type = item.dataset.threatType;
+                    this.showThreatDetails(type);
+                }
+            });
+            threatsList.addEventListener("mouseout", (e) => {
+                const item = e.target.closest(".threat-list-item");
+                if (item) {
+                    this.showSelectionDetails(this.currentEntity);
+                }
             });
         }
     }
@@ -284,63 +342,20 @@ export class UIManager {
             counts[item.type] = (counts[item.type] || 0) + item.count;
         });
 
-        const ATTACKER_INFO = {
-            phishing: {
-                name: "フィッシングメール",
-                icon: "✉️",
-                shortDesc: "認証回避・社会工学",
-                desc: "境界防御(FW)を無効化し、DMZをスキップして内部サーバに直接侵入します。フィッシング攻撃に対してはメールフィルターが有効です。"
-            },
-            bruteforce: {
-                name: "ブルートフォース攻撃",
-                icon: "🔑",
-                shortDesc: "認証攻撃・パスワードリスト",
-                desc: "総当たりで認証突破を狙う。認証強化が無いノードでは急加速します。多要素認証(MFA)による鈍化・防御が効果的です。"
-            },
-            sqlinjection: {
-                name: "SQLインジェクション",
-                icon: "💻",
-                shortDesc: "脆弱性攻撃・DBバイパス",
-                desc: "WebサーバからDBサーバへ直接バイパス・侵入する特性を持ちます。Webサーバ保護のためにWAFの設置が推奨されます。"
-            },
-            ransomware: {
-                name: "ランサムウェア",
-                icon: "💀",
-                shortDesc: "マルウェア・暗号化",
-                desc: "到達したサーバ内のファイルを暗号化してシステムを停止させます。EDRによる撃退やバックアップによる緊急復旧が必要です。"
-            },
-            apt: {
-                name: "APT (持続的標的型)",
-                icon: "🕵️",
-                shortDesc: "標的型攻撃・潜伏偵察",
-                desc: "高度なステルス（検知回避）能力を持つ、潜伏型の組織的・持続的攻撃。検知能力を高めるセキュリティ対策が求められます。"
-            },
-            insider: {
-                name: "内部不正",
-                icon: "👤",
-                shortDesc: "権限悪用・情報持ち出し",
-                desc: "境界防御をバイパスしてDMZ以降の内部から直接出現する。セキュリティ教育やMFA、内部監視等が有効です。"
-            }
-        };
-
         const activeTypes = new Set(this.game.attackers.map(a => a.type));
 
         Object.keys(counts).forEach(type => {
-            const info = ATTACKER_INFO[type] || { name: type, icon: "👾", shortDesc: "未知のサイバー攻撃", desc: "詳細不明のセキュリティ脅威。" };
+            const info = this.attackerInfo[type] || { name: type, icon: "👾", shortDesc: "未知のサイバー攻撃", desc: "詳細不明のセキュリティ脅威。" };
             const isActive = activeTypes.has(type) && this.game.waveInProgress;
 
             const itemHtml = `
-                <div class="threat-list-item ${isActive ? 'active-now' : ''}" style="position: relative; cursor: help;">
+                <div class="threat-list-item ${isActive ? 'active-now' : ''}" data-threat-type="${type}" style="position: relative; cursor: help;">
                     <div class="threat-item-icon">${info.icon}</div>
                     <div class="threat-item-details">
                         <span class="threat-item-name">${info.name}</span>
                         <span class="threat-item-desc">${info.shortDesc}</span>
                     </div>
                     <div class="threat-item-count">x${counts[type]}</div>
-                    <div class="custom-tooltip" style="bottom: 110%; left: 50%; transform: translateX(-50%) translateY(10px); pointer-events: none; opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;">
-                        <h5>${info.icon} ${info.name}</h5>
-                        <p>${info.desc}</p>
-                    </div>
                 </div>
             `;
             listEl.insertAdjacentHTML("beforeend", itemHtml);
@@ -494,14 +509,39 @@ export class UIManager {
         });
     }
 
+    // 敵（攻撃手法）の詳細概要を一時的に表示する
+    showThreatDetails(type) {
+        const info = this.attackerInfo[type];
+        if (!info) return;
+
+        const container = this.dom.selectionDetails;
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="detail-section">
+                <div class="detail-title">${info.icon} ${info.name}</div>
+                <div class="detail-subtitle">攻撃手法の概要</div>
+                <div class="detail-row">
+                    <span class="lbl">攻撃タイプ:</span>
+                    <span class="val" style="color: #ff0055; text-shadow: 0 0 5px rgba(255, 0, 85, 0.4);">${info.shortDesc}</span>
+                </div>
+                <div style="margin-top: 12px; font-size: 11.5px; line-height: 1.5; color: var(--text-dim); white-space: normal; word-break: break-all;">
+                    ${info.desc}
+                </div>
+            </div>
+        `;
+    }
+
     // 選択されたエンティティ（ノードまたはスロット/タワー）の詳細表示
     showSelectionDetails(entity) {
+        this.currentEntity = entity;
         this.game.selectedEntity = entity;
         const container = this.dom.selectionDetails;
         container.innerHTML = "";
 
         if (!entity) {
-            this.dom.floatingDetailPanel.classList.add("hidden");
+            // 常に詳細パネルの枠を表示したままにする
+            this.dom.floatingDetailPanel.classList.remove("hidden");
             return;
         }
 
