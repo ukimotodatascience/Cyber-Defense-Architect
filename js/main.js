@@ -274,9 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (clickedNode) {
             selectedSlot = null;
             hoveredNode = clickedNode;
-        if (clickedNode) {
-            selectedSlot = null;
-            hoveredNode = clickedNode;
             ui.showSelectionDetails(clickedNode);
             return;
         }

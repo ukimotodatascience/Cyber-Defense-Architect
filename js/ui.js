@@ -182,10 +182,15 @@ export class UIManager {
         nodes.forEach(node => {
             const wNum = parseInt(node.dataset.wave);
             node.className = "wave-node";
-            if (wNum === currentWave) {
-                node.classList.add("active");
-            } else if (wNum < currentWave) {
-                node.classList.add("completed");
+            if (wNum > maxWave) {
+                node.classList.add("hidden");
+            } else {
+                node.classList.remove("hidden");
+                if (wNum === currentWave) {
+                    node.classList.add("active");
+                } else if (wNum < currentWave) {
+                    node.classList.add("completed");
+                }
             }
         });
 
@@ -317,7 +322,8 @@ export class UIManager {
                 sqlinjection: { name: "SQLインジェクション", icon: "💻", desc: "WebサーバからDBサーバへ直接バイパス・侵入する特性を持ちます。" },
                 phishing: { name: "フィッシングメール", icon: "✉️", desc: "境界防御(FW)を無効化し、DMZをスキップして内部サーバに直接侵入します。" },
                 ransomware: { name: "ランサムウェア", icon: "💀", desc: "到達したサーバ内のファイルを暗号化してシステムを停止させます。" },
-                apt: { name: "APT (標的型攻撃)", icon: "🕵️", desc: "高度なステルス（検知回避）能力を持つ、潜伏型の組織的・持続的攻撃。" }
+                apt: { name: "APT (標的型攻撃)", icon: "🕵️", desc: "高度なステルス（検知回避）能力を持つ、潜伏型の組織的・持続的攻撃。" },
+                insider: { name: "内部不正", icon: "👤", desc: "境界防御をバイパスしてDMZ以降の内部から直接出現する。セキュリティ教育やMFA等が有効です。" }
             };
 
             Object.keys(counts).forEach(type => {
