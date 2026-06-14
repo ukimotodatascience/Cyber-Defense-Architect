@@ -422,9 +422,11 @@ export class Defender {
                 if (targetNode.recoveryProgress >= 100) {
                     targetNode.status = "nominal";
                     targetNode.recoveryProgress = 0;
-                    // スタッフ割り当てを解除し、使用カウントをデクリメント
-                    targetNode.isStaffAssigned = false;
-                    game.staffUsed = Math.max(0, game.staffUsed - 1);
+                    // スタッフが実際に割り当てられていた場合のみ解除・デクリメント
+                    if (targetNode.isStaffAssigned) {
+                        targetNode.isStaffAssigned = false;
+                        game.staffUsed = Math.max(0, game.staffUsed - 1);
+                    }
                     game.ui.log(`[復旧] バックアップにより ${targetNode.name} が安全に復旧しました。`, "success");
                     game.effects.push(new FloatingText("RESTORED!", targetNode.x, targetNode.y, "#39ff14"));
                 }
@@ -476,6 +478,10 @@ export class Defender {
 
             // APTステルス中はターゲットにできない
             if (enemy.type === "apt" && enemy.stealthTimer > 0) return false;
+
+            // Firewallはフィッシングに無効なため、最初から候補に含めない
+            // （クールダウンを無駄に消費してしまうのを防ぐ）
+            if (this.type === "firewall" && enemy.type === "phishing") return false;
 
             const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
             return dist <= this.range;
