@@ -779,7 +779,7 @@ body.cyber-theme {
 .bottom-palette-panel {
     position: relative;
     margin: 0 25px 25px 25px;
-    height: 210px;
+    height: 165px;
     flex-shrink: 0; /* Prevent flex box from squishing the panel */
     background: var(--bg-panel);
     border: 2px solid var(--border-dim);
@@ -805,7 +805,7 @@ body.cyber-theme {
     flex: 1;
     min-width: 130px;
     max-width: 160px;
-    height: 135px;
+    height: 95px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
