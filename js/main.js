@@ -144,6 +144,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // 次のウェーブプレビューアイコンのクリックイベント
+    const nextWavePreviewIcons = document.getElementById("next-wave-preview-icons");
+    if (nextWavePreviewIcons) {
+        nextWavePreviewIcons.addEventListener("click", (e) => {
+            const item = e.target.closest(".next-preview-icon");
+            if (item) {
+                clearPaletteSelection();
+                selectedSlot = null;
+                hoveredNode = null;
+                const type = item.dataset.threatType;
+                ui.showThreatDetails(type);
+            }
+        });
+    }
+
     // パレット選択をクリアするヘルパー
     function clearPaletteSelection() {
         selectedPaletteTower = null;
@@ -176,13 +191,40 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
         hoveredNode = foundNode;
-        canvas.style.cursor = (foundSlot || foundNode) ? "pointer" : "default";
+
+        // 敵ユニットのホバー検出
+        let foundEnemy = null;
+        game.attackers.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - mouseX, enemy.y - mouseY);
+            if (dist <= enemy.size + 10) {
+                foundEnemy = enemy;
+            }
+        });
+
+        canvas.style.cursor = (foundSlot || foundNode || foundEnemy) ? "pointer" : "default";
     });
 
     canvas.addEventListener("click", (e) => {
         const rect = canvas.getBoundingClientRect();
         const mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
         const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+
+        // 0. 敵ユニットをクリックした場合
+        let clickedEnemy = null;
+        game.attackers.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - mouseX, enemy.y - mouseY);
+            if (dist <= enemy.size + 10) {
+                clickedEnemy = enemy;
+            }
+        });
+
+        if (clickedEnemy) {
+            clearPaletteSelection();
+            selectedSlot = null;
+            hoveredNode = null;
+            ui.showThreatDetails(clickedEnemy.type);
+            return;
+        }
 
         // 1. スロットをクリックした場合
         let clickedSlot = null;

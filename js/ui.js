@@ -432,6 +432,8 @@ export class UIManager {
                 node.className = "next-preview-icon";
                 node.textContent = icon;
                 node.title = item.type;
+                node.dataset.threatType = item.type;
+                node.style.cursor = "pointer";
                 container.appendChild(node);
             }
         });
