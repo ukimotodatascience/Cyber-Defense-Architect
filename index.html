@@ -56,67 +56,70 @@
 
     <!-- Main Game Workspace (Fills remaining height) -->
     <div class="game-container">
-        <!-- Main Canvas Area -->
-        <div class="canvas-wrapper">
-            <canvas id="game-canvas" width="1200" height="540"></canvas>
-
-            <!-- WAVE進捗 & 出現中の敵 (左側フローティングパネル) -->
-            <div class="floating-left-panel">
-                <!-- Wave Progress -->
-                <div class="wave-progress-box">
-                    <div class="wave-header">
-                        <span class="wave-label-main">WAVE</span>
-                        <span id="current-wave-text" class="wave-val-main">1/5</span>
-                    </div>
-                    <div class="wave-track" id="wave-track">
-                        <div class="wave-line"></div>
-                        <div class="wave-node active" data-wave="1">1</div>
-                        <div class="wave-node" data-wave="2">2</div>
-                        <div class="wave-node" data-wave="3">3</div>
-                        <div class="wave-node" data-wave="4">4</div>
-                        <div class="wave-node" data-wave="5">5</div>
-                        <div class="wave-node-end">🛡️</div>
-                    </div>
+        <!-- 独立した左サイドバー -->
+        <aside class="sidebar-left-panel" id="sidebar-left-panel">
+            <!-- Wave Progress -->
+            <div class="wave-progress-box">
+                <div class="wave-header">
+                    <span class="wave-label-main">WAVE</span>
+                    <span id="current-wave-text" class="wave-val-main">1/5</span>
                 </div>
-
-                <!-- Active Threats -->
-                <div class="threats-box">
-                    <div class="panel-section-title">出現中の敵</div>
-                    <div class="active-threats-list" id="active-threats-list">
-                        <!-- JSで動的に追加される -->
-                    </div>
-                </div>
-
-                <!-- Next Wave Preview -->
-                <div class="next-wave-box">
-                    <div class="panel-section-title-sm">次のウェーブ</div>
-                    <div class="next-wave-icons" id="next-wave-preview-icons">
-                        <!-- JSで動的に追加される -->
-                    </div>
-                </div>
-
-                <!-- Attack Routes -->
-                <div class="route-hint-box">
-                    <div class="panel-section-title-sm">攻撃の進行ルート</div>
-                    <div class="route-hint-arrow">➔ ➔ ➔</div>
+                <div class="wave-track" id="wave-track">
+                    <div class="wave-line"></div>
+                    <div class="wave-node active" data-wave="1">1</div>
+                    <div class="wave-node" data-wave="2">2</div>
+                    <div class="wave-node" data-wave="3">3</div>
+                    <div class="wave-node" data-wave="4">4</div>
+                    <div class="wave-node" data-wave="5">5</div>
+                    <div class="wave-node-end">🛡️</div>
                 </div>
             </div>
 
-            <!-- 中央上部の警告バナー -->
-            <div id="canvas-overlay-message" class="hidden">
-                <span class="warning-icon">⚠</span>
-                <span id="overlay-title">ランサムウェアが侵入中！</span>
-                <button id="btn-start-wave" class="btn-cyber-start">ウェーブ開始</button>
+            <!-- Active Threats -->
+            <div class="threats-box">
+                <div class="panel-section-title">出現中の敵</div>
+                <div class="active-threats-list" id="active-threats-list">
+                    <!-- JSで動的に追加される -->
+                </div>
             </div>
 
-            <!-- 右上の「脅威情報」ボタン -->
-            <button id="btn-threat-info" class="btn-threat-info-panel">💀 脅威情報</button>
+            <!-- Next Wave Preview -->
+            <div class="next-wave-box">
+                <div class="panel-section-title-sm">次のウェーブ</div>
+                <div class="next-wave-icons" id="next-wave-preview-icons">
+                    <!-- JSで動的に追加される -->
+                </div>
+            </div>
 
-            <!-- 右下詳細パネル (選択中の防御設備) -->
-            <div class="floating-detail-panel hidden" id="floating-detail-panel">
-                <div class="detail-panel-title">選択中の防御設備</div>
-                <div id="selection-details">
-                    <!-- JSで選択時に書き換えられる -->
+            <!-- Attack Routes -->
+            <div class="route-hint-box">
+                <div class="panel-section-title-sm">攻撃の進行ルート</div>
+                <div class="route-hint-arrow">➔ ➔ ➔</div>
+            </div>
+        </aside>
+
+        <!-- メインゲームエリア (キャンバス + ショップパレット) -->
+        <div class="main-game-area">
+            <!-- Canvas Area -->
+            <div class="canvas-wrapper">
+                <canvas id="game-canvas" width="1200" height="540"></canvas>
+
+                <!-- 中央上部の警告バナー -->
+                <div id="canvas-overlay-message" class="hidden">
+                    <span class="warning-icon">⚠</span>
+                    <span id="overlay-title">ランサムウェアが侵入中！</span>
+                    <button id="btn-start-wave" class="btn-cyber-start">ウェーブ開始</button>
+                </div>
+
+                <!-- 右上の「脅威情報」ボタン -->
+                <button id="btn-threat-info" class="btn-threat-info-panel">💀 脅威情報</button>
+
+                <!-- 右下詳細パネル (選択中の防御設備) -->
+                <div class="floating-detail-panel hidden" id="floating-detail-panel">
+                    <div class="detail-panel-title">選択中の防御設備</div>
+                    <div id="selection-details">
+                        <!-- JSで選択時に書き換えられる -->
+                    </div>
                 </div>
             </div>
 
