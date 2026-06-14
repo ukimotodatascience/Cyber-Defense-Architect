@@ -230,7 +230,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (game.status === "playing" && currentSpeed > 0) {
             // 敵のスポーンスケジュール処理
             if (game.waveInProgress && game.spawnQueue.length > 0) {
-                const elapsedSinceWaveStart = time - game.waveStartTime;
+                // 壁時計時間ではなく、実際のゲーム内進行時間を加算
+                game.waveActiveTime += delta * currentSpeed;
+                const elapsedSinceWaveStart = game.waveActiveTime;
 
                 // 出現時刻に達した敵を生成
                 while (game.spawnQueue.length > 0 && game.spawnQueue[0].spawnTime <= elapsedSinceWaveStart) {

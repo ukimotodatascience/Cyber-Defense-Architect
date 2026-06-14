@@ -73,8 +73,17 @@ export class UIManager {
         // リスタート・ステージ選択へ
         document.getElementById("btn-restart").addEventListener("click", () => {
             this.hideModal(this.dom.modalGameEnd);
-            this.game.loadStage(this.game.stage.id);
-            this.log(`[システム] ステージをリスタートしました。`, "system");
+            if (this.game.loadStage(this.game.stage.id)) {
+                const canvas = document.getElementById("game-canvas");
+                if (canvas) {
+                    this.game.map.initializeTopology(canvas.width, canvas.height);
+                } else {
+                    this.game.map.initializeTopology();
+                }
+                this.showSelectionDetails(null);
+                this.updateHUD();
+                this.log(`[システム] ステージをリスタートしました。`, "system");
+            }
         });
         document.getElementById("btn-back-to-select").addEventListener("click", () => {
             this.hideModal(this.dom.modalGameEnd);
@@ -352,6 +361,7 @@ export class UIManager {
                     this.game.budget += Math.round(tower.cost * 0.5);
                     this.game.effects.push(new FloatingText(`+$${Math.round(tower.cost * 0.5)}`, tower.x, tower.y, "#ffcc00"));
                     slot.tower = null;
+                    this.game.defenders = this.game.defenders.filter(d => d !== tower);
                     this.showSelectionDetails(null);
                     this.updateHUD();
                     this.log(`[防衛] ${tower.name} を撤去しました。`, "system");

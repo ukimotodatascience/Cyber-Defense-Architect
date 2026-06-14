@@ -253,6 +253,7 @@ export class GameState {
         this.waveInProgress = true;
         this.lastSpawnTime = performance.now();
         this.waveStartTime = performance.now();
+        this.waveActiveTime = 0;
         return true;
     }
 
