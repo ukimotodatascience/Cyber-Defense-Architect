@@ -170,8 +170,21 @@ export class UIManager {
         this.dom.budgetVal.textContent = this.game.budget.toLocaleString();
         this.dom.staffVal.textContent = `${this.game.staffAvailable} / ${this.game.staffMax}`;
 
-        // ステージとウェーブ情報
-        this.dom.stageName.textContent = this.game.stage.name;
+        // ステージとウェーブ情報 (ステージ番号とタイトルを分割して2行表示)
+        let stageNum = "ステージ -";
+        let stageTitle = "作戦準備完了";
+        if (this.game.stage) {
+            const parts = this.game.stage.name.split(/[:：]/);
+            if (parts.length >= 2) {
+                stageNum = parts[0].trim();
+                stageTitle = parts[1].trim();
+            } else {
+                stageNum = "STAGE";
+                stageTitle = this.game.stage.name;
+            }
+        }
+        document.getElementById("current-stage-name").textContent = stageNum;
+        document.getElementById("current-stage-desc").textContent = stageTitle;
 
         const maxWave = this.game.stage.waves.length;
         const currentWave = Math.min(maxWave, this.game.currentWaveIndex + (this.game.waveInProgress ? 1 : 0));
@@ -206,6 +219,49 @@ export class UIManager {
                 this.showOverlayMessage(`WAVE ${nextWaveNum} 準備完了`);
             }
         }
+
+        // ショップパレットの解放状況を更新
+        this.updatePaletteUI();
+    }
+
+    updatePaletteUI() {
+        const paletteItems = document.querySelectorAll(".bottom-palette-panel .palette-item");
+        paletteItems.forEach(btn => {
+            const type = btn.dataset.towerType;
+            let isLocked = false;
+
+            if (type === "mfa") {
+                isLocked = !this.game.unlockedTech.has("mfa");
+            } else if (type === "waf") {
+                isLocked = !this.game.unlockedTech.has("waf");
+            } else if (type === "edr") {
+                isLocked = !this.game.unlockedTech.has("edr");
+            }
+
+            if (isLocked) {
+                btn.classList.add("locked");
+                btn.setAttribute("disabled", "true");
+            } else {
+                btn.classList.remove("locked");
+                btn.removeAttribute("disabled");
+            }
+
+            // コスト表示を 🪙 アイコンに更新する
+            const costSpan = btn.querySelector(".item-cost");
+            if (costSpan) {
+                let costVal = "";
+                if (type === "mailfilter") costVal = "800";
+                else if (type === "education") costVal = "600";
+                else if (type === "edr") costVal = "900";
+                else if (type === "waf") costVal = "1,000";
+                else if (type === "firewall") costVal = "700";
+                else if (type === "mfa") costVal = "800";
+                else if (type === "siem") costVal = "1,200";
+                else if (type === "backup") costVal = "600";
+
+                costSpan.textContent = `🪙 ${costVal}`;
+            }
+        });
     }
 
     updateThreatsList() {
@@ -334,6 +390,12 @@ export class UIManager {
         this.dom.overlayTitle.classList.remove("neon-text-red");
         this.dom.btnStartWave.classList.remove("hidden");
         this.dom.overlayMessage.classList.remove("hidden");
+
+        // WAVE準備フェーズに入ったので、上部中央のWAVE警告バナーを非表示にする
+        const banner = document.getElementById("wave-alert-banner");
+        if (banner) {
+            banner.classList.add("hidden");
+        }
     }
 
     hideOverlayMessage() {
@@ -343,6 +405,32 @@ export class UIManager {
         const currentWave = this.game.currentWaveIndex + 1;
         this.dom.overlayTitle.textContent = `WAVE ${currentWave} 防衛フェーズ稼働中`;
         this.dom.overlayTitle.classList.add("neon-text-red");
+
+        // WAVEが開始されたので、上部中央のWAVE警告バナーを表示する
+        const banner = document.getElementById("wave-alert-banner");
+        const bannerText = document.getElementById("wave-alert-text");
+        if (banner && bannerText) {
+            banner.classList.remove("hidden");
+            const stage = this.game.stage;
+            const waveIndex = Math.min(stage.waves.length - 1, this.game.currentWaveIndex);
+            const waveData = stage.waves[waveIndex];
+            let alertMsg = "外部からの攻撃パケット侵入中！";
+            if (waveData) {
+                const types = waveData.spawnList.map(item => item.type);
+                if (types.includes("apt")) {
+                    alertMsg = "APT (持続的標的型) が侵攻中！";
+                } else if (types.includes("ransomware")) {
+                    alertMsg = "ランサムウェアが侵攻中！";
+                } else if (types.includes("insider")) {
+                    alertMsg = "内部不正によるアクセス検知！";
+                } else if (types.includes("sqlinjection")) {
+                    alertMsg = "SQLインジェクション攻撃検知！";
+                } else if (types.includes("bruteforce")) {
+                    alertMsg = "ブルートフォース攻撃検知！";
+                }
+            }
+            bannerText.textContent = alertMsg;
+        }
     }
 
     showModal(modalEl) {
@@ -462,7 +550,7 @@ export class UIManager {
                                 強化 🪙 ${nextLevelCost.toLocaleString()}
                             </button>
                         ` : `<button class="btn-cyber" disabled>最大レベルです</button>`}
-                        <button id="btn-tower-sell" class="btn-cyber-danger">設備を売却 (返還: 🪙 ${Math.round(tower.cost * 0.5)})</button>
+                        <button id="btn-tower-sell" class="btn-cyber-danger">設備を売却</button>
                     </div>
                 `;
 

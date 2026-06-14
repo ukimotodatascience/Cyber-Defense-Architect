@@ -383,13 +383,23 @@ export class NetworkMap {
         for (let i = 0; i < 7; i++) {
             const zX = i * zoneW;
 
-            // ゾーン縦帯の塗りつぶし
-            ctx.fillStyle = zones[i].color;
+            // ゾーン縦帯のグラデーション塗りつぶし (上部が少し濃く、下部へ向けてフェードアウト)
+            const zoneGrad = ctx.createLinearGradient(zX, 0, zX, h);
+            const baseOpacity = zones[i].color.includes("0.07") ? "0.10" : "0.08";
+            zoneGrad.addColorStop(0, zones[i].color.replace("0.07", baseOpacity).replace("0.05", baseOpacity));
+            zoneGrad.addColorStop(0.3, zones[i].color.replace("0.07", "0.03").replace("0.05", "0.02"));
+            zoneGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+            ctx.fillStyle = zoneGrad;
             ctx.fillRect(zX, 0, zoneW, h);
 
-            // 境界線（右端のみ描画。最後のゾーンは描かない）
+            // 境界線（右端のみ描画。最後のゾーンは描かない。上部が明るく下部が消えるグラデーション点線）
             if (i < 6) {
-                ctx.strokeStyle = zones[i].borderColor;
+                const borderGrad = ctx.createLinearGradient(zX + zoneW, 0, zX + zoneW, h);
+                borderGrad.addColorStop(0, zones[i].borderColor);
+                borderGrad.addColorStop(0.7, zones[i].borderColor.replace("0.25", "0.05").replace("0.2", "0.03"));
+                borderGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+                ctx.strokeStyle = borderGrad;
                 ctx.lineWidth = 1;
                 ctx.setLineDash([4, 4]);
                 ctx.beginPath();
@@ -431,13 +441,8 @@ export class NetworkMap {
         }
         ctx.restore();
 
-        // 2.5 攻撃の進行ルートの描画 (アニメーションする赤い破線)
+        // 2.5 攻撃の進行ルートの描画 (グロー効果＋流れるような赤い点線レーザー)
         ctx.save();
-        ctx.strokeStyle = "rgba(255, 0, 85, 0.35)";
-        ctx.lineWidth = 2.0;
-        ctx.setLineDash([6, 6]);
-        ctx.lineDashOffset = -Math.floor(time / 30) % 24;
-
         const drawPathRoute = (route) => {
             if (!route || route.length < 2) return;
             ctx.beginPath();
@@ -448,6 +453,21 @@ export class NetworkMap {
             ctx.stroke();
         };
 
+        // パス1: 下地の光るグロー
+        ctx.strokeStyle = "rgba(255, 0, 85, 0.12)";
+        ctx.lineWidth = 4.0;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "#ff0055";
+        drawPathRoute(this.paths.webRoute);
+        drawPathRoute(this.paths.authRoute);
+        drawPathRoute(this.paths.crossRoute);
+
+        // パス2: 動く点線レーザー（グローなしでクッキリ）
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "rgba(255, 0, 85, 0.65)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 8]);
+        ctx.lineDashOffset = -Math.floor(time / 20) % 28;
         drawPathRoute(this.paths.webRoute);
         drawPathRoute(this.paths.authRoute);
         drawPathRoute(this.paths.crossRoute);

@@ -672,22 +672,22 @@ export class Defender {
     draw(ctx) {
         ctx.save();
 
-        const w = 62;
-        const h = 40;
+        const w = 56;
+        const h = 48;
         const x = this.x - w / 2;
-        const y = this.y - h / 2;
-        const r = 4;
+        const y = this.y - h / 2 - 5; // Float slightly above the tower
+        const r = 5;
 
         // ドロップシャドウ/グロー
         ctx.shadowBlur = 8;
         ctx.shadowColor = this.color;
 
         // 半透明の黒い背景
-        ctx.fillStyle = "rgba(10, 15, 30, 0.85)";
+        ctx.fillStyle = "rgba(6, 8, 20, 0.9)";
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 1.5;
 
-        // 角丸四角形描画
+        // 角丸四角形描画 (バッジの枠)
         ctx.beginPath();
         ctx.moveTo(x + r, y);
         ctx.lineTo(x + w - r, y);
@@ -702,28 +702,38 @@ export class Defender {
         ctx.fill();
         ctx.stroke();
 
-        ctx.shadowBlur = 0; // テキストはグローなしでクッキリ
+        ctx.shadowBlur = 0; // テキストやアイコンはグローなしでクッキリ
 
-        // アイコンの描画（左側）
+        // 英語の短縮名マッピング
+        let shortName = "TWR";
+        if (this.type === "firewall") shortName = "FW";
+        else if (this.type === "waf") shortName = "WAF";
+        else if (this.type === "mfa") shortName = "MFA";
+        else if (this.type === "edr") shortName = "EDR";
+        else if (this.type === "backup") shortName = "Backup";
+        else if (this.type === "mailfilter") shortName = "MailFilter";
+        else if (this.type === "education") shortName = "Edu";
+        else if (this.type === "siem") shortName = "SIEM";
+
+        // 上段のテキスト（名前 ＋ レベル）
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.font = "bold 8px 'Share Tech Mono', sans-serif";
         ctx.fillStyle = "#fff";
+
+        const textY = y + 5;
+        ctx.fillText(`${shortName}  Lv.${this.level}`, this.x, textY);
+
+        // 中段のアイコン（少し下にずらす）
         ctx.font = "14px Arial";
-        ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText(this.icon, x + 6, y + h / 2);
+        ctx.fillText(this.icon, this.x, y + h / 2 + 1);
 
-        // タワー名とレベルの描画（右側）
-        ctx.font = "bold 9px 'Share Tech Mono', sans-serif";
-        ctx.fillText(this.name, x + 23, y + 13);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
-        ctx.font = "9px 'Share Tech Mono', sans-serif";
-        ctx.fillText(`Lv.${this.level}`, x + 23, y + 27);
-
-        // 下部のレベルインジケータ（緑ドット）
-        const dotY = y + h + 6;
-        const maxDots = 5;
-        const dotSize = 2.5;
-        const dotSpacing = 7;
+        // 下部のレベルインジケータ（バッジ内の下部に横並びで描画）
+        const dotY = y + h - 6;
+        const maxDots = 4; // 4マスメーターに変更
+        const dotSize = 2.0;
+        const dotSpacing = 6;
         const startDotX = this.x - ((maxDots - 1) * dotSpacing) / 2;
 
         for (let i = 0; i < maxDots; i++) {
@@ -731,7 +741,7 @@ export class Defender {
             ctx.arc(startDotX + i * dotSpacing, dotY, dotSize, 0, Math.PI * 2);
             if (i < this.level) {
                 ctx.fillStyle = "#39ff14"; // 点灯
-                ctx.shadowBlur = 3;
+                ctx.shadowBlur = 4;
                 ctx.shadowColor = "#39ff14";
             } else {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; // 消灯
