@@ -422,6 +422,9 @@ export class Defender {
                 if (targetNode.recoveryProgress >= 100) {
                     targetNode.status = "nominal";
                     targetNode.recoveryProgress = 0;
+                    // スタッフ割り当てを解除し、使用カウントをデクリメント
+                    targetNode.isStaffAssigned = false;
+                    game.staffUsed = Math.max(0, game.staffUsed - 1);
                     game.ui.log(`[復旧] バックアップにより ${targetNode.name} が安全に復旧しました。`, "success");
                     game.effects.push(new FloatingText("RESTORED!", targetNode.x, targetNode.y, "#39ff14"));
                 }

@@ -270,15 +270,15 @@ export class GameState {
         }
 
         if (infectedCount > 0) {
-            // 感染ノード数に応じて事業継続率が毎秒減少
-            const continuityDrain = 0.05 * infectedCount * this.speed * delta;
+            // 感染ノード数に応じて事業継続率が毎秒減少 (1ノードにつき毎秒5%減少)
+            const continuityDrain = 5.0 * infectedCount * this.speed * (delta / 1000);
             this.continuity = Math.max(0, this.continuity - continuityDrain);
 
             // システム停止時間を累積
             this.systemDowntime += (delta / 1000) * this.speed;
         } else {
-            // 感染が無い場合は緩やかに事業継続率が回復
-            this.continuity = Math.min(100, this.continuity + 0.02 * this.speed * delta);
+            // 感染が無い場合は緩やかに事業継続率が回復 (毎秒2%回復)
+            this.continuity = Math.min(100, this.continuity + 2.0 * this.speed * (delta / 1000));
         }
 
         // 敗北条件チェック
