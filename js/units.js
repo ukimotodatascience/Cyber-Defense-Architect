@@ -640,7 +640,13 @@ export class Defender {
     calculateDefenseDepth(target, game) {
         // 同一ターゲットを同時に攻撃範囲に収めている「ユニークなタワータイプ」の数をカウント
         const targetingTowerTypes = new Set();
-        targetingTowerTypes.add(this.type);
+
+        // 自分自身がターゲットをバイパスされない場合のみ追加
+        const selfBypass = (this.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) ||
+                           (this.type === "waf" && target.bypassWAF);
+        if (!selfBypass) {
+            targetingTowerTypes.add(this.type);
+        }
 
         game.defenders.forEach(def => {
             if (def === this || def.type === "backup") return;
@@ -651,8 +657,11 @@ export class Defender {
 
             const dist = Math.hypot(def.x - target.x, def.y - target.y);
             if (dist <= def.range) {
-                // Firewallはフィッシングに実質ダメージ 0 なので深度ボーナスにカウントしない
-                if (def.type === "firewall" && target.type === "phishing") return;
+                // Firewallはフィッシング、またはFirewallをバイパスする敵に対してカウントしない
+                if (def.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) return;
+                // WAFはWAFをバイパスする敵に対してカウントしない
+                if (def.type === "waf" && target.bypassWAF) return;
+
                 targetingTowerTypes.add(def.type);
             }
         });
