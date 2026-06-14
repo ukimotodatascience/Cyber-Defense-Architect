@@ -163,37 +163,37 @@ export class GameState {
     reset() {
         this.status = "briefing"; // briefing, playing, paused, over, victory
         this.speed = 1; // 0 = paused, 1 = normal, 2 = fast
-        
+
         this.stage = null;
         this.currentWaveIndex = 0; // 0-indexed
-        
+
         this.trust = 100; // 企業信頼度 (%)
         this.continuity = 100; // 事業継続率 (%)
         this.budget = 0; // 防御予算
         this.staffMax = 0; // 最大人員
         this.staffUsed = 0; // 使用中人員
-        
+
         // システム停止時間カウンタ (毎秒更新され、上限超過で敗北)
-        this.systemDowntime = 0; 
+        this.systemDowntime = 0;
         this.maxDowntimeLimit = 60; // 60秒以上の累積停止でゲームオーバー
-        
+
         // ゲームエンティティ
         this.attackers = [];
         this.defenders = [];
         this.projectiles = [];
         this.effects = []; // ビジュアルエフェクトやフローティングテキスト
-        
+
         // 技術研究アンロックリスト
         this.unlockedTech = new Set(["firewall", "password", "antivirus"]);
-        
+
         // スパニック(敵の生成)スケジューラ
         this.spawnQueue = [];
         this.lastSpawnTime = 0;
         this.waveInProgress = false;
-        
+
         // スコア
         this.score = 0;
-        
+
         // 選択対象 (Node or Tower)
         this.selectedEntity = null;
     }
@@ -211,7 +211,7 @@ export class GameState {
         this.continuity = 100;
         this.status = "playing";
         this.speed = 1;
-        
+
         return true;
     }
 
@@ -225,7 +225,7 @@ export class GameState {
 
         const waveData = this.stage.waves[this.currentWaveIndex];
         this.spawnQueue = [];
-        
+
         // ウェーブの敵を生成キューに格納
         waveData.spawnList.forEach(spawnInfo => {
             for (let i = 0; i < spawnInfo.count; i++) {
@@ -240,7 +240,7 @@ export class GameState {
         // ただし出現タイミングをずらすために、単に出現タイプごとに時間差をつけてキューに格納
         // 異なるタイプ同士が並行して出現するように、マージしてシャッフル
         this.spawnQueue.sort((a, b) => a.delay - b.delay);
-        
+
         // 相対ディレイ時間を絶対経過時間（spawn開始からの経過時間）に変換
         let baseTime = 0;
         this.spawnQueue = this.spawnQueue.map(item => {
@@ -272,7 +272,7 @@ export class GameState {
             // 感染ノード数に応じて事業継続率が毎秒減少
             const continuityDrain = 0.05 * infectedCount * this.speed * delta;
             this.continuity = Math.max(0, this.continuity - continuityDrain);
-            
+
             // システム停止時間を累積
             this.systemDowntime += (delta / 1000) * this.speed;
         } else {
@@ -294,7 +294,7 @@ export class GameState {
             this.waveInProgress = false;
             this.currentWaveIndex++;
             this.score += 500 * (this.currentWaveIndex); // ウェーブクリアボーナス
-            
+
             // 予算報酬
             this.budget += 300 + (this.currentWaveIndex * 100);
 

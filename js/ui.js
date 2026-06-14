@@ -6,7 +6,7 @@ import { FloatingText } from './units.js';
 export class UIManager {
     constructor(game) {
         this.game = game;
-        
+
         // DOMキャッシュ
         this.dom = {
             trustVal: document.getElementById("stat-trust"),
@@ -17,22 +17,22 @@ export class UIManager {
             staffVal: document.getElementById("stat-staff"),
             stageName: document.getElementById("current-stage-name"),
             waveInfo: document.getElementById("current-wave-info"),
-            
+
             speedPause: document.getElementById("btn-speed-pause"),
             speed1x: document.getElementById("btn-speed-1x"),
             speed2x: document.getElementById("btn-speed-2x"),
-            
+
             socLog: document.getElementById("soc-log"),
             selectionDetails: document.getElementById("selection-details"),
-            
+
             modalStageSelect: document.getElementById("modal-stage-select"),
             modalTechTree: document.getElementById("modal-tech-tree"),
             modalGameEnd: document.getElementById("modal-game-end"),
-            
+
             overlayMessage: document.getElementById("canvas-overlay-message"),
             overlayTitle: document.getElementById("overlay-title"),
             btnStartWave: document.getElementById("btn-start-wave"),
-            
+
             btnTechTree: document.getElementById("btn-tech-tree"),
             btnCloseTech: document.getElementById("btn-close-tech"),
             btnFullscreen: document.getElementById("btn-fullscreen")
@@ -97,7 +97,7 @@ export class UIManager {
 
     setGameSpeed(speed) {
         this.game.speed = speed;
-        
+
         this.dom.speedPause.classList.remove("active");
         this.dom.speed1x.classList.remove("active");
         this.dom.speed2x.classList.remove("active");
@@ -110,10 +110,10 @@ export class UIManager {
     log(message, type = "normal") {
         const entry = document.createElement("div");
         entry.className = `log-entry ${type}`;
-        
+
         const timestamp = new Date().toLocaleTimeString();
         entry.textContent = `[${timestamp}] ${message}`;
-        
+
         this.dom.socLog.appendChild(entry);
         this.dom.socLog.scrollTop = this.dom.socLog.scrollHeight;
     }
@@ -141,13 +141,13 @@ export class UIManager {
 
         // ステージとウェーブ情報
         this.dom.stageName.textContent = this.game.stage.name;
-        
+
         const currentWave = this.game.currentWaveIndex + (this.game.waveInProgress ? 1 : 0);
         const maxWave = this.game.stage.waves.length;
         this.dom.waveInfo.textContent = `WAVE: ${Math.min(maxWave, currentWave)} / ${maxWave}`;
 
         // ウェーブが開始していないかつ、ゲームオーバーでなければオーバーレイを出す
-        if (!this.game.waveInProgress && this.game.status === "playing" && 
+        if (!this.game.waveInProgress && this.game.status === "playing" &&
             (this.dom.overlayMessage.classList.contains("hidden") || this.dom.btnStartWave.classList.contains("hidden"))) {
             const nextWaveNum = this.game.currentWaveIndex + 1;
             if (nextWaveNum <= maxWave) {
@@ -164,20 +164,20 @@ export class UIManager {
         // 次のウェーブ情報を取得
         const waveIndex = this.game.currentWaveIndex;
         const stage = this.game.stage;
-        
+
         let infoHtml = "";
         if (stage && stage.waves && stage.waves[waveIndex]) {
             const waveData = stage.waves[waveIndex];
             infoHtml += `<div class="upcoming-threats">`;
             infoHtml += `<h4>🛡️ 接近中の脅威:</h4>`;
             infoHtml += `<ul>`;
-            
+
             // 敵タイプごとに出現数を集計
             const counts = {};
             waveData.spawnList.forEach(item => {
                 counts[item.type] = (counts[item.type] || 0) + item.count;
             });
-            
+
             const ATTACKER_INFO = {
                 bruteforce: { name: "ブルートフォース", icon: "🔑", desc: "総当たりで認証突破を狙う。認証強化が無いノードでは急加速します。" },
                 sqlinjection: { name: "SQLインジェクション", icon: "💻", desc: "WebサーバからDBサーバへ直接バイパス・侵入する特性を持ちます。" },
@@ -185,7 +185,7 @@ export class UIManager {
                 ransomware: { name: "ランサムウェア", icon: "💀", desc: "到達したサーバ内のファイルを暗号化してシステムを停止させます。" },
                 apt: { name: "APT (標的型攻撃)", icon: "🕵️", desc: "高度なステルス（検知回避）能力を持つ、潜伏型の組織的・持続的攻撃。" }
             };
-            
+
             Object.keys(counts).forEach(type => {
                 const info = ATTACKER_INFO[type] || { name: type, icon: "", desc: "" };
                 infoHtml += `
@@ -209,7 +209,7 @@ export class UIManager {
         if (infoDiv) {
             infoDiv.remove();
         }
-        
+
         this.dom.overlayTitle.insertAdjacentHTML("afterend", infoHtml);
         this.dom.overlayMessage.classList.remove("hidden");
     }
@@ -248,7 +248,7 @@ export class UIManager {
             if (!techId) return; // 初期アンロックノードは除外
 
             const isUnlocked = this.game.unlockedTech.has(techId);
-            
+
             if (isUnlocked) {
                 node.className = "tech-node active";
                 const statusSpan = node.querySelector(".tech-status") || node.querySelector(".tech-cost");
@@ -259,7 +259,7 @@ export class UIManager {
             } else {
                 const canUnlock = this.game.techTree.canUnlock(techId);
                 node.className = canUnlock ? "tech-node locked can-unlock" : "tech-node locked";
-                
+
                 // ネオン枠発光効果の追加 (can-unlock時)
                 if (canUnlock) {
                     node.style.borderColor = "var(--neon-gold)";
@@ -367,12 +367,12 @@ export class UIManager {
                     </div>
                 `;
             }
-        } 
+        }
         // 2. サーバノードの選択時
         else {
             const node = entity;
             const hasBackup = this.game.defenders.some(d => d.type === "backup" && d.parentNodeId === node.id);
-            
+
             // 人員による手動復旧がアサインされているか確認
             const isManuallyRecovering = node.isStaffAssigned;
 
@@ -403,7 +403,7 @@ export class UIManager {
                     </div>
                     ` : ''}
                 </div>
-                
+
                 ${node.status === 'infected' ? `
                 <div class="detail-actions">
                     ${!node.isStaffAssigned ? `
@@ -462,7 +462,7 @@ export class UIManager {
             titleEl.className = "neon-text-green";
             titleEl.textContent = "MISSION ACCOMPLISHED";
             subtitleEl.textContent = "セキュリティ体制が攻撃を完全に撃破し、重要資産を守り抜きました。";
-            
+
             waveEl.textContent = "ALL CLEARED";
             trustEl.textContent = `${Math.round(this.game.trust)}%`;
             scoreEl.className = "neon-text-green";

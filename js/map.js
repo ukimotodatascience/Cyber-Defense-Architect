@@ -9,7 +9,7 @@ export class Node {
         this.y = y;
         this.size = size;
         this.status = "nominal"; // nominal (正常), infected (ランサム感染), offline (機能停止)
-        
+
         // ノード固有のリソース（停止時間など）
         this.infectionProgress = 0; // 0 to 100
         this.recoveryProgress = 0; // 0 to 100
@@ -97,7 +97,7 @@ export class Node {
             ctx.fillStyle = varColor("neon-red");
             ctx.font = "12px 'Share Tech Mono'";
             ctx.fillText("⚠️ CRITICAL INFECTED", this.x, this.y + this.size + 18);
-            
+
             // 復旧プログレスバー
             if (this.recoveryProgress > 0) {
                 drawProgressBar(ctx, this.x - 25, this.y + this.size + 24, 50, 5, this.recoveryProgress / 100, "#39ff14");
@@ -198,7 +198,7 @@ export class NetworkMap {
         this.slots = [];
         this.paths = []; // 攻撃者が通るメインのパス定義
         this.dataPulses = []; // パルスアニメーション用の粒子配列
-        
+
         this.initializeTopology();
     }
 
@@ -357,20 +357,20 @@ export class NetworkMap {
         // 1. パス(接続線)の描画
         ctx.save();
         ctx.lineWidth = 2;
-        
+
         // ネットワーク接続関係の線を描画
         const drawLink = (n1, n2) => {
             const grad = ctx.createLinearGradient(n1.x, n1.y, n2.x, n2.y);
             let c1 = "rgba(0, 240, 255, 0.15)";
             let c2 = "rgba(0, 240, 255, 0.15)";
-            
+
             if (n1.status === "infected" || n2.status === "infected") {
                 c1 = "rgba(255, 0, 85, 0.25)";
                 c2 = "rgba(255, 0, 85, 0.25)";
             }
             grad.addColorStop(0, c1);
             grad.addColorStop(1, c2);
-            
+
             ctx.strokeStyle = grad;
             ctx.beginPath();
             ctx.moveTo(n1.x, n1.y);
@@ -430,7 +430,7 @@ export class NetworkMap {
 // ユーティリティ: パス補間で特定の進捗度(0.0〜1.0)に対応する座標を返す
 export function getPointOnPath(path, progress) {
     if (!path || path.length < 2) return null;
-    
+
     const segmentCount = path.length - 1;
     const scaledProgress = progress * segmentCount;
     const segmentIndex = Math.floor(scaledProgress);

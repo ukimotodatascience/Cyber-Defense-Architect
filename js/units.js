@@ -9,14 +9,15 @@ export class Attacker {
         this.pathKey = pathKey;
         this.map = map;
         this.path = map.paths[pathKey];
-        
+
         this.x = this.path[0].x;
         this.y = this.path[0].y;
         this.progress = 0; // path上の進捗 0.0 to 1.0
-        
+
         this.size = 12;
         this.status = "active"; // active, dead, success
-        
+        this.lastVisitedServerNode = null; // ランサム感染用の直近サーバー記録
+
         // 特徴に応じたステータスの初期設定
         this.initStats();
     }
@@ -40,7 +41,7 @@ export class Attacker {
                     this.progress = 0.25; // DMZ通過直後から開始
                 }
                 break;
-                
+
             case "bruteforce":
                 this.name = "ブルートフォース";
                 this.maxHp = 180;
@@ -52,7 +53,7 @@ export class Attacker {
                 this.icon = "🔑";
                 this.bypassFirewall = false;
                 break;
-                
+
             case "sqlinjection":
                 this.name = "SQLインジェクション";
                 this.maxHp = 120;
@@ -65,7 +66,7 @@ export class Attacker {
                 this.bypassFirewall = false;
                 this.teleportedToDB = false; // DBサーバへのテレポートフラグ
                 break;
-                
+
             case "ransomware":
                 this.name = "ランサムウェア";
                 this.maxHp = 250;
@@ -77,7 +78,7 @@ export class Attacker {
                 this.icon = "💀";
                 this.bypassFirewall = false;
                 break;
-                
+
             case "apt":
                 this.name = "APT (持続的標的型)";
                 this.maxHp = 800; // ボスクラス
@@ -92,9 +93,9 @@ export class Attacker {
                 this.stealthTimer = 6000; // 6秒間のステルス
                 break;
         }
-        
+
         // サイバーキルチェーンのフェーズ (侵入 -> 実行 -> 権限取得 -> 横展開 -> 目的達成)
-        this.killChainPhase = "intrusion"; 
+        this.killChainPhase = "intrusion";
     }
 
     update(delta, game) {
@@ -153,6 +154,12 @@ export class Attacker {
             this.y = pos.y;
         }
 
+        // 直近のサーバーノードを追従記録 (ランサム感染用)
+        const currentNodeId = this.getCurrentNode();
+        if (currentNodeId && currentNodeId !== "internet" && currentNodeId !== "data") {
+            this.lastVisitedServerNode = currentNodeId;
+        }
+
         // キルチェーンフェーズの更新
         if (this.progress < 0.2) this.killChainPhase = "intrusion"; // 侵入
         else if (this.progress < 0.4) this.killChainPhase = "exploitation"; // 実行
@@ -183,10 +190,10 @@ export class Attacker {
         game.trust = Math.max(0, game.trust - this.damageToTrust);
         game.effects.push(new FloatingText(`信頼度 -${this.damageToTrust}%`, this.x, this.y - 15, "#ff0055"));
 
-        // ランサムウェア：サーバノードを感染（暗号化）させる
-        if (this.type === "ransomware") {
-            const targetNode = this.getNearestNode();
-            if (targetNode && targetNode.id !== "internet" && targetNode.id !== "data") {
+        // ランサムウェア：最後に通過したサーバノードを感染（暗号化）させる
+        if (this.type === "ransomware" && this.lastVisitedServerNode) {
+            const targetNode = game.map.getNodeById(this.lastVisitedServerNode);
+            if (targetNode) {
                 targetNode.status = "infected";
                 targetNode.recoveryProgress = 0;
                 game.effects.push(new FloatingText("SERVER ENCRYPTED!", targetNode.x, targetNode.y, "#ff0055"));
@@ -278,7 +285,7 @@ export class Defender {
         this.level = 1;
         this.lastShotTime = 0;
         this.laserTargets = []; // 描画用レーザーの宛先
-        
+
         this.initStats(game);
     }
 
@@ -300,7 +307,7 @@ export class Defender {
                 this.fireRate = 1000; // 連射速度（ミリ秒）
                 this.color = "#00f0ff"; // neon-blue
                 break;
-                
+
             case "waf":
                 this.name = "WAF";
                 this.icon = "🌐";
@@ -315,7 +322,7 @@ export class Defender {
                     this.baseRange *= 1.2;
                 }
                 break;
-                
+
             case "mfa":
                 this.name = "MFA";
                 this.icon = "🔑";
@@ -325,7 +332,7 @@ export class Defender {
                 this.fireRate = 800; // 攻撃間隔が短い
                 this.color = "#ffcc00"; // neon-gold
                 break;
-                
+
             case "edr":
                 this.name = "EDR";
                 this.icon = "🛡️";
@@ -338,7 +345,7 @@ export class Defender {
                     this.baseDamage *= 1.4;
                 }
                 break;
-                
+
             case "backup":
                 this.name = "Backup";
                 this.icon = "💾";
@@ -361,7 +368,7 @@ export class Defender {
 
     upgrade(game) {
         if (this.level >= 3) return false;
-        
+
         const upgradeCost = Math.round(this.cost * 0.6);
         if (game.budget < upgradeCost) return false;
 
@@ -369,7 +376,7 @@ export class Defender {
         this.level++;
         this.range = this.baseRange * (1 + (this.level - 1) * 0.15);
         this.damage = this.baseDamage * (1 + (this.level - 1) * 0.25);
-        
+
         game.effects.push(new FloatingText("UPGRADE!!", this.x, this.y - 15, "#ffcc00"));
         return true;
     }
@@ -380,7 +387,7 @@ export class Defender {
 
     update(delta, game) {
         this.laserTargets = [];
-        
+
         // 親ノードが感染またはオフラインの時、タワーは動作停止
         const parentNode = game.map.getNodeById(this.parentNodeId);
         if (parentNode && (parentNode.status === "infected" || parentNode.status === "offline")) {
@@ -407,11 +414,11 @@ export class Defender {
             if (targetNode) {
                 // 復旧ビームを照射
                 this.laserTargets.push({ x: targetNode.x, y: targetNode.y, color: "#00ffd5" });
-                
+
                 // 復旧速度の計算 (Cloud Backup解放時は倍速)
                 const recoveryRate = game.unlockedTech.has("zerotrust") ? 15 : 8; // 技術解放で復旧力アップ
                 targetNode.recoveryProgress += recoveryRate * (delta / 1000) * game.speed * this.level;
-                
+
                 if (targetNode.recoveryProgress >= 100) {
                     targetNode.status = "nominal";
                     targetNode.recoveryProgress = 0;
@@ -430,7 +437,7 @@ export class Defender {
                 targets.forEach(target => {
                     // ダメージ・効果の適用
                     let actualDamage = this.damage;
-                    
+
                     // 防御特攻・デバフの適用
                     actualDamage = this.applyCombatModifier(target, actualDamage, game);
 
@@ -443,7 +450,7 @@ export class Defender {
                         const multiplier = game.unlockedTech.has("xdr") ? 1.5 : 1.0;
                         const depthBonus = 1 + (depthCount - 1) * 0.5 * multiplier;
                         actualDamage *= depthBonus;
-                        
+
                         // 多層防御のエフェクト
                         if (Math.random() < 0.15) {
                             game.effects.push(new FloatingText(`DEPTH x${depthCount}`, target.x + (Math.random() * 20 - 10), target.y - 15, "#bd00ff"));
@@ -463,7 +470,7 @@ export class Defender {
         // 射程内の敵を全検索
         let candidates = game.attackers.filter(enemy => {
             if (enemy.status !== "active") return false;
-            
+
             // APTステルス中はターゲットにできない
             if (enemy.type === "apt" && enemy.stealthTimer > 0) return false;
 
@@ -535,7 +542,7 @@ export class Defender {
 
         game.defenders.forEach(def => {
             if (def === this || def.type === "backup") return;
-            
+
             // 親ノードが停止している場合は無視
             const parent = game.map.getNodeById(def.parentNodeId);
             if (parent && (parent.status === "infected" || parent.status === "offline")) return;
@@ -556,7 +563,7 @@ export class Defender {
         ctx.shadowBlur = 10;
         ctx.shadowColor = this.color;
         ctx.fillStyle = this.color;
-        
+
         ctx.beginPath();
         // レベルに応じた形状（Lv1: 三角, Lv2: 四角, Lv3: 六角）
         if (this.level === 1) {
@@ -617,7 +624,7 @@ export class Defender {
             ctx.shadowBlur = 12;
             ctx.shadowColor = target.color;
             ctx.lineWidth = target.thickness || 1.5;
-            
+
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
             ctx.lineTo(target.x, target.y);
@@ -649,7 +656,7 @@ export class FloatingText {
         const elapsed = Date.now() - this.spawnTime;
         this.opacity = 1.0 - elapsed / this.life;
         this.y -= (20 * (delta / 1000)) * game.speed; // ゆっくり上昇
-        
+
         return elapsed < this.life; // 生存しているか
     }
 

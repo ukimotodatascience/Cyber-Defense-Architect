@@ -5,17 +5,17 @@
     --bg-panel: rgba(13, 17, 33, 0.75);
     --border-cyber: #00f0ff;
     --border-dim: rgba(0, 240, 255, 0.25);
-    
+
     --neon-blue: #00f0ff;
     --neon-green: #39ff14;
     --neon-red: #ff0055;
     --neon-gold: #ffcc00;
     --neon-purple: #bd00ff;
     --neon-cyan: #00ffd5;
-    
+
     --text-main: #e2e8f0;
     --text-dim: #94a3b8;
-    
+
     --font-heading: 'Outfit', sans-serif;
     --font-mono: 'Share Tech Mono', monospace;
 }
@@ -29,7 +29,7 @@
 
 body.cyber-theme {
     background-color: var(--bg-dark);
-    background-image: 
+    background-image:
         linear-gradient(rgba(18, 24, 48, 0.4) 1px, transparent 1px),
         linear-gradient(90deg, rgba(18, 24, 48, 0.4) 1px, transparent 1px);
     background-size: 30px 30px;

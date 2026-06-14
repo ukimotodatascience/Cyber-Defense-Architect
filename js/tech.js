@@ -108,11 +108,11 @@ export class TechTree {
         if (!this.canUnlock(techId)) return false;
 
         const item = TECH_ITEMS[techId];
-        
+
         // リソース消費
         this.game.budget -= item.costBudget;
         this.game.staffUsed += item.costStaff; // 研究にアサインされ、使用中になる
-        
+
         // アンロック
         this.game.unlockedTech.add(techId);
         this.game.score += 300; // 研究スコア加算

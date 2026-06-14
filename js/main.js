@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ui.hideModal(ui.dom.modalStageSelect);
                 ui.updateHUD();
                 ui.log(`[ミッション開始] 「${game.stage.name}」を開始しました。予算: $${game.budget}`, "system");
-                
+
                 // 初期の詳細パネル
                 ui.showSelectionDetails(null);
             }
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", (e) => {
             // 他の選択を解除
             const towerType = btn.dataset.towerType;
-            
+
             if (selectedPaletteTower === towerType) {
                 // トグルオフ
                 selectedPaletteTower = null;
@@ -174,15 +174,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (selectedPaletteTower && !clickedSlot.tower) {
                 // 仮のタワーを生成して価格を確認
                 const tempDefender = new Defender(selectedPaletteTower, clickedSlot.x, clickedSlot.y, clickedSlot.parentNodeId, game);
-                
+
                 if (game.budget >= tempDefender.cost) {
                     game.budget -= tempDefender.cost;
                     clickedSlot.tower = tempDefender;
                     game.defenders.push(tempDefender);
-                    
+
                     ui.log(`[配置] ${tempDefender.name} を ${map.getNodeById(clickedSlot.parentNodeId).name} 周辺に配置しました。`, "success");
                     game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
-                    
+
                     clearPaletteSelection();
                     ui.updateHUD();
                 } else {
@@ -231,11 +231,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // 敵のスポーンスケジュール処理
             if (game.waveInProgress && game.spawnQueue.length > 0) {
                 const elapsedSinceWaveStart = time - game.waveStartTime;
-                
+
                 // 出現時刻に達した敵を生成
                 while (game.spawnQueue.length > 0 && game.spawnQueue[0].spawnTime <= elapsedSinceWaveStart) {
                     const nextSpawn = game.spawnQueue.shift();
-                    
+
                     // 攻撃タイプに応じた移動パスの割り当て
                     let pathKey = "webRoute";
                     if (nextSpawn.type === "bruteforce") {
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
             for (let i = game.attackers.length - 1; i >= 0; i--) {
                 const enemy = game.attackers[i];
                 enemy.update(delta, game);
-                
+
                 // 到達または死亡した敵のクリーンアップ
                 if (enemy.status === "success" || enemy.status === "dead") {
                     game.attackers.splice(i, 1);
@@ -284,13 +284,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (node.status === "infected" && node.isStaffAssigned) {
                     // 人員による復旧（毎秒 15% の復旧スピード）
                     node.recoveryProgress += 12 * (delta / 1000) * currentSpeed;
-                    
+
                     if (node.recoveryProgress >= 100) {
                         node.status = "nominal";
                         node.recoveryProgress = 0;
                         node.isStaffAssigned = false;
                         game.staffUsed--; // 人員の解放
-                        
+
                         ui.updateHUD();
                         ui.showSelectionDetails(node); // パネル表示更新
                         ui.log(`[緊急対応] ${node.name} の復旧がセキュリティ要員により完了しました。`, "success");
@@ -356,13 +356,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // パレットで選択されており、かつ空きスロットにホバーしている場合
         if (selectedPaletteTower && hoveredSlot && !hoveredSlot.tower) {
             const tempDef = new Defender(selectedPaletteTower, hoveredSlot.x, hoveredSlot.y, hoveredSlot.parentNodeId, game);
-            
+
             ctx.save();
             ctx.fillStyle = "rgba(0, 240, 255, 0.04)";
             ctx.strokeStyle = "rgba(0, 240, 255, 0.3)";
             ctx.lineWidth = 1;
             ctx.setLineDash([5, 3]);
-            
+
             ctx.beginPath();
             ctx.arc(hoveredSlot.x, hoveredSlot.y, tempDef.range, 0, Math.PI * 2);
             ctx.fill();
@@ -377,7 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.strokeStyle = "rgba(255, 204, 0, 0.25)";
             ctx.lineWidth = 1;
             ctx.setLineDash([5, 3]);
-            
+
             ctx.beginPath();
             ctx.arc(selectedSlot.x, selectedSlot.y, selectedSlot.tower.range, 0, Math.PI * 2);
             ctx.fill();
@@ -412,19 +412,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // ノード用の説明ツールチップ（吹き出し）描画
     function drawNodeTooltip(ctx, node) {
         ctx.save();
-        
+
         const title = node.name;
         const text = node.description;
         const tooltipWidth = 280;
         const padding = 12;
-        
+
         ctx.font = "12px 'Share Tech Mono', sans-serif";
-        
+
         // 1行の最大幅を超えたら改行するロジック（文字単位で判定）
         const words = text.split("");
         let lines = [];
         let currentLine = "";
-        
+
         for (let i = 0; i < words.length; i++) {
             const testLine = currentLine + words[i];
             const metrics = ctx.measureText(testLine);
@@ -436,51 +436,51 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         lines.push(currentLine);
-        
+
         const lineHeight = 16;
         const tooltipHeight = 35 + lines.length * lineHeight;
-        
+
         // 表示位置（ノードの真上）
         let x = node.x - tooltipWidth / 2;
         let y = node.y - node.size - tooltipHeight - 15;
-        
+
         // 画面外はみ出し防止
         if (x < 10) x = 10;
         if (x + tooltipWidth > canvas.width - 10) x = canvas.width - tooltipWidth - 10;
         if (y < 10) y = node.y + node.size + 15; // 上にはみ出る場合は下に表示
-        
+
         // 背景と枠の描画
         ctx.fillStyle = "rgba(8, 10, 24, 0.95)";
         ctx.strokeStyle = "#00f0ff";
         ctx.lineWidth = 1;
         ctx.shadowBlur = 12;
         ctx.shadowColor = "#00f0ff";
-        
+
         drawRoundRect(ctx, x, y, tooltipWidth, tooltipHeight, 6);
-        
+
         // テキストの影は消す
         ctx.shadowBlur = 0;
-        
+
         // タイトルの描画
         ctx.fillStyle = "#00f0ff";
         ctx.font = "bold 13px 'Share Tech Mono', sans-serif";
         ctx.textAlign = "left";
         ctx.fillText(title, x + padding, y + padding + 10);
-        
+
         // 区切り線
         ctx.strokeStyle = "rgba(0, 240, 255, 0.25)";
         ctx.beginPath();
         ctx.moveTo(x + padding, y + 26);
         ctx.lineTo(x + tooltipWidth - padding, y + 26);
         ctx.stroke();
-        
+
         // 本文の描画
         ctx.fillStyle = "#e2e8f0";
         ctx.font = "11px 'Outfit', sans-serif";
         lines.forEach((line, index) => {
             ctx.fillText(line, x + padding, y + 43 + index * lineHeight);
         });
-        
+
         ctx.restore();
     }
 
