@@ -277,6 +277,16 @@ export class UIManager {
                     node.style.borderColor = "";
                     node.style.boxShadow = "";
                 }
+
+                // 「開発済」に書き換えられたスパンをコスト表示に戻す
+                // （ステージリスタート後も正しいラベルが表示されるように）
+                const statusSpan = node.querySelector(".tech-status");
+                if (statusSpan) {
+                    const budget = node.dataset.costBudget || "?";
+                    const staff  = node.dataset.costStaff  || "?";
+                    statusSpan.className = "tech-cost";
+                    statusSpan.textContent = `コスト: $${budget} / 👨‍💻${staff}`;
+                }
             }
         });
     }

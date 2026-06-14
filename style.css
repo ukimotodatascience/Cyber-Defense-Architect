@@ -164,7 +164,8 @@ body.cyber-theme {
     transition: width 0.3s ease;
 }
 .bg-green { background-color: var(--neon-green); box-shadow: 0 0 5px var(--neon-green); }
-.bg-blue { background-color: var(--neon-blue); box-shadow: 0 0 5px var(--neon-blue); }
+.bg-blue  { background-color: var(--neon-blue);  box-shadow: 0 0 5px var(--neon-blue);  }
+.bg-red   { background-color: var(--neon-red);   box-shadow: 0 0 5px var(--neon-red);   }
 
 .hud-controls {
     display: flex;
@@ -865,6 +866,7 @@ body.cyber-theme {
     font-size: 10px;
     color: var(--neon-gold);
 }
+
 
 .tech-node.locked {
     opacity: 0.5;
