@@ -541,9 +541,11 @@ export class Defender {
             // APTステルス中はターゲットにできない
             if (enemy.type === "apt" && enemy.stealthTimer > 0) return false;
 
-            // Firewallはフィッシングに無効なため、最初から候補に含めない
-            // （クールダウンを無駄に消費してしまうのを防ぐ）
-            if (this.type === "firewall" && enemy.type === "phishing") return false;
+            // Firewallはフィッシング、またはFirewallをバイパスする敵(内部不正など)に無効なため候補に含めない
+            if (this.type === "firewall" && (enemy.type === "phishing" || enemy.bypassFirewall)) return false;
+
+            // WAFはWAFをバイパスする敵(内部不正など)に無効なため候補に含めない
+            if (this.type === "waf" && enemy.bypassWAF) return false;
 
             const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
             return dist <= this.range;
@@ -569,7 +571,9 @@ export class Defender {
 
         // WAF: SQLインジェクション、XSS等に3倍
         if (this.type === "waf") {
-            if (target.type === "sqlinjection") {
+            if (target.bypassWAF) {
+                dmg = 0;
+            } else if (target.type === "sqlinjection") {
                 dmg *= 3.0;
                 game.effects.push(new FloatingText("WAF INTERCEPT", target.x, target.y - 12, "#39ff14"));
             } else if (target.type === "phishing") {
@@ -596,9 +600,9 @@ export class Defender {
             }
         }
 
-        // Firewall: フィッシングには完全無効（ダメージ0）
+        // Firewall: フィッシング、またはFirewallバイパスの敵には完全無効（ダメージ0）
         if (this.type === "firewall") {
-            if (target.type === "phishing") {
+            if (target.type === "phishing" || target.bypassFirewall) {
                 dmg = 0;
             }
         }
