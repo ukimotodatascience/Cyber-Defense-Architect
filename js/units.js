@@ -92,6 +92,20 @@ export class Attacker {
                 // ステルス状態（ゲーム開始後一定時間はロックオンされない）
                 this.stealthTimer = 6000; // 6秒間のステルス
                 break;
+
+            case "insider":
+                this.name = "内部不正";
+                this.maxHp = 200;
+                this.hp = 200;
+                this.speed = 0.045;
+                this.reward = 150;
+                this.damageToTrust = 20;
+                this.color = "#ff0055"; // neon-red
+                this.icon = "👤";
+                this.bypassFirewall = true;
+                this.bypassWAF = true;
+                this.progress = 0.25; // 内部のDMZ直後から出現
+                break;
         }
 
         // サイバーキルチェーンのフェーズ (侵入 -> 実行 -> 権限取得 -> 横展開 -> 目的達成)
@@ -299,23 +313,23 @@ export class Defender {
 
         switch (this.type) {
             case "firewall":
-                this.name = "Firewall";
-                this.icon = "🔥";
-                this.cost = 300;
+                this.name = "ファイアウォール";
+                this.icon = "🛡️";
+                this.cost = 700;
                 this.baseRange = 140;
-                this.baseDamage = 25; // 1発あたりのダメージ
+                this.baseDamage = 30; // 1発あたりのダメージ
                 this.fireRate = 1000; // 連射速度（ミリ秒）
-                this.color = "#00f0ff"; // neon-blue
+                this.color = "#ff0055"; // neon-red
                 break;
 
             case "waf":
                 this.name = "WAF";
                 this.icon = "🌐";
-                this.cost = 500;
+                this.cost = 1000;
                 this.baseRange = 130;
-                this.baseDamage = 40;
+                this.baseDamage = 45;
                 this.fireRate = 1200;
-                this.color = "#39ff14"; // neon-green
+                this.color = "#00f0ff"; // neon-blue
                 // WAF強化の適用
                 if (hasNextGenWAF) {
                     this.baseDamage *= 1.5;
@@ -326,9 +340,9 @@ export class Defender {
             case "mfa":
                 this.name = "MFA";
                 this.icon = "🔑";
-                this.cost = 400;
+                this.cost = 800;
                 this.baseRange = 120;
-                this.baseDamage = 15;
+                this.baseDamage = 20;
                 this.fireRate = 800; // 攻撃間隔が短い
                 this.color = "#ffcc00"; // neon-gold
                 break;
@@ -336,24 +350,54 @@ export class Defender {
             case "edr":
                 this.name = "EDR";
                 this.icon = "🛡️";
-                this.cost = 600;
+                this.cost = 900;
                 this.baseRange = 110;
-                this.baseDamage = 50;
+                this.baseDamage = 55;
                 this.fireRate = 1500;
-                this.color = "#ff0055"; // neon-red
+                this.color = "#39ff14"; // neon-green
                 if (hasEDR2) {
                     this.baseDamage *= 1.4;
                 }
                 break;
 
             case "backup":
-                this.name = "Backup";
+                this.name = "バックアップ";
                 this.icon = "💾";
-                this.cost = 400;
+                this.cost = 600;
                 this.baseRange = 150;
                 this.baseDamage = 0; // 攻撃能力なし
                 this.fireRate = 1000;
                 this.color = "#00ffd5"; // neon-cyan
+                break;
+
+            case "mailfilter":
+                this.name = "メールフィルター";
+                this.icon = "✉️";
+                this.cost = 800;
+                this.baseRange = 140;
+                this.baseDamage = 45;
+                this.fireRate = 1000;
+                this.color = "#bd00ff"; // neon-purple
+                break;
+
+            case "education":
+                this.name = "セキュリティ教育";
+                this.icon = "👥";
+                this.cost = 600;
+                this.baseRange = 185;
+                this.baseDamage = 0; // 攻撃力なし（デバフのみ）
+                this.fireRate = 800;
+                this.color = "#00ffd5"; // neon-cyan
+                break;
+
+            case "siem":
+                this.name = "SIEM";
+                this.icon = "🖥️";
+                this.cost = 1200;
+                this.baseRange = 160;
+                this.baseDamage = 20; // 範囲内全員への持続ダメージ
+                this.fireRate = 1000;
+                this.color = "#39ff14"; // neon-green
                 break;
         }
 
@@ -435,6 +479,23 @@ export class Defender {
             return;
         }
 
+        // 1.5 セキュリティ教育タワーの動作（敵を減速）
+        if (this.type === "education") {
+            if (now - this.lastShotTime >= this.fireRate / game.speed) {
+                const targets = this.findTargets(game);
+                targets.forEach(target => {
+                    if (!target.isSlowedByEducation) {
+                        target.isSlowedByEducation = true;
+                        target.speed = target.speed * 0.65;
+                        game.effects.push(new FloatingText("EDU SLOW", target.x, target.y - 12, this.color));
+                    }
+                    this.laserTargets.push({ x: target.x, y: target.y, color: this.color });
+                });
+                this.lastShotTime = now;
+            }
+            return;
+        }
+
         // 2. 一般防衛タワーの動作（敵を迎撃）
         if (now - this.lastShotTime >= this.fireRate / game.speed) {
             // 射程内の敵を検索
@@ -480,9 +541,11 @@ export class Defender {
             // APTステルス中はターゲットにできない
             if (enemy.type === "apt" && enemy.stealthTimer > 0) return false;
 
-            // Firewallはフィッシングに無効なため、最初から候補に含めない
-            // （クールダウンを無駄に消費してしまうのを防ぐ）
-            if (this.type === "firewall" && enemy.type === "phishing") return false;
+            // Firewallはフィッシング、またはFirewallをバイパスする敵(内部不正など)に無効なため候補に含めない
+            if (this.type === "firewall" && (enemy.type === "phishing" || enemy.bypassFirewall)) return false;
+
+            // WAFはWAFをバイパスする敵(内部不正など)に無効なため候補に含めない
+            if (this.type === "waf" && enemy.bypassWAF) return false;
 
             const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
             return dist <= this.range;
@@ -492,6 +555,11 @@ export class Defender {
 
         // 基本は「最も進んでいる敵」をターゲットにする
         candidates.sort((a, b) => b.progress - a.progress);
+
+        // SIEMは射程内の敵全員を同時攻撃可能
+        if (this.type === "siem") {
+            return candidates;
+        }
 
         // レベルに応じて同時射撃数が増加（Firewallは複数ターゲット可能）
         const maxTargets = this.type === "firewall" ? this.level : 1;
@@ -503,7 +571,9 @@ export class Defender {
 
         // WAF: SQLインジェクション、XSS等に3倍
         if (this.type === "waf") {
-            if (target.type === "sqlinjection") {
+            if (target.bypassWAF) {
+                dmg = 0;
+            } else if (target.type === "sqlinjection") {
                 dmg *= 3.0;
                 game.effects.push(new FloatingText("WAF INTERCEPT", target.x, target.y - 12, "#39ff14"));
             } else if (target.type === "phishing") {
@@ -530,15 +600,37 @@ export class Defender {
             }
         }
 
-        // Firewall: フィッシングには完全無効（ダメージ0）
+        // Firewall: フィッシング、またはFirewallバイパスの敵には完全無効（ダメージ0）
         if (this.type === "firewall") {
-            if (target.type === "phishing") {
+            if (target.type === "phishing" || target.bypassFirewall) {
                 dmg = 0;
             }
         }
 
+        // メールフィルター: フィッシングに特効4倍、その他には0.2倍
+        if (this.type === "mailfilter") {
+            if (target.type === "phishing") {
+                dmg *= 4.0;
+                game.effects.push(new FloatingText("MAIL FILTERED", target.x, target.y - 12, this.color));
+            } else {
+                dmg *= 0.2;
+            }
+        }
+
+        // SIEM: ログ統合分析によるバフ適用（SIEMの射程内にある他のタワーの攻撃力をアップ）
+        const hasSIEMBuff = game.defenders.some(def => {
+            if (def.type !== "siem") return false;
+            const parent = game.map.getNodeById(def.parentNodeId);
+            if (parent && (parent.status === "infected" || parent.status === "offline")) return false;
+            const dist = Math.hypot(def.x - target.x, def.y - target.y);
+            return dist <= def.range;
+        });
+        if (hasSIEMBuff && this.type !== "siem") {
+            dmg *= 1.35; // 他のタワーの攻撃力を35%バフ
+        }
+
         // 技術ツリー「Zero Trust Core」解放：全ノードでフィッシングなどのバイパスダメージを底上げ
-        if (game.unlockedTech.has("zerotrust") && target.type === "phishing" && this.type !== "firewall") {
+        if (game.unlockedTech.has("zerotrust") && target.type === "phishing" && this.type !== "firewall" && this.type !== "mailfilter") {
             dmg *= 1.3;
         }
 
@@ -548,7 +640,13 @@ export class Defender {
     calculateDefenseDepth(target, game) {
         // 同一ターゲットを同時に攻撃範囲に収めている「ユニークなタワータイプ」の数をカウント
         const targetingTowerTypes = new Set();
-        targetingTowerTypes.add(this.type);
+
+        // 自分自身がターゲットをバイパスされない場合のみ追加
+        const selfBypass = (this.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) ||
+                           (this.type === "waf" && target.bypassWAF);
+        if (!selfBypass) {
+            targetingTowerTypes.add(this.type);
+        }
 
         game.defenders.forEach(def => {
             if (def === this || def.type === "backup") return;
@@ -559,8 +657,11 @@ export class Defender {
 
             const dist = Math.hypot(def.x - target.x, def.y - target.y);
             if (dist <= def.range) {
-                // Firewallはフィッシングに実質ダメージ 0 なので深度ボーナスにカウントしない
-                if (def.type === "firewall" && target.type === "phishing") return;
+                // Firewallはフィッシング、またはFirewallをバイパスする敵に対してカウントしない
+                if (def.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) return;
+                // WAFはWAFをバイパスする敵に対してカウントしない
+                if (def.type === "waf" && target.bypassWAF) return;
+
                 targetingTowerTypes.add(def.type);
             }
         });
@@ -571,58 +672,73 @@ export class Defender {
     draw(ctx) {
         ctx.save();
 
-        // タワーの外形
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
+        const w = 62;
+        const h = 40;
+        const x = this.x - w / 2;
+        const y = this.y - h / 2;
+        const r = 4;
 
+        // ドロップシャドウ/グロー
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+
+        // 半透明の黒い背景
+        ctx.fillStyle = "rgba(10, 15, 30, 0.85)";
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 1.5;
+
+        // 角丸四角形描画
         ctx.beginPath();
-        // レベルに応じた形状（Lv1: 三角, Lv2: 四角, Lv3: 六角）
-        if (this.level === 1) {
-            // 三角形
-            ctx.moveTo(this.x, this.y - 14);
-            ctx.lineTo(this.x + 12, this.y + 10);
-            ctx.lineTo(this.x - 12, this.y + 10);
-            ctx.closePath();
-            ctx.fill();
-        } else if (this.level === 2) {
-            // ダイヤ型
-            ctx.moveTo(this.x, this.y - 15);
-            ctx.lineTo(this.x + 13, this.y);
-            ctx.lineTo(this.x, this.y + 15);
-            ctx.lineTo(this.x - 13, this.y);
-            ctx.closePath();
-            ctx.fill();
-        } else {
-            // 六角形
-            ctx.moveTo(this.x, this.y - 16);
-            ctx.lineTo(this.x + 14, this.y - 8);
-            ctx.lineTo(this.x + 14, this.y + 8);
-            ctx.lineTo(this.x, this.y + 16);
-            ctx.lineTo(this.x - 14, this.y + 8);
-            ctx.lineTo(this.x - 14, this.y - 8);
-            ctx.closePath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0; // テキストはグローなしでクッキリ
+
+        // アイコンの描画（左側）
+        ctx.fillStyle = "#fff";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.icon, x + 6, y + h / 2);
+
+        // タワー名とレベルの描画（右側）
+        ctx.font = "bold 9px 'Share Tech Mono', sans-serif";
+        ctx.fillText(this.name, x + 23, y + 13);
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
+        ctx.font = "9px 'Share Tech Mono', sans-serif";
+        ctx.fillText(`Lv.${this.level}`, x + 23, y + 27);
+
+        // 下部のレベルインジケータ（緑ドット）
+        const dotY = y + h + 6;
+        const maxDots = 5;
+        const dotSize = 2.5;
+        const dotSpacing = 7;
+        const startDotX = this.x - ((maxDots - 1) * dotSpacing) / 2;
+
+        for (let i = 0; i < maxDots; i++) {
+            ctx.beginPath();
+            ctx.arc(startDotX + i * dotSpacing, dotY, dotSize, 0, Math.PI * 2);
+            if (i < this.level) {
+                ctx.fillStyle = "#39ff14"; // 点灯
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = "#39ff14";
+            } else {
+                ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; // 消灯
+                ctx.shadowBlur = 0;
+            }
             ctx.fill();
         }
-
-        // コア部分
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = "#0d142c";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // アイコン文字
-        ctx.fillStyle = "#fff";
-        ctx.font = "9px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(this.icon, this.x, this.y);
-
-        // レベルテキスト
-        ctx.fillStyle = "#fff";
-        ctx.font = "12px 'Share Tech Mono'";
-        ctx.fillText(`L${this.level}`, this.x, this.y + 28);
 
         ctx.restore();
     }

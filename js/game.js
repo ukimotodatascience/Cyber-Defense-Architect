@@ -56,28 +56,49 @@ export const STAGES = {
     },
     3: {
         id: 3,
-        name: "上級: APT (持続的標的型) 攻撃",
-        description: "高度なステルス能力を持つAPTが襲来。多層防御ボーナスと技術ツリーの解放を駆使せよ。",
-        initialBudget: 2500,
-        initialStaff: 4,
+        name: "ステージ 3-2: ランサムウェアの脅威",
+        description: "フィッシングメール、ブルートフォース、ランサムウェア、内部不正が同時に襲来。多層防御で要所を守り抜け。",
+        initialBudget: 2450,
+        initialStaff: 5,
         waves: [
             {
+                // Wave 1
                 spawnList: [
-                    { type: "phishing", count: 5, interval: 2000 },
-                    { type: "bruteforce", count: 5, interval: 2000 }
+                    { type: "phishing", count: 6, interval: 2000 },
+                    { type: "bruteforce", count: 4, interval: 2000 }
                 ]
             },
             {
+                // Wave 2 (Matches reference image: phishing x12, bruteforce x8, ransomware x5, insider x3)
                 spawnList: [
-                    { type: "sqlinjection", count: 4, interval: 3000 },
-                    { type: "ransomware", count: 3, interval: 4000 }
+                    { type: "phishing", count: 12, interval: 1500 },
+                    { type: "bruteforce", count: 8, interval: 2000 },
+                    { type: "ransomware", count: 5, interval: 3000 },
+                    { type: "insider", count: 3, interval: 4000 }
                 ]
             },
             {
+                // Wave 3
+                spawnList: [
+                    { type: "sqlinjection", count: 6, interval: 2500 },
+                    { type: "ransomware", count: 4, interval: 3000 }
+                ]
+            },
+            {
+                // Wave 4
                 spawnList: [
                     { type: "apt", count: 1, interval: 1000 },
-                    { type: "phishing", count: 6, interval: 2000 },
-                    { type: "ransomware", count: 3, interval: 3500 }
+                    { type: "insider", count: 5, interval: 2000 },
+                    { type: "ransomware", count: 4, interval: 3000 }
+                ]
+            },
+            {
+                // Wave 5
+                spawnList: [
+                    { type: "apt", count: 2, interval: 4000 },
+                    { type: "phishing", count: 10, interval: 1500 },
+                    { type: "ransomware", count: 5, interval: 2500 },
+                    { type: "insider", count: 4, interval: 3000 }
                 ]
             }
         ]

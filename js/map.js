@@ -199,6 +199,9 @@ export class NetworkMap {
         this.paths = []; // 攻撃者が通るメインのパス定義
         this.dataPulses = []; // パルスアニメーション用の粒子配列
 
+        this.bgImage = new Image();
+        this.bgImage.src = "images/map_bg.png";
+
         this.initializeTopology();
     }
 
@@ -353,10 +356,106 @@ export class NetworkMap {
 
     draw(ctx, hoveredSlot, selectedSlot) {
         const time = Date.now();
+        const w = ctx.canvas.width;
+        const h = ctx.canvas.height;
 
-        // 1. パス(接続線)の描画
+        // 1. 背景画像の描画
+        if (this.bgImage.complete) {
+            ctx.drawImage(this.bgImage, 0, 0, w, h);
+        } else {
+            ctx.fillStyle = "#020308";
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // 2. 7つのカラーゾーンとゾーンタブの描画
+        const zones = [
+            { name: "インターネット", color: "rgba(189, 0, 255, 0.07)", borderColor: "rgba(189, 0, 255, 0.25)", textColor: "#bd00ff" },
+            { name: "DMZ", color: "rgba(0, 70, 255, 0.07)", borderColor: "rgba(0, 70, 255, 0.25)", textColor: "#00a2ff" },
+            { name: "Webサーバー", color: "rgba(0, 200, 255, 0.07)", borderColor: "rgba(0, 200, 255, 0.25)", textColor: "#00f0ff" },
+            { name: "アプリサーバー", color: "rgba(57, 255, 20, 0.05)", borderColor: "rgba(57, 255, 20, 0.2)", textColor: "#39ff14" },
+            { name: "認証・AD", color: "rgba(255, 204, 0, 0.05)", borderColor: "rgba(255, 204, 0, 0.2)", textColor: "#ffcc00" },
+            { name: "社内ネットワーク", color: "rgba(255, 120, 0, 0.05)", borderColor: "rgba(255, 120, 0, 0.2)", textColor: "#ff7800" },
+            { name: "機密情報・データ", color: "rgba(255, 0, 85, 0.07)", borderColor: "rgba(255, 0, 85, 0.25)", textColor: "#ff0055" }
+        ];
+
+        const zoneW = w / 7;
         ctx.save();
-        ctx.lineWidth = 2;
+        for (let i = 0; i < 7; i++) {
+            const zX = i * zoneW;
+
+            // ゾーン縦帯の塗りつぶし
+            ctx.fillStyle = zones[i].color;
+            ctx.fillRect(zX, 0, zoneW, h);
+
+            // 境界線（右端のみ描画。最後のゾーンは描かない）
+            if (i < 6) {
+                ctx.strokeStyle = zones[i].borderColor;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(zX + zoneW, 0);
+                ctx.lineTo(zX + zoneW, h);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // ゾーンタブの描画（画面上部）
+            const tabMargin = 8;
+            const tabH = 22;
+            const tabY = 15;
+            const tabW = zoneW - tabMargin * 2;
+            const tabX = zX + tabMargin;
+
+            // 斜めのタブ（平行四辺形風）
+            ctx.fillStyle = "rgba(10, 15, 30, 0.85)";
+            ctx.strokeStyle = zones[i].textColor;
+            ctx.lineWidth = 1.5;
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = zones[i].textColor;
+            ctx.beginPath();
+            ctx.moveTo(tabX + 8, tabY);
+            ctx.lineTo(tabX + tabW, tabY);
+            ctx.lineTo(tabX + tabW - 8, tabY + tabH);
+            ctx.lineTo(tabX, tabY + tabH);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // タブのテキスト
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(zones[i].name, tabX + tabW / 2, tabY + tabH / 2 + 1);
+        }
+        ctx.restore();
+
+        // 2.5 攻撃の進行ルートの描画 (アニメーションする赤い破線)
+        ctx.save();
+        ctx.strokeStyle = "rgba(255, 0, 85, 0.35)";
+        ctx.lineWidth = 2.0;
+        ctx.setLineDash([6, 6]);
+        ctx.lineDashOffset = -Math.floor(time / 30) % 24;
+
+        const drawPathRoute = (route) => {
+            if (!route || route.length < 2) return;
+            ctx.beginPath();
+            ctx.moveTo(route[0].x, route[0].y);
+            for (let i = 1; i < route.length; i++) {
+                ctx.lineTo(route[i].x, route[i].y);
+            }
+            ctx.stroke();
+        };
+
+        drawPathRoute(this.paths.webRoute);
+        drawPathRoute(this.paths.authRoute);
+        drawPathRoute(this.paths.crossRoute);
+        ctx.restore();
+
+        // 3. パス(接続線)の描画
+        ctx.save();
+        ctx.lineWidth = 1.5;
 
         // ネットワーク接続関係の線を描画
         const drawLink = (n1, n2) => {
