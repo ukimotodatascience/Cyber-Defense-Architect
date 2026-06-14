@@ -254,6 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Canvas タッチ操作（スマートフォン/タブレット用）
     canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
         // タッチ座標をキャンバス論理座標に変換してクリックと同様に処理
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
@@ -310,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // モバイルでサイドバーを自動的に開く
             openSidebar();
         }
-    }, { passive: true });
+    }, { passive: false });
 
     // 5. ゲームのメインアップデート＆描画ループ
     function gameLoop(time) {
