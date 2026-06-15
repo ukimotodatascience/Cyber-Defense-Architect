@@ -564,6 +564,33 @@ export class Defender {
         }
     }
 
+    getTargetPriority(enemy) {
+        if (this.type === "mfa") {
+            if (enemy.type === "bruteforce") return 10;
+        }
+        if (this.type === "fido2") {
+            if (enemy.type === "bruteforce") return 10;
+        }
+        if (this.type === "waf") {
+            if (enemy.type === "sqlinjection") return 10;
+            if (enemy.type === "phishing") return -5;
+        }
+        if (this.type === "mailfilter") {
+            if (enemy.type === "phishing") return 10;
+            return -8; // フィッシング以外はダメージ0.2倍なので優先度を極めて低くする
+        }
+        if (this.type === "zerotrust") {
+            if (enemy.type === "phishing" || enemy.type === "insider") return 10;
+        }
+        if (this.type === "edr") {
+            if (enemy.type === "ransomware") return 10;
+        }
+        if (this.type === "firewall") {
+            if (enemy.type === "phishing" || enemy.bypassFirewall) return -10;
+        }
+        return 0;
+    }
+
     findTargets(game) {
         // 射程内の敵を全検索
         let candidates = game.attackers.filter(enemy => {
@@ -584,8 +611,15 @@ export class Defender {
 
         if (candidates.length === 0) return [];
 
-        // 基本は「最も進んでいる敵」をターゲットにする
-        candidates.sort((a, b) => b.progress - a.progress);
+        // 特効・効果の高さに基づき、優先度の高い敵をターゲットにする。優先度が同じなら最も進んでいる敵を選ぶ。
+        candidates.sort((a, b) => {
+            const prioA = this.getTargetPriority(a);
+            const prioB = this.getTargetPriority(b);
+            if (prioA !== prioB) {
+                return prioB - prioA;
+            }
+            return b.progress - a.progress;
+        });
 
         // SIEMは射程内の敵全員を同時攻撃可能
         if (this.type === "siem") {
