@@ -805,7 +805,7 @@ body.cyber-theme {
 
 .palette-shop-area .tower-palette {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 12px;
     flex-grow: 1;
     overflow-x: auto;
