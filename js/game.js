@@ -206,9 +206,9 @@ export class GameState {
 
         // 技術研究アンロックリスト
         this.unlockedTech = new Set([
-            "firewall", "waf", "zerotrust",
-            "password", "mfa", "fido2",
-            "antivirus", "edr", "xdr"
+            "firewall", "waf",
+            "password", "mfa",
+            "antivirus", "edr"
         ]);
 
         // スパニック(敵の生成)スケジューラ
