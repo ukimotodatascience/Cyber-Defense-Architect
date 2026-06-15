@@ -1449,15 +1449,15 @@ body.cyber-theme {
     bottom: 102%;
     left: 50%;
     transform: translateX(-50%) translateY(10px);
-    background: rgba(6, 8, 20, 0.98);
-    border: 2px solid var(--border-cyber);
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
-    color: var(--text-main);
-    padding: 14px 16px;
-    border-radius: 8px;
-    width: 310px; /* Slimmer to fit within the 385px sidebar perfectly */
-    font-family: var(--font-heading);
-    font-size: 14px;
+    background: rgba(8, 10, 24, 0.95);
+    border: 1px solid #00f0ff;
+    box-shadow: 0 0 12px #00f0ff;
+    color: #e2e8f0;
+    padding: 12px;
+    border-radius: 6px;
+    width: 280px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
     line-height: 1.5;
     pointer-events: none;
     opacity: 0;
@@ -1468,18 +1468,21 @@ body.cyber-theme {
 }
 
 .custom-tooltip h5 {
-    font-size: 16px;
-    color: var(--neon-blue);
+    font-size: 13px;
+    color: #00f0ff;
+    margin-top: 0;
     margin-bottom: 6px;
-    font-family: var(--font-heading);
-    border-bottom: 1px dashed var(--border-dim);
+    font-family: 'Share Tech Mono', sans-serif;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.25);
     padding-bottom: 5px;
-    font-weight: 800;
+    font-weight: bold;
 }
 
 .custom-tooltip p {
     margin: 0;
-    color: var(--text-dim);
+    color: #e2e8f0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
     line-height: 1.5;
 }
 
