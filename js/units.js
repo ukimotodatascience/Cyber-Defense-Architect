@@ -304,12 +304,12 @@ export class Defender {
     }
 
     initStats(game) {
-        // 技術ツリー解放状況による補正値の計算
-        const hasNextGenWAF = game.unlockedTech.has("waf");
-        const hasZeroTrust = game.unlockedTech.has("zerotrust");
-        const hasMFA2 = game.unlockedTech.has("mfa");
-        const hasEDR2 = game.unlockedTech.has("edr");
-        const hasXDR = game.unlockedTech.has("xdr");
+        // マップ上にタワーが配置されているかによる補正値の計算
+        const hasNextGenWAF = game.defenders.some(d => d.type === "waf");
+        const hasZeroTrust = game.defenders.some(d => d.type === "zerotrust");
+        const hasMFA2 = game.defenders.some(d => d.type === "mfa");
+        const hasEDR2 = game.defenders.some(d => d.type === "edr");
+        const hasXDR = game.defenders.some(d => d.type === "xdr");
 
         switch (this.type) {
             case "firewall":
@@ -337,6 +337,26 @@ export class Defender {
                 }
                 break;
 
+            case "zerotrust":
+                this.name = "ゼロトラスト";
+                this.icon = "🛡️";
+                this.cost = 1200;
+                this.baseRange = 130;
+                this.baseDamage = 40;
+                this.fireRate = 1000;
+                this.color = "#00f0ff"; // neon-blue
+                break;
+
+            case "password":
+                this.name = "パスワード認証";
+                this.icon = "🔑";
+                this.cost = 300;
+                this.baseRange = 120;
+                this.baseDamage = 8;
+                this.fireRate = 1000;
+                this.color = "#ffcc00"; // neon-gold
+                break;
+
             case "mfa":
                 this.name = "MFA";
                 this.icon = "🔑";
@@ -355,6 +375,16 @@ export class Defender {
                 this.baseDamage = 0; // ダメージではなく即撃破
                 this.fireRate = 1000;
                 this.color = "#00f0ff"; // neon-blue
+                break;
+
+            case "antivirus":
+                this.name = "アンチウイルス";
+                this.icon = "🛡️";
+                this.cost = 400;
+                this.baseRange = 110;
+                this.baseDamage = 20;
+                this.fireRate = 1500;
+                this.color = "#39ff14"; // neon-green
                 break;
 
             case "edr":
@@ -409,6 +439,16 @@ export class Defender {
                 this.fireRate = 1000;
                 this.color = "#39ff14"; // neon-green
                 break;
+
+            case "xdr":
+                this.name = "XDR";
+                this.icon = "🖥️";
+                this.cost = 1500;
+                this.baseRange = 160;
+                this.baseDamage = 25; // SIEMに類するダメージ
+                this.fireRate = 1000;
+                this.color = "#39ff14"; // neon-green
+                break;
         }
 
         // XDRによる全射程の強化
@@ -451,8 +491,8 @@ export class Defender {
                 // 復旧ビームを照射
                 this.laserTargets.push({ x: targetNode.x, y: targetNode.y, color: "#00ffd5" });
 
-                // 復旧速度の計算 (Cloud Backup解放時は倍速)
-                const recoveryRate = game.unlockedTech.has("zerotrust") ? 15 : 8; // 技術解放で復旧力アップ
+                // 復旧速度の計算 (ゼロトラスト配置時は倍速)
+                const recoveryRate = game.defenders.some(d => d.type === "zerotrust") ? 15 : 8; // ゼロトラスト配置で復旧力アップ
                 targetNode.recoveryProgress += recoveryRate * (delta / 1000) * game.speed * this.level;
 
                 if (targetNode.recoveryProgress >= 100) {
@@ -504,8 +544,8 @@ export class Defender {
                     const depthCount = this.calculateDefenseDepth(target, game);
                     if (depthCount >= 2) {
                         // 2種類以上のタワーが狙っている場合、ボーナス発動
-                        // XDRがアンロックされているとボーナス効果1.5倍
-                        const multiplier = game.unlockedTech.has("xdr") ? 1.5 : 1.0;
+                        // XDRが配置されているとボーナス効果1.5倍
+                        const multiplier = game.defenders.some(d => d.type === "xdr") ? 1.5 : 1.0;
                         const depthBonus = 1 + (depthCount - 1) * 0.5 * multiplier;
                         actualDamage *= depthBonus;
 
@@ -572,12 +612,19 @@ export class Defender {
             }
         }
 
+        // ゼロトラスト: フィッシングや内部不正（バイパス系）に対して3倍ダメージ
+        if (this.type === "zerotrust") {
+            if (target.type === "phishing" || target.type === "insider") {
+                dmg *= 3.0;
+                game.effects.push(new FloatingText("ZERO TRUST BLOCK", target.x, target.y - 12, "#00f0ff"));
+            }
+        }
+
         // MFA: ブルートフォースに大ダメージ＆大幅減速
         if (this.type === "mfa") {
             if (target.type === "bruteforce") {
                 dmg *= 2.5;
-                // 減速効果（Multi-Factor Auth研究解放で効果大）
-                const slowFactor = game.unlockedTech.has("mfa") ? 0.3 : 0.5; // 速度を30%/50%に低下
+                const slowFactor = 0.3; // 常に30%に減速
                 target.speed = target.speed * slowFactor;
                 game.effects.push(new FloatingText("MFA DEBUFF", target.x, target.y - 12, "#ffcc00"));
             }
@@ -620,8 +667,20 @@ export class Defender {
             dmg *= 1.35; // 他のタワーの攻撃力を35%バフ
         }
 
-        // 技術ツリー「Zero Trust Core」解放：全ノードでフィッシングなどのバイパスダメージを底上げ
-        if (game.unlockedTech.has("zerotrust") && target.type === "phishing" && this.type !== "firewall" && this.type !== "mailfilter") {
+        // XDR: SIEMと同様のバフ（XDRの射程内にある他のタワーの攻撃力をアップ）
+        const hasXDRBuff = game.defenders.some(def => {
+            if (def.type !== "xdr") return false;
+            const parent = game.map.getNodeById(def.parentNodeId);
+            if (parent && (parent.status === "infected" || parent.status === "offline")) return false;
+            const dist = Math.hypot(def.x - target.x, def.y - target.y);
+            return dist <= def.range;
+        });
+        if (hasXDRBuff && this.type !== "xdr" && this.type !== "siem") {
+            dmg *= 1.35; // 他のタワーの攻撃力を35%バフ (SIEMと重複不可とするため siem 以外に)
+        }
+
+        // ゼロトラスト配置：全ノードでフィッシングなどのバイパスダメージを底上げ
+        if (game.defenders.some(d => d.type === "zerotrust") && target.type === "phishing" && this.type !== "firewall" && this.type !== "mailfilter") {
             dmg *= 1.3;
         }
 

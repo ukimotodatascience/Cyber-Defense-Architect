@@ -94,6 +94,12 @@ export class UIManager {
                 cost: 600,
                 desc: "人間に起因する攻撃（フィッシングや内部不正）を遅延させ、進行速度を低下させます。攻撃力はありません。"
             },
+            antivirus: {
+                name: "アンチウイルス",
+                icon: "🛡️",
+                cost: 400,
+                desc: "パターンマッチングによるマルウェア対策。新型には無力ですが、安価にランサムウェア等へダメージを与えられます。"
+            },
             edr: {
                 name: "EDR",
                 icon: "🛡️",
@@ -106,11 +112,23 @@ export class UIManager {
                 cost: 1000,
                 desc: "Webサーバの手前に配置し、SQLインジェクションなどのWeb脆弱性攻撃を検知・遮断します。"
             },
+            zerotrust: {
+                name: "ゼロトラスト",
+                icon: "🛡️",
+                cost: 1200,
+                desc: "境界防御に頼らない保護。フィッシングや内部不正等のバイパス攻撃に特効（3倍ダメージ）。さらにバックアップの復旧速度が向上します。"
+            },
             firewall: {
                 name: "ファイアウォール",
                 icon: "🛡️",
                 cost: 700,
                 desc: "もっとも基本的な境界防御。インターネットとDMZ間、または内部セグメント間の不要なポート通信を遮断します。"
+            },
+            password: {
+                name: "パスワード認証",
+                icon: "🔑",
+                cost: 300,
+                desc: "標準的なパスワード認証。ブルートフォース攻撃に対して最低限のダメージを与えますが、減速効果はありません。"
             },
             mfa: {
                 name: "MFA (多要素認証)",
@@ -129,6 +147,12 @@ export class UIManager {
                 icon: "🖥️",
                 cost: 1200,
                 desc: "全ノードからのログを集約監視し、潜伏するAPT攻撃などの検知率・撃退力を高めます。"
+            },
+            xdr: {
+                name: "XDR",
+                icon: "🖥️",
+                cost: 1500,
+                desc: "ログの統合・相関分析。配置されている間、すべてのタワーの射程+15%、さらに多層防御ボーナス効果が1.5倍になります。"
             },
             backup: {
                 name: "バックアップ",
@@ -360,12 +384,16 @@ export class UIManager {
                 let costVal = "";
                 if (type === "mailfilter") costVal = "800";
                 else if (type === "education") costVal = "600";
+                else if (type === "antivirus") costVal = "400";
                 else if (type === "edr") costVal = "900";
                 else if (type === "waf") costVal = "1,000";
+                else if (type === "zerotrust") costVal = "1,200";
                 else if (type === "firewall") costVal = "700";
+                else if (type === "password") costVal = "300";
                 else if (type === "mfa") costVal = "800";
                 else if (type === "fido2") costVal = "1,200";
                 else if (type === "siem") costVal = "1,200";
+                else if (type === "xdr") costVal = "1,500";
                 else if (type === "backup") costVal = "600";
 
                 costSpan.textContent = `🪙 ${costVal}`;
@@ -604,12 +632,24 @@ export class UIManager {
                             <span class="lbl">攻撃頻度 (Rate):</span>
                             <span class="val">${(1000 / tower.fireRate).toFixed(1)} 回/秒</span>
                         </div>
-                        ` : `
+                        ` : ''}
                         <div class="detail-row">
                             <span class="lbl">効果:</span>
-                            <span class="val">${tower.type === 'education' ? '敵の進行速度 -35%' : tower.type === 'fido2' ? 'ブルートフォース攻撃を無効化' : '自動復旧ビーム照射'}</span>
+                            <span class="val">${
+                                tower.type === 'education' ? '敵の進行速度 -35%' :
+                                tower.type === 'fido2' ? 'ブルートフォース攻撃を無効化（即撃破）' :
+                                tower.type === 'zerotrust' ? 'バイパス攻撃特効 (x3.0) ＆ 復旧速度UP' :
+                                tower.type === 'xdr' ? '全タワー射程+15% ＆ 多層防御ボーナスx1.5' :
+                                tower.type === 'backup' ? '自動データ復旧ビーム照射' :
+                                tower.type === 'password' ? 'ブルートフォース攻撃に微小ダメージ' :
+                                tower.type === 'mfa' ? 'ブルートフォース攻撃特効 ＆ 速度低下' :
+                                tower.type === 'waf' ? 'Web脆弱性攻撃特効 (x3.0)' :
+                                tower.type === 'edr' ? 'ランサムウェア特効 (x3.0)' :
+                                tower.type === 'mailfilter' ? 'フィッシング特効 (x4.0)' :
+                                tower.type === 'antivirus' ? 'マルウェアに通常ダメージ' :
+                                '一般的な防衛射撃'
+                            }</span>
                         </div>
-                        `}
                     </div>
                     <div class="detail-actions">
                         <button id="btn-tower-sell" class="btn-cyber-danger">設備を売却</button>
@@ -621,6 +661,10 @@ export class UIManager {
                     this.game.effects.push(new FloatingText(`+$${Math.round(tower.cost * 0.5)}`, tower.x, tower.y, "#ffcc00"));
                     slot.tower = null;
                     this.game.defenders = this.game.defenders.filter(d => d !== tower);
+
+                    // パッシブバフの適用・解除のために全タワー性能を再計算
+                    this.game.defenders.forEach(d => d.initStats(this.game));
+
                     this.showSelectionDetails(null);
                     this.updateHUD();
                     this.log(`[防衛] ${tower.name} を売却・撤去しました。`, "system");

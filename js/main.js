@@ -10,11 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const game = new GameState();
     const map = new NetworkMap();
     game.map = map;
-
     const ui = new UIManager(game);
     game.ui = ui;
-
-
+    window.game = game;
 
     // キャンバスコンテキスト
     const canvas = document.getElementById("game-canvas");
@@ -245,6 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     clickedSlot.tower = tempDefender;
                     game.defenders.push(tempDefender);
 
+                    // パッシブバフ（XDR射程強化等）の適用のため全タワー性能を再計算
+                    game.defenders.forEach(d => d.initStats(game));
+
                     ui.log(`[配置] ${tempDefender.name} を ${map.getNodeById(clickedSlot.parentNodeId).name} 周辺に配置しました。`, "success");
                     game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
 
@@ -311,6 +312,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     game.budget -= tempDefender.cost;
                     clickedSlot.tower = tempDefender;
                     game.defenders.push(tempDefender);
+
+                    // パッシブバフ（XDR射程強化等）の適用のため全タワー性能を再計算
+                    game.defenders.forEach(d => d.initStats(game));
+
                     ui.log(`[配置] ${tempDefender.name} を ${map.getNodeById(clickedSlot.parentNodeId).name} 周辺に配置しました。`, "success");
                     game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
                     clearPaletteSelection();
