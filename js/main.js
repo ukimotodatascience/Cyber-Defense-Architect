@@ -518,6 +518,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         ui.showSelectionDetails(node); // パネル表示更新
                         ui.log(`[緊急対応] ${node.name} の復旧がセキュリティ要員により完了しました。`, "success");
                         game.effects.push(new FloatingText("復旧完了!", node.x, node.y, "#39ff14"));
+
+                        // サーバー復旧に伴うタワーパッシブの再計算
+                        game.defenders.forEach(d => d.initStats(game));
                     }
                 }
             });

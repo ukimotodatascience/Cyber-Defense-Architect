@@ -212,6 +212,9 @@ export class Attacker {
                 targetNode.recoveryProgress = 0;
                 game.effects.push(new FloatingText("SERVER ENCRYPTED!", targetNode.x, targetNode.y, "#ff0055"));
                 game.ui.log(`[警告] ${targetNode.name} がランサムウェアに感染し暗号化されました！`, "alert");
+
+                // サーバー停止に伴うタワーパッシブの再計算
+                game.defenders.forEach(d => d.initStats(game));
             }
         } else {
             game.ui.log(`[侵入] ${this.name} 攻撃が機密情報へ到達。信頼度が ${this.damageToTrust}% 低下しました。`, "alert");
@@ -304,12 +307,19 @@ export class Defender {
     }
 
     initStats(game) {
-        // マップ上にタワーが配置されているかによる補正値の計算
-        const hasNextGenWAF = game.defenders.some(d => d.type === "waf");
-        const hasZeroTrust = game.defenders.some(d => d.type === "zerotrust");
-        const hasMFA2 = game.defenders.some(d => d.type === "mfa");
-        const hasEDR2 = game.defenders.some(d => d.type === "edr");
-        const hasXDR = game.defenders.some(d => d.type === "xdr");
+        // 親ノードが正常に稼働しているかどうかの判定ヘルパー
+        const isTowerActive = (d) => {
+            const parent = game.map.getNodeById(d.parentNodeId);
+            if (!parent) return true;
+            return parent.status !== "infected" && parent.status !== "offline";
+        };
+
+        // マップ上にアクティブなタワーが配置されているかによる補正値の計算
+        const hasNextGenWAF = game.defenders.some(d => d.type === "waf" && isTowerActive(d));
+        const hasZeroTrust = game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d));
+        const hasMFA2 = game.defenders.some(d => d.type === "mfa" && isTowerActive(d));
+        const hasEDR2 = game.defenders.some(d => d.type === "edr" && isTowerActive(d));
+        const hasXDR = game.defenders.some(d => d.type === "xdr" && isTowerActive(d));
 
         switch (this.type) {
             case "firewall":
@@ -505,6 +515,9 @@ export class Defender {
                     }
                     game.ui.log(`[復旧] バックアップにより ${targetNode.name} が安全に復旧しました。`, "success");
                     game.effects.push(new FloatingText("RESTORED!", targetNode.x, targetNode.y, "#39ff14"));
+
+                    // サーバー復旧に伴うタワーパッシブの再計算
+                    game.defenders.forEach(d => d.initStats(game));
                 }
             }
             return;
