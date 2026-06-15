@@ -2,6 +2,13 @@
 
 import { getPointOnPath, drawProgressBar } from './map.js';
 
+// タワーが配置されている親サーバーノードが正常に稼働しているかどうかの判定ヘルパー
+export function isTowerActive(d, game) {
+    const parent = game.map.getNodeById(d.parentNodeId);
+    if (!parent) return true;
+    return parent.status !== "infected" && parent.status !== "offline";
+}
+
 // 攻撃ユニット (敵)
 export class Attacker {
     constructor(type, pathKey, map) {
@@ -307,19 +314,12 @@ export class Defender {
     }
 
     initStats(game) {
-        // 親ノードが正常に稼働しているかどうかの判定ヘルパー
-        const isTowerActive = (d) => {
-            const parent = game.map.getNodeById(d.parentNodeId);
-            if (!parent) return true;
-            return parent.status !== "infected" && parent.status !== "offline";
-        };
-
         // マップ上にアクティブなタワーが配置されているかによる補正値の計算
-        const hasNextGenWAF = game.defenders.some(d => d.type === "waf" && isTowerActive(d));
-        const hasZeroTrust = game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d));
-        const hasMFA2 = game.defenders.some(d => d.type === "mfa" && isTowerActive(d));
-        const hasEDR2 = game.defenders.some(d => d.type === "edr" && isTowerActive(d));
-        const hasXDR = game.defenders.some(d => d.type === "xdr" && isTowerActive(d));
+        const hasNextGenWAF = game.defenders.some(d => d.type === "waf" && isTowerActive(d, game));
+        const hasZeroTrust = game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d, game));
+        const hasMFA2 = game.defenders.some(d => d.type === "mfa" && isTowerActive(d, game));
+        const hasEDR2 = game.defenders.some(d => d.type === "edr" && isTowerActive(d, game));
+        const hasXDR = game.defenders.some(d => d.type === "xdr" && isTowerActive(d, game));
 
         switch (this.type) {
             case "firewall":
@@ -502,7 +502,7 @@ export class Defender {
                 this.laserTargets.push({ x: targetNode.x, y: targetNode.y, color: "#00ffd5" });
 
                 // 復旧速度の計算 (ゼロトラスト配置時は倍速)
-                const recoveryRate = game.defenders.some(d => d.type === "zerotrust") ? 15 : 8; // ゼロトラスト配置で復旧力アップ
+                const recoveryRate = game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d, game)) ? 15 : 8; // ゼロトラスト配置で復旧力アップ
                 targetNode.recoveryProgress += recoveryRate * (delta / 1000) * game.speed * this.level;
 
                 if (targetNode.recoveryProgress >= 100) {
@@ -558,7 +558,7 @@ export class Defender {
                     if (depthCount >= 2) {
                         // 2種類以上のタワーが狙っている場合、ボーナス発動
                         // XDRが配置されているとボーナス効果1.5倍
-                        const multiplier = game.defenders.some(d => d.type === "xdr") ? 1.5 : 1.0;
+                        const multiplier = game.defenders.some(d => d.type === "xdr" && isTowerActive(d, game)) ? 1.5 : 1.0;
                         const depthBonus = 1 + (depthCount - 1) * 0.5 * multiplier;
                         actualDamage *= depthBonus;
 
@@ -730,7 +730,7 @@ export class Defender {
         }
 
         // ゼロトラスト配置：全ノードでフィッシングなどのバイパスダメージを底上げ
-        if (game.defenders.some(d => d.type === "zerotrust") && target.type === "phishing" && this.type !== "firewall" && this.type !== "mailfilter") {
+        if (game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d, game)) && target.type === "phishing" && this.type !== "firewall" && this.type !== "mailfilter") {
             dmg *= 1.3;
         }
 
