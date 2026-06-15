@@ -433,6 +433,10 @@ export class UIManager {
                         <span class="threat-item-desc">${info.shortDesc}</span>
                     </div>
                     <div class="threat-item-count">x${counts[type]}</div>
+                    <div class="custom-tooltip">
+                        <h5>${info.icon} ${info.name}</h5>
+                        <p>${info.desc}</p>
+                    </div>
                 </div>
             `;
             listEl.insertAdjacentHTML("beforeend", itemHtml);
@@ -472,10 +476,17 @@ export class UIManager {
                 const icon = ATTACKER_ICONS[item.type] || "👾";
                 const node = document.createElement("div");
                 node.className = "next-preview-icon";
-                node.textContent = icon;
-                node.title = item.type;
                 node.dataset.threatType = item.type;
                 node.style.cursor = "pointer";
+
+                const info = this.attackerInfo[item.type] || { name: item.type, icon: "👾", desc: "詳細不明のセキュリティ脅威。" };
+                node.innerHTML = `
+                    ${icon}
+                    <div class="custom-tooltip">
+                        <h5>${icon} ${info.name}</h5>
+                        <p>${info.desc}</p>
+                    </div>
+                `;
                 container.appendChild(node);
             }
         });

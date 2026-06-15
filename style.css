@@ -596,6 +596,7 @@ body.cyber-theme {
 }
 
 .next-preview-icon {
+    position: relative;
     width: 28px;
     height: 28px;
     border-radius: 50%;
@@ -1483,7 +1484,8 @@ body.cyber-theme {
 
 /* Hover & Active touch states trigger tooltip */
 .palette-item:hover .custom-tooltip,
-.palette-item.touch-active .custom-tooltip {
+.palette-item.touch-active .custom-tooltip,
+.next-preview-icon:hover .custom-tooltip {
     display: block;
     opacity: 1;
     transform: translateX(-50%) translateY(0);

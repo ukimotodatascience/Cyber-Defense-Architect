@@ -88,6 +88,15 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        // マウスホバーで詳細を右側パネルにプレビュー表示
+        btn.addEventListener("mouseenter", () => {
+            const towerType = btn.dataset.towerType;
+            ui.showDefenderShopDetails(towerType);
+        });
+        btn.addEventListener("mouseleave", () => {
+            restoreDetailPanel();
+        });
+
         // スマホタッチ対応: タッチされたらツールチップクラスを切り替える
         btn.addEventListener("touchstart", (e) => {
             const isCurrentlyActive = btn.classList.contains("touch-active");
@@ -126,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 出現中の敵リストクリックイベント
+    // 出現中の敵リストクリック＆ホバーイベント
     const activeThreatsList = document.getElementById("active-threats-list");
     if (activeThreatsList) {
         activeThreatsList.addEventListener("click", (e) => {
@@ -139,9 +148,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 ui.showThreatDetails(type);
             }
         });
+        activeThreatsList.addEventListener("mouseover", (e) => {
+            const item = e.target.closest(".threat-list-item");
+            if (item) {
+                const type = item.dataset.threatType;
+                ui.showThreatDetails(type);
+            }
+        });
+        activeThreatsList.addEventListener("mouseout", (e) => {
+            const item = e.target.closest(".threat-list-item");
+            if (item) {
+                restoreDetailPanel();
+            }
+        });
     }
 
-    // 次のウェーブプレビューアイコンのクリックイベント
+    // 次のウェーブプレビューアイコンのクリック＆ホバーイベント
     const nextWavePreviewIcons = document.getElementById("next-wave-preview-icons");
     if (nextWavePreviewIcons) {
         nextWavePreviewIcons.addEventListener("click", (e) => {
@@ -154,6 +176,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 ui.showThreatDetails(type);
             }
         });
+        nextWavePreviewIcons.addEventListener("mouseover", (e) => {
+            const item = e.target.closest(".next-preview-icon");
+            if (item) {
+                const type = item.dataset.threatType;
+                ui.showThreatDetails(type);
+            }
+        });
+        nextWavePreviewIcons.addEventListener("mouseout", (e) => {
+            const item = e.target.closest(".next-preview-icon");
+            if (item) {
+                restoreDetailPanel();
+            }
+        });
+    }
+
+    // 詳細表示状態を元の選択に戻すヘルパー
+    function restoreDetailPanel() {
+        if (selectedPaletteTower) {
+            ui.showDefenderShopDetails(selectedPaletteTower);
+        } else if (selectedSlot) {
+            ui.showSelectionDetails(selectedSlot.tower || selectedSlot);
+        } else if (hoveredNode) {
+            ui.showSelectionDetails(hoveredNode);
+        } else {
+            ui.showSelectionDetails(null);
+        }
     }
 
     // パレット選択をクリアするヘルパー
