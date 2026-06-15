@@ -54,7 +54,6 @@
                 <button id="btn-speed-pause" class="btn-hud-ctrl" title="一時停止">⏸</button>
                 <button id="btn-speed-1x" class="btn-hud-ctrl active" title="倍速切替">▶▶ <span class="speed-indicator">x1</span></button>
                 <button id="btn-speed-2x" class="btn-hud-ctrl" title="2倍速">▶▶ <span class="speed-indicator">x2</span></button>
-                <button id="btn-tech-tree" class="btn-hud-ctrl settings-btn" title="設定/技術ツリー">⚙</button>
             </div>
         </div>
     </header>
@@ -281,8 +280,7 @@
                     </div>
                     <!-- カテゴリフィルタータブ -->
                     <div class="palette-tabs">
-                        <button class="tab-btn active" data-category="all">全て</button>
-                        <button class="tab-btn" data-category="boundary">境界防御</button>
+                        <button class="tab-btn active" data-category="boundary">境界防御</button>
                         <button class="tab-btn" data-category="auth">認証・ID管理</button>
                         <button class="tab-btn" data-category="endpoint">エンドポイント</button>
                         <button class="tab-btn" data-category="network">ネットワーク監視</button>
@@ -360,84 +358,7 @@
         </div>
     </div>
 
-    <!-- Tech Tree Modal -->
-    <div id="modal-tech-tree" class="modal hidden">
-        <div class="modal-content cyber-box">
-            <div class="modal-close-header">
-                <h2>SECURITY TECHNOLOGY R&D (技術ツリー)</h2>
-                <button id="btn-close-tech" class="btn-close">×</button>
-            </div>
-            <p class="subtitle">人員（👨‍💻）と予算（$）を投入し、セキュリティ技術を研究・強化します。</p>
 
-            <div class="tech-tree-grid">
-                <!-- Path 1: Boundary Protection -->
-                <div class="tech-column">
-                    <h3>境界防御・Web系</h3>
-                    <div class="tech-node active" id="tech-firewall">
-                        <h4>Firewall (初期)</h4>
-                        <p>基本的な境界防御。ポートスキャン等を検知。</p>
-                        <span class="tech-status">開発済</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-waf" data-tech-id="waf" data-cost-budget="400" data-cost-staff="1" data-req="firewall">
-                        <h4>Next-Gen WAF</h4>
-                        <p>Webサーバ保護。SQLiやXSSへの攻撃力+50%、射程+20%</p>
-                        <span class="tech-cost">コスト: $400 / 👨‍💻1</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-zerotrust" data-tech-id="zerotrust" data-cost-budget="600" data-cost-staff="2" data-req="waf">
-                        <h4>Zero Trust Core</h4>
-                        <p>境界防御の概念を排し、全ノードでフィッシング等のバイパス攻撃を30%減衰。</p>
-                        <span class="tech-cost">コスト: $600 / 👨‍💻2</span>
-                    </div>
-                </div>
-
-                <!-- Path 2: Identity & Authentication -->
-                <div class="tech-column">
-                    <h3>認証・ID管理</h3>
-                    <div class="tech-node active" id="tech-password">
-                        <h4>Password (初期)</h4>
-                        <p>標準的なパスワード認証。ブルートフォースの標的になりやすい。</p>
-                        <span class="tech-status">開発済</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-mfa" data-tech-id="mfa" data-cost-budget="300" data-cost-staff="1" data-req="password">
-                        <h4>Multi-Factor Auth</h4>
-                        <p>多要素認証。ブルートフォース攻撃の進行速度を半減（鈍化効果強化）。</p>
-                        <span class="tech-cost">コスト: $300 / 👨‍💻1</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-fido2" data-tech-id="fido2" data-cost-budget="500" data-cost-staff="2" data-req="mfa">
-                        <h4>FIDO2 / Passwordless</h4>
-                        <p>パスワードレス認証。ブルートフォース攻撃を完全に無効化（瞬時撃破）。</p>
-                        <span class="tech-cost">コスト: $500 / 👨‍💻2</span>
-                    </div>
-                </div>
-
-                <!-- Path 3: Endpoint & Detection -->
-                <div class="tech-column">
-                    <h3>検知・端末防御</h3>
-                    <div class="tech-node active" id="tech-antivirus">
-                        <h4>Anti-Virus (初期)</h4>
-                        <p>パターンマッチングによるマルウェア防御。新型には無力。</p>
-                        <span class="tech-status">開発済</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-edr" data-tech-id="edr" data-cost-budget="500" data-cost-staff="1" data-req="antivirus">
-                        <h4>EDR (Endpoint Detection)</h4>
-                        <p>挙動検知。ランサムウェア等のマルウェアへの毎秒ダメージ+40%。</p>
-                        <span class="tech-cost">コスト: $500 / 👨‍💻1</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-xdr" data-tech-id="xdr" data-cost-budget="800" data-cost-staff="2" data-req="edr">
-                        <h4>XDR & SIEM Integration</h4>
-                        <p>ログの統合分析。すべてのタワーの射程+15%、多層防御ボーナス効果が1.5倍。</p>
-                        <span class="tech-cost">コスト: $800 / 👨‍💻2</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Game Over / Victory Modal -->
     <div id="modal-game-end" class="modal hidden">

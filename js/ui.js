@@ -1,6 +1,5 @@
 /* Cyber Defense Architect - UI Updates & Event Management */
 
-import { TECH_ITEMS } from './tech.js';
 import { FloatingText } from './units.js';
 
 export class UIManager {
@@ -29,15 +28,12 @@ export class UIManager {
             speed2x: document.getElementById("btn-speed-2x"),
 
             modalStageSelect: document.getElementById("modal-stage-select"),
-            modalTechTree: document.getElementById("modal-tech-tree"),
             modalGameEnd: document.getElementById("modal-game-end"),
 
             overlayMessage: document.getElementById("sidebar-wave-control"),
             overlayTitle: document.getElementById("overlay-title"),
             btnStartWave: document.getElementById("btn-start-wave"),
 
-            btnTechTree: document.getElementById("btn-tech-tree"),
-            btnCloseTech: document.getElementById("btn-close-tech"),
             btnFullscreen: document.getElementById("btn-fullscreen"),
             btnThreatInfo: document.getElementById("btn-threat-info")
         };
@@ -136,6 +132,7 @@ export class UIManager {
             }
         };
 
+        this.filterPalette("boundary");
         this.initStaticEvents();
     }
 
@@ -158,9 +155,7 @@ export class UIManager {
             });
         }
 
-        // 技術ツリー開閉 (⚙ギアアイコン)
-        this.dom.btnTechTree.addEventListener("click", () => this.openTechTree());
-        this.dom.btnCloseTech.addEventListener("click", () => this.closeTechTree());
+
 
         // ウェーブ開始ボタン
         this.dom.btnStartWave.addEventListener("click", () => {
@@ -181,6 +176,7 @@ export class UIManager {
                     this.game.map.initializeTopology();
                 }
                 this.showSelectionDetails(null);
+                this.resetPaletteTabs();
                 this.updateHUD();
                 this.log(`[システム] ステージをリスタートしました。`, "system");
             }
@@ -222,6 +218,17 @@ export class UIManager {
         }
 
 
+    }
+
+    resetPaletteTabs() {
+        document.querySelectorAll(".tab-btn").forEach(tab => {
+            if (tab.dataset.category === "boundary") {
+                tab.classList.add("active");
+            } else {
+                tab.classList.remove("active");
+            }
+        });
+        this.filterPalette("boundary");
     }
 
     filterPalette(category) {
@@ -336,23 +343,10 @@ export class UIManager {
         const paletteItems = document.querySelectorAll(".bottom-palette-panel .palette-item");
         paletteItems.forEach(btn => {
             const type = btn.dataset.towerType;
-            let isLocked = false;
 
-            if (type === "mfa") {
-                isLocked = !this.game.unlockedTech.has("mfa");
-            } else if (type === "waf") {
-                isLocked = !this.game.unlockedTech.has("waf");
-            } else if (type === "edr") {
-                isLocked = !this.game.unlockedTech.has("edr");
-            }
-
-            if (isLocked) {
-                btn.classList.add("locked");
-                btn.setAttribute("disabled", "true");
-            } else {
-                btn.classList.remove("locked");
-                btn.removeAttribute("disabled");
-            }
+            // ロック処理は廃止、常に有効化
+            btn.classList.remove("locked");
+            btn.removeAttribute("disabled");
 
             // コスト表示を 🪙 アイコンに更新する
             const costSpan = btn.querySelector(".item-cost");
@@ -510,54 +504,7 @@ export class UIManager {
         modalEl.classList.add("hidden");
     }
 
-    openTechTree() {
-        this.showModal(this.dom.modalTechTree);
-        this.updateTechTreeUI();
-    }
 
-    closeTechTree() {
-        this.hideModal(this.dom.modalTechTree);
-    }
-
-    updateTechTreeUI() {
-        document.querySelectorAll(".tech-node").forEach(node => {
-            const techId = node.dataset.techId;
-            if (!techId) return; // 初期アンロックノードは除外
-
-            const isUnlocked = this.game.unlockedTech.has(techId);
-
-            if (isUnlocked) {
-                node.className = "tech-node active";
-                const statusSpan = node.querySelector(".tech-status") || node.querySelector(".tech-cost");
-                if (statusSpan) {
-                    statusSpan.className = "tech-status";
-                    statusSpan.textContent = "開発済";
-                }
-            } else {
-                const canUnlock = this.game.techTree.canUnlock(techId);
-                node.className = canUnlock ? "tech-node locked can-unlock" : "tech-node locked";
-
-                // ネオン枠発光効果の追加 (can-unlock時)
-                if (canUnlock) {
-                    node.style.borderColor = "var(--neon-gold)";
-                    node.style.boxShadow = "0 0 10px rgba(255, 204, 0, 0.4)";
-                } else {
-                    node.style.borderColor = "";
-                    node.style.boxShadow = "";
-                }
-
-                // 「開発済」に書き換えられたスパンをコスト表示に戻す
-                // （ステージリスタート後も正しいラベルが表示されるように）
-                const statusSpan = node.querySelector(".tech-status");
-                if (statusSpan) {
-                    const budget = node.dataset.costBudget || "?";
-                    const staff  = node.dataset.costStaff  || "?";
-                    statusSpan.className = "tech-cost";
-                    statusSpan.textContent = `コスト: $${budget} / 👨‍💻${staff}`;
-                }
-            }
-        });
-    }
 
     // 防御手法の概要を一時的に表示する
     showDefenderShopDetails(type) {

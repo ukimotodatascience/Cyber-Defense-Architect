@@ -3,7 +3,6 @@
 import { GameState } from './game.js';
 import { NetworkMap, getPointOnPath } from './map.js';
 import { UIManager } from './ui.js';
-import { TechTree } from './tech.js';
 import { Attacker, Defender, FloatingText } from './units.js';
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -15,8 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ui = new UIManager(game);
     game.ui = ui;
 
-    const techTree = new TechTree(game);
-    game.techTree = techTree;
+
 
     // キャンバスコンテキスト
     const canvas = document.getElementById("game-canvas");
@@ -67,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // 初期の詳細パネル
                 ui.showSelectionDetails(null);
+                ui.resetPaletteTabs();
             }
         });
     });
