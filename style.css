@@ -1442,13 +1442,15 @@ body.cyber-theme {
     margin-top: 35px;
 }
 
-/* Custom Tooltip Styling - Upscaled */
+/* Custom Tooltip Styling - Disabled in HTML, controlled globally by JS */
 .custom-tooltip {
-    display: none; /* Hide completely when inactive to prevent layout overflow and scrollbars */
-    position: absolute;
-    bottom: 102%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
+    display: none !important;
+}
+
+/* Global Tooltip for layout overflow escape (position fixed) */
+#global-tooltip {
+    display: none;
+    position: fixed;
     background: rgba(8, 10, 24, 0.95);
     border: 1px solid #00f0ff;
     box-shadow: 0 0 12px #00f0ff;
@@ -1460,14 +1462,12 @@ body.cyber-theme {
     font-size: 11px;
     line-height: 1.5;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    z-index: 99;
+    z-index: 99999;
     text-align: left;
     backdrop-filter: blur(8px);
 }
 
-.custom-tooltip h5 {
+#global-tooltip h5 {
     font-size: 13px;
     color: #00f0ff;
     margin-top: 0;
@@ -1478,28 +1478,12 @@ body.cyber-theme {
     font-weight: bold;
 }
 
-.custom-tooltip p {
+#global-tooltip p {
     margin: 0;
     color: #e2e8f0;
     font-family: 'Outfit', sans-serif;
     font-size: 11px;
     line-height: 1.5;
-}
-
-/* Hover & Active touch states trigger tooltip */
-.palette-item:hover .custom-tooltip,
-.palette-item.touch-active .custom-tooltip,
-.next-preview-icon:hover .custom-tooltip {
-    display: block;
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-.threat-list-item:hover .custom-tooltip {
-    display: block;
-    opacity: 0.95;
-    transform: translateX(-50%) translateY(0);
-    pointer-events: auto;
 }
 
 /* Custom stage-desc inside HUD */

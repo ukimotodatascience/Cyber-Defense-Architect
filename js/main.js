@@ -88,13 +88,19 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // マウスホバーで詳細を右側パネルにプレビュー表示
+        // マウスホバーで詳細を右側パネルにプレビュー表示 ＆ グローバルポップアップの表示
         btn.addEventListener("mouseenter", () => {
             const towerType = btn.dataset.towerType;
             ui.showDefenderShopDetails(towerType);
+
+            const info = ui.defenderInfo[towerType];
+            if (info) {
+                showGlobalTooltip(btn, `${info.name} (🪙 ${info.cost.toLocaleString()})`, info.desc, info.icon);
+            }
         });
         btn.addEventListener("mouseleave", () => {
             restoreDetailPanel();
+            hideGlobalTooltip();
         });
 
         // スマホタッチ対応: タッチされたらツールチップクラスを切り替える
@@ -153,12 +159,18 @@ document.addEventListener("DOMContentLoaded", () => {
             if (item) {
                 const type = item.dataset.threatType;
                 ui.showThreatDetails(type);
+
+                const info = ui.attackerInfo[type];
+                if (info) {
+                    showGlobalTooltip(item, info.name, info.desc, info.icon);
+                }
             }
         });
         activeThreatsList.addEventListener("mouseout", (e) => {
             const item = e.target.closest(".threat-list-item");
             if (item) {
                 restoreDetailPanel();
+                hideGlobalTooltip();
             }
         });
     }
@@ -181,14 +193,59 @@ document.addEventListener("DOMContentLoaded", () => {
             if (item) {
                 const type = item.dataset.threatType;
                 ui.showThreatDetails(type);
+
+                const info = ui.attackerInfo[type];
+                if (info) {
+                    showGlobalTooltip(item, info.name, info.desc, info.icon);
+                }
             }
         });
         nextWavePreviewIcons.addEventListener("mouseout", (e) => {
             const item = e.target.closest(".next-preview-icon");
             if (item) {
                 restoreDetailPanel();
+                hideGlobalTooltip();
             }
         });
+    }
+
+    // グローバルツールチップ要素
+    const globalTooltip = document.getElementById("global-tooltip");
+
+    // グローバルポップアップツールチップ表示処理 (overflow切り取られ防止)
+    function showGlobalTooltip(element, title, desc, icon = "") {
+        if (!globalTooltip) return;
+
+        globalTooltip.innerHTML = `
+            <h5>${icon ? icon + " " : ""}${title}</h5>
+            <p>${desc}</p>
+        `;
+
+        const rect = element.getBoundingClientRect();
+
+        globalTooltip.style.display = "block";
+
+        const tooltipRect = globalTooltip.getBoundingClientRect();
+
+        let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+        let top = rect.top - tooltipRect.height - 8;
+
+        if (left < 10) left = 10;
+        if (left + tooltipRect.width > window.innerWidth - 10) {
+            left = window.innerWidth - tooltipRect.width - 10;
+        }
+        if (top < 10) {
+            top = rect.bottom + 8;
+        }
+
+        globalTooltip.style.left = `${left}px`;
+        globalTooltip.style.top = `${top}px`;
+    }
+
+    function hideGlobalTooltip() {
+        if (globalTooltip) {
+            globalTooltip.style.display = "none";
+        }
     }
 
     // 詳細表示状態を元の選択に戻すヘルパー
