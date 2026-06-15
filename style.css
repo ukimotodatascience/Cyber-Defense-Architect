@@ -538,6 +538,7 @@ body.cyber-theme {
     border-radius: 6px;
     padding: 12px 16px;
     transition: all 0.25s ease;
+    position: relative;
 }
 
 .threat-list-item.active-now {
@@ -1445,7 +1446,7 @@ body.cyber-theme {
 .custom-tooltip {
     display: none; /* Hide completely when inactive to prevent layout overflow and scrollbars */
     position: absolute;
-    bottom: 115%;
+    bottom: 102%;
     left: 50%;
     transform: translateX(-50%) translateY(10px);
     background: rgba(6, 8, 20, 0.98);
