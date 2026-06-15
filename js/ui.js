@@ -118,6 +118,12 @@ export class UIManager {
                 cost: 800,
                 desc: "認証・ADノード等に設置。ブルートフォース等の認証突破試行を強力に遅延・ブロックします。"
             },
+            fido2: {
+                name: "FIDO2",
+                icon: "🔑",
+                cost: 1200,
+                desc: "パスワードレス認証。認証・ADノード等に設置。ブルートフォース攻撃を検知した瞬間に無効化（瞬時撃破）します。"
+            },
             siem: {
                 name: "SIEM",
                 icon: "🖥️",
@@ -358,6 +364,7 @@ export class UIManager {
                 else if (type === "waf") costVal = "1,000";
                 else if (type === "firewall") costVal = "700";
                 else if (type === "mfa") costVal = "800";
+                else if (type === "fido2") costVal = "1,200";
                 else if (type === "siem") costVal = "1,200";
                 else if (type === "backup") costVal = "600";
 
@@ -575,12 +582,10 @@ export class UIManager {
             if (slot.tower) {
                 // タワーの詳細表示
                 const tower = slot.tower;
-                const nextLevelCost = tower.getUpgradeCost();
-                const canUpgrade = tower.level < 3 && this.game.budget >= nextLevelCost;
 
                 container.innerHTML = `
                     <div class="detail-section">
-                        <div class="detail-title">${tower.name} (Lv.${tower.level})</div>
+                        <div class="detail-title">${tower.name}</div>
                         <div class="detail-subtitle">セキュリティ防衛モジュール</div>
                         <div class="detail-row">
                             <span class="lbl">配置先:</span>
@@ -602,30 +607,14 @@ export class UIManager {
                         ` : `
                         <div class="detail-row">
                             <span class="lbl">効果:</span>
-                            <span class="val">${tower.type === 'education' ? '敵の進行速度 -35%' : '自動復旧ビーム照射'}</span>
+                            <span class="val">${tower.type === 'education' ? '敵の進行速度 -35%' : tower.type === 'fido2' ? 'ブルートフォース攻撃を無効化' : '自動復旧ビーム照射'}</span>
                         </div>
                         `}
                     </div>
                     <div class="detail-actions">
-                        ${tower.level < 3 ? `
-                            <button id="btn-tower-upgrade" class="btn-cyber" ${!canUpgrade ? 'disabled' : ''}>
-                                強化 🪙 ${nextLevelCost.toLocaleString()}
-                            </button>
-                        ` : `<button class="btn-cyber" disabled>最大レベルです</button>`}
                         <button id="btn-tower-sell" class="btn-cyber-danger">設備を売却</button>
                     </div>
                 `;
-
-                // ボタンイベント
-                const upgradeBtn = document.getElementById("btn-tower-upgrade");
-                if (upgradeBtn) {
-                    upgradeBtn.addEventListener("click", () => {
-                        if (tower.upgrade(this.game)) {
-                            this.showSelectionDetails(slot);
-                            this.updateHUD();
-                        }
-                    });
-                }
 
                 document.getElementById("btn-tower-sell").addEventListener("click", () => {
                     this.game.budget += Math.round(tower.cost * 0.5);

@@ -183,8 +183,8 @@ export class Attacker {
     }
 
     takeDamage(amount, type, game) {
-        // 技術ツリー「FIDO2」解放時、ブルートフォース攻撃はMFA攻撃（認証攻撃）を受けると瞬時に消滅
-        if (this.type === "bruteforce" && type === "mfa" && game.unlockedTech.has("fido2")) {
+        // FIDO2タワーの攻撃時、ブルートフォース攻撃は瞬時に消滅
+        if (this.type === "bruteforce" && type === "fido2") {
             this.hp = 0;
             game.effects.push(new FloatingText("FIDO2 BLOCKED!", this.x, this.y, "#00f0ff"));
         } else {
@@ -347,6 +347,16 @@ export class Defender {
                 this.color = "#ffcc00"; // neon-gold
                 break;
 
+            case "fido2":
+                this.name = "FIDO2";
+                this.icon = "🔑";
+                this.cost = 1200;
+                this.baseRange = 120;
+                this.baseDamage = 0; // ダメージではなく即撃破
+                this.fireRate = 1000;
+                this.color = "#00f0ff"; // neon-blue
+                break;
+
             case "edr":
                 this.name = "EDR";
                 this.icon = "🛡️";
@@ -406,27 +416,8 @@ export class Defender {
             this.baseRange *= 1.15;
         }
 
-        this.range = this.baseRange * (1 + (this.level - 1) * 0.15);
-        this.damage = this.baseDamage * (1 + (this.level - 1) * 0.25);
-    }
-
-    upgrade(game) {
-        if (this.level >= 3) return false;
-
-        const upgradeCost = Math.round(this.cost * 0.6);
-        if (game.budget < upgradeCost) return false;
-
-        game.budget -= upgradeCost;
-        this.level++;
-        this.range = this.baseRange * (1 + (this.level - 1) * 0.15);
-        this.damage = this.baseDamage * (1 + (this.level - 1) * 0.25);
-
-        game.effects.push(new FloatingText("UPGRADE!!", this.x, this.y - 15, "#ffcc00"));
-        return true;
-    }
-
-    getUpgradeCost() {
-        return Math.round(this.cost * 0.6);
+        this.range = this.baseRange;
+        this.damage = this.baseDamage;
     }
 
     update(delta, game) {
@@ -673,7 +664,7 @@ export class Defender {
         ctx.save();
 
         const w = 64;
-        const h = 54;
+        const h = 42; // ドット表示廃止に伴い高さを縮小 (54 -> 42)
         const x = this.x - w / 2;
         const y = this.y - h / 2 - 5; // Float slightly above the tower
         const r = 5;
@@ -709,46 +700,26 @@ export class Defender {
         if (this.type === "firewall") shortName = "FW";
         else if (this.type === "waf") shortName = "WAF";
         else if (this.type === "mfa") shortName = "MFA";
+        else if (this.type === "fido2") shortName = "FIDO2";
         else if (this.type === "edr") shortName = "EDR";
         else if (this.type === "backup") shortName = "Backup";
         else if (this.type === "mailfilter") shortName = "MailFltr";
         else if (this.type === "education") shortName = "Edu";
         else if (this.type === "siem") shortName = "SIEM";
 
-        // 上段のテキスト（名前 ＋ レベル）
+        // 上段のテキスト（名前のみ）
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.font = "bold 9px 'Share Tech Mono', sans-serif";
         ctx.fillStyle = "#fff";
 
         const textY = y + 5;
-        ctx.fillText(`${shortName}  Lv.${this.level}`, this.x, textY);
+        ctx.fillText(shortName, this.x, textY);
 
         // 中段のアイコン（少し下にずらす）
         ctx.font = "16px Arial";
         ctx.textBaseline = "middle";
-        ctx.fillText(this.icon, this.x, y + h / 2);
-
-        // 下部のレベルインジケータ（バッジ内の下部に横並びで描画）
-        const dotY = y + h - 7;
-        const maxDots = 4; // 4マスメーターに変更
-        const dotSize = 2.5;
-        const dotSpacing = 8;
-        const startDotX = this.x - ((maxDots - 1) * dotSpacing) / 2;
-
-        for (let i = 0; i < maxDots; i++) {
-            ctx.beginPath();
-            ctx.arc(startDotX + i * dotSpacing, dotY, dotSize, 0, Math.PI * 2);
-            if (i < this.level) {
-                ctx.fillStyle = "#39ff14"; // 点灯
-                ctx.shadowBlur = 4;
-                ctx.shadowColor = "#39ff14";
-            } else {
-                ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; // 消灯
-                ctx.shadowBlur = 0;
-            }
-            ctx.fill();
-        }
+        ctx.fillText(this.icon, this.x, y + h / 2 + 2); // 縦方向に微調整
 
         ctx.restore();
     }
