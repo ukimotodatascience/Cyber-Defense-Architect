@@ -190,6 +190,8 @@ export class UIManager {
 
         // ウェーブ開始ボタン
         this.dom.btnStartWave.addEventListener("click", () => {
+            // ステージ未選択の場合は何もしない
+            if (!this.game.stage) return;
             if (this.game.startNextWave()) {
                 this.hideOverlayMessage();
                 this.log(`[オペレーション] ウェーブ ${this.game.currentWaveIndex + 1} 開始！攻撃が侵入しています。`, "warn");

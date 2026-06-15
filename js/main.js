@@ -61,6 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 ui.updateHUD();
                 ui.log(`[ミッション開始] 「${game.stage.name}」を開始しました。予算: $${game.budget}`, "system");
 
+                // ステージ読み込み成功後にウェーブ開始ボタンを有効化
+                document.getElementById("btn-start-wave").disabled = false;
+
                 // 初期の詳細パネル
                 ui.showSelectionDetails(null);
                 ui.resetPaletteTabs();
