@@ -3,7 +3,6 @@
 import { GameState } from './game.js';
 import { NetworkMap, getPointOnPath } from './map.js';
 import { UIManager } from './ui.js';
-import { TechTree } from './tech.js';
 import { Attacker, Defender, FloatingText } from './units.js';
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -11,12 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const game = new GameState();
     const map = new NetworkMap();
     game.map = map;
-
     const ui = new UIManager(game);
     game.ui = ui;
-
-    const techTree = new TechTree(game);
-    game.techTree = techTree;
+    window.game = game;
 
     // キャンバスコンテキスト
     const canvas = document.getElementById("game-canvas");
@@ -29,18 +25,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let hoveredNode = null; // ホバー（またはタップ）されたノードオブジェクト
     let lastTime = performance.now();
 
-    // Canvasのリサイズとレイアウト更新処理
+    // Canvasの論理解像度固定化とレイアウト初期化
     function resizeCanvas() {
-        const wrapper = canvas.parentElement;
-        if (!wrapper) return;
-        const rect = wrapper.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        // 論理サイズは 1200x540 で固定！
+        canvas.width = 1200;
+        canvas.height = 540;
 
         // マップのレイアウト更新
         map.updateLayout(canvas.width, canvas.height);
 
-        // 既存の敵ユニットのパス参照と座標をリサイズ後のマップに同期
+        // 既存の敵ユニットのパス参照と座標を同期
         game.attackers.forEach(enemy => {
             enemy.path = map.paths[enemy.pathKey];
             const pos = getPointOnPath(enemy.path, enemy.progress);
@@ -51,9 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 初期起動時のリサイズ
+    // 初期起動時のレイアウト初期化
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
 
     // ---- サイドバートグルはフローティング化に伴い廃止 ----
 
@@ -68,8 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 ui.updateHUD();
                 ui.log(`[ミッション開始] 「${game.stage.name}」を開始しました。予算: $${game.budget}`, "system");
 
+                // ステージ読み込み成功後にウェーブ開始ボタンを有効化
+                document.getElementById("btn-start-wave").disabled = false;
+
                 // 初期の詳細パネル
                 ui.showSelectionDetails(null);
+                ui.resetPaletteTabs();
             }
         });
     });
@@ -85,11 +82,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 // トグルオフ
                 selectedPaletteTower = null;
                 btn.classList.remove("selected");
+                ui.showSelectionDetails(null);
             } else {
                 paletteButtons.forEach(b => b.classList.remove("selected"));
                 selectedPaletteTower = towerType;
                 btn.classList.add("selected");
+                ui.showDefenderShopDetails(towerType);
             }
+        });
+
+        // マウスホバーでグローバルポップアップツールチップのみを表示（右下説明欄は切り替えない）
+        btn.addEventListener("mouseenter", () => {
+            const towerType = btn.dataset.towerType;
+            const info = ui.defenderInfo[towerType];
+            if (info) {
+                showGlobalTooltip(btn, `${info.name} (🪙 ${info.cost.toLocaleString()})`, info.desc, info.icon);
+            }
+        });
+        btn.addEventListener("mouseleave", () => {
+            hideGlobalTooltip();
         });
 
         // スマホタッチ対応: タッチされたらツールチップクラスを切り替える
@@ -126,8 +137,111 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".tab-btn").forEach(tab => {
         tab.addEventListener("click", () => {
             clearPaletteSelection();
+            ui.showSelectionDetails(null);
         });
     });
+
+    // 出現中の敵リストクリック＆ホバーイベント
+    const activeThreatsList = document.getElementById("active-threats-list");
+    if (activeThreatsList) {
+        activeThreatsList.addEventListener("click", (e) => {
+            const item = e.target.closest(".threat-list-item");
+            if (item) {
+                clearPaletteSelection();
+                selectedSlot = null;
+                hoveredNode = null;
+                const type = item.dataset.threatType;
+                ui.showThreatDetails(type);
+            }
+        });
+        activeThreatsList.addEventListener("mouseover", (e) => {
+            const item = e.target.closest(".threat-list-item");
+            if (item) {
+                const type = item.dataset.threatType;
+                const info = ui.attackerInfo[type];
+                if (info) {
+                    showGlobalTooltip(item, info.name, info.desc, info.icon);
+                }
+            }
+        });
+        activeThreatsList.addEventListener("mouseout", (e) => {
+            const item = e.target.closest(".threat-list-item");
+            if (item) {
+                hideGlobalTooltip();
+            }
+        });
+    }
+
+    // 次のウェーブプレビューアイコンのクリック＆ホバーイベント
+    const nextWavePreviewIcons = document.getElementById("next-wave-preview-icons");
+    if (nextWavePreviewIcons) {
+        nextWavePreviewIcons.addEventListener("click", (e) => {
+            const item = e.target.closest(".next-preview-icon");
+            if (item) {
+                clearPaletteSelection();
+                selectedSlot = null;
+                hoveredNode = null;
+                const type = item.dataset.threatType;
+                ui.showThreatDetails(type);
+            }
+        });
+        nextWavePreviewIcons.addEventListener("mouseover", (e) => {
+            const item = e.target.closest(".next-preview-icon");
+            if (item) {
+                const type = item.dataset.threatType;
+                const info = ui.attackerInfo[type];
+                if (info) {
+                    showGlobalTooltip(item, info.name, info.desc, info.icon);
+                }
+            }
+        });
+        nextWavePreviewIcons.addEventListener("mouseout", (e) => {
+            const item = e.target.closest(".next-preview-icon");
+            if (item) {
+                hideGlobalTooltip();
+            }
+        });
+    }
+
+    // グローバルツールチップ要素
+    const globalTooltip = document.getElementById("global-tooltip");
+
+    // グローバルポップアップツールチップ表示処理 (overflow切り取られ防止)
+    function showGlobalTooltip(element, title, desc, icon = "") {
+        if (!globalTooltip) return;
+
+        globalTooltip.innerHTML = `
+            <h5>${icon ? icon + " " : ""}${title}</h5>
+            <p>${desc}</p>
+        `;
+
+        const rect = element.getBoundingClientRect();
+
+        globalTooltip.style.display = "block";
+
+        const tooltipRect = globalTooltip.getBoundingClientRect();
+
+        let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+        let top = rect.top - tooltipRect.height - 8;
+
+        if (left < 10) left = 10;
+        if (left + tooltipRect.width > window.innerWidth - 10) {
+            left = window.innerWidth - tooltipRect.width - 10;
+        }
+        if (top < 10) {
+            top = rect.bottom + 8;
+        }
+
+        globalTooltip.style.left = `${left}px`;
+        globalTooltip.style.top = `${top}px`;
+    }
+
+    function hideGlobalTooltip() {
+        if (globalTooltip) {
+            globalTooltip.style.display = "none";
+        }
+    }
+
 
     // パレット選択をクリアするヘルパー
     function clearPaletteSelection() {
@@ -161,13 +275,40 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
         hoveredNode = foundNode;
-        canvas.style.cursor = (foundSlot || foundNode) ? "pointer" : "default";
+
+        // 敵ユニットのホバー検出
+        let foundEnemy = null;
+        game.attackers.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - mouseX, enemy.y - mouseY);
+            if (dist <= enemy.size + 10) {
+                foundEnemy = enemy;
+            }
+        });
+
+        canvas.style.cursor = (foundSlot || foundNode || foundEnemy) ? "pointer" : "default";
     });
 
     canvas.addEventListener("click", (e) => {
         const rect = canvas.getBoundingClientRect();
         const mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
         const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+
+        // 0. 敵ユニットをクリックした場合
+        let clickedEnemy = null;
+        game.attackers.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - mouseX, enemy.y - mouseY);
+            if (dist <= enemy.size + 10) {
+                clickedEnemy = enemy;
+            }
+        });
+
+        if (clickedEnemy) {
+            clearPaletteSelection();
+            selectedSlot = null;
+            hoveredNode = null;
+            ui.showThreatDetails(clickedEnemy.type);
+            return;
+        }
 
         // 1. スロットをクリックした場合
         let clickedSlot = null;
@@ -189,10 +330,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     clickedSlot.tower = tempDefender;
                     game.defenders.push(tempDefender);
 
+                    // パッシブバフ（XDR射程強化等）の適用のため全タワー性能を再計算
+                    game.defenders.forEach(d => d.initStats(game));
+
                     ui.log(`[配置] ${tempDefender.name} を ${map.getNodeById(clickedSlot.parentNodeId).name} 周辺に配置しました。`, "success");
                     game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
 
                     clearPaletteSelection();
+                    ui.showSelectionDetails(null);
                     ui.updateHUD();
                 } else {
                     ui.log(`[エラー] 予算が不足しています。必要: $${tempDefender.cost}`, "alert");
@@ -237,7 +382,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const mouseX = ((touch.clientX - rect.left) / rect.width) * canvas.width;
         const mouseY = ((touch.clientY - rect.top) / rect.height) * canvas.height;
 
-        // スロットの判定
+        // 0. 敵ユニットをタップした場合
+        let clickedEnemy = null;
+        game.attackers.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - mouseX, enemy.y - mouseY);
+            // タッチ用に判定範囲を広めに取る (size + 20)
+            if (dist <= enemy.size + 20) {
+                clickedEnemy = enemy;
+            }
+        });
+
+        if (clickedEnemy) {
+            clearPaletteSelection();
+            selectedSlot = null;
+            hoveredNode = null;
+            ui.showThreatDetails(clickedEnemy.type);
+            return;
+        }
+
+        // 1. スロットの判定
         let clickedSlot = null;
         map.slots.forEach(slot => {
             const dist = Math.hypot(slot.x - mouseX, slot.y - mouseY);
@@ -254,9 +417,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     game.budget -= tempDefender.cost;
                     clickedSlot.tower = tempDefender;
                     game.defenders.push(tempDefender);
+
+                    // パッシブバフ（XDR射程強化等）の適用のため全タワー性能を再計算
+                    game.defenders.forEach(d => d.initStats(game));
+
                     ui.log(`[配置] ${tempDefender.name} を ${map.getNodeById(clickedSlot.parentNodeId).name} 周辺に配置しました。`, "success");
                     game.effects.push(new FloatingText(`-$${tempDefender.cost}`, clickedSlot.x, clickedSlot.y - 10, "#ff0055"));
                     clearPaletteSelection();
+                    ui.showSelectionDetails(null);
                     ui.updateHUD();
                 } else {
                     ui.log(`[エラー] 予算が不足しています。必要: $${tempDefender.cost}`, "alert");
@@ -371,6 +539,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         ui.showSelectionDetails(node); // パネル表示更新
                         ui.log(`[緊急対応] ${node.name} の復旧がセキュリティ要員により完了しました。`, "success");
                         game.effects.push(new FloatingText("復旧完了!", node.x, node.y, "#39ff14"));
+
+                        // サーバー復旧に伴うタワーパッシブの再計算
+                        game.defenders.forEach(d => d.initStats(game));
                     }
                 }
             });

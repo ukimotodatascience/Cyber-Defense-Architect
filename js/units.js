@@ -2,6 +2,13 @@
 
 import { getPointOnPath, drawProgressBar } from './map.js';
 
+// タワーが配置されている親サーバーノードが正常に稼働しているかどうかの判定ヘルパー
+export function isTowerActive(d, game) {
+    const parent = game.map.getNodeById(d.parentNodeId);
+    if (!parent) return true;
+    return parent.status !== "infected" && parent.status !== "offline";
+}
+
 // 攻撃ユニット (敵)
 export class Attacker {
     constructor(type, pathKey, map) {
@@ -183,8 +190,8 @@ export class Attacker {
     }
 
     takeDamage(amount, type, game) {
-        // 技術ツリー「FIDO2」解放時、ブルートフォース攻撃はMFA攻撃（認証攻撃）を受けると瞬時に消滅
-        if (this.type === "bruteforce" && type === "mfa" && game.unlockedTech.has("fido2")) {
+        // FIDO2タワーの攻撃時、ブルートフォース攻撃は瞬時に消滅
+        if (this.type === "bruteforce" && type === "fido2") {
             this.hp = 0;
             game.effects.push(new FloatingText("FIDO2 BLOCKED!", this.x, this.y, "#00f0ff"));
         } else {
@@ -212,6 +219,9 @@ export class Attacker {
                 targetNode.recoveryProgress = 0;
                 game.effects.push(new FloatingText("SERVER ENCRYPTED!", targetNode.x, targetNode.y, "#ff0055"));
                 game.ui.log(`[警告] ${targetNode.name} がランサムウェアに感染し暗号化されました！`, "alert");
+
+                // サーバー停止に伴うタワーパッシブの再計算
+                game.defenders.forEach(d => d.initStats(game));
             }
         } else {
             game.ui.log(`[侵入] ${this.name} 攻撃が機密情報へ到達。信頼度が ${this.damageToTrust}% 低下しました。`, "alert");
@@ -304,12 +314,12 @@ export class Defender {
     }
 
     initStats(game) {
-        // 技術ツリー解放状況による補正値の計算
-        const hasNextGenWAF = game.unlockedTech.has("waf");
-        const hasZeroTrust = game.unlockedTech.has("zerotrust");
-        const hasMFA2 = game.unlockedTech.has("mfa");
-        const hasEDR2 = game.unlockedTech.has("edr");
-        const hasXDR = game.unlockedTech.has("xdr");
+        // マップ上にアクティブなタワーが配置されているかによる補正値の計算
+        const hasNextGenWAF = game.defenders.some(d => d.type === "waf" && isTowerActive(d, game));
+        const hasZeroTrust = game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d, game));
+        const hasMFA2 = game.defenders.some(d => d.type === "mfa" && isTowerActive(d, game));
+        const hasEDR2 = game.defenders.some(d => d.type === "edr" && isTowerActive(d, game));
+        const hasXDR = game.defenders.some(d => d.type === "xdr" && isTowerActive(d, game));
 
         switch (this.type) {
             case "firewall":
@@ -337,6 +347,26 @@ export class Defender {
                 }
                 break;
 
+            case "zerotrust":
+                this.name = "ゼロトラスト";
+                this.icon = "🛡️";
+                this.cost = 1200;
+                this.baseRange = 130;
+                this.baseDamage = 40;
+                this.fireRate = 1000;
+                this.color = "#00f0ff"; // neon-blue
+                break;
+
+            case "password":
+                this.name = "パスワード認証";
+                this.icon = "🔑";
+                this.cost = 300;
+                this.baseRange = 120;
+                this.baseDamage = 8;
+                this.fireRate = 1000;
+                this.color = "#ffcc00"; // neon-gold
+                break;
+
             case "mfa":
                 this.name = "MFA";
                 this.icon = "🔑";
@@ -345,6 +375,26 @@ export class Defender {
                 this.baseDamage = 20;
                 this.fireRate = 800; // 攻撃間隔が短い
                 this.color = "#ffcc00"; // neon-gold
+                break;
+
+            case "fido2":
+                this.name = "FIDO2";
+                this.icon = "🔑";
+                this.cost = 1200;
+                this.baseRange = 120;
+                this.baseDamage = 0; // ダメージではなく即撃破
+                this.fireRate = 1000;
+                this.color = "#00f0ff"; // neon-blue
+                break;
+
+            case "antivirus":
+                this.name = "アンチウイルス";
+                this.icon = "🛡️";
+                this.cost = 400;
+                this.baseRange = 110;
+                this.baseDamage = 20;
+                this.fireRate = 1500;
+                this.color = "#39ff14"; // neon-green
                 break;
 
             case "edr":
@@ -399,6 +449,16 @@ export class Defender {
                 this.fireRate = 1000;
                 this.color = "#39ff14"; // neon-green
                 break;
+
+            case "xdr":
+                this.name = "XDR";
+                this.icon = "🖥️";
+                this.cost = 1500;
+                this.baseRange = 160;
+                this.baseDamage = 25; // SIEMに類するダメージ
+                this.fireRate = 1000;
+                this.color = "#39ff14"; // neon-green
+                break;
         }
 
         // XDRによる全射程の強化
@@ -406,27 +466,33 @@ export class Defender {
             this.baseRange *= 1.15;
         }
 
-        this.range = this.baseRange * (1 + (this.level - 1) * 0.15);
-        this.damage = this.baseDamage * (1 + (this.level - 1) * 0.25);
+        this.range = this.baseRange;
+        this.damage = this.baseDamage;
+
+        // レベルアップ倍率の適用（レベルが上がっている場合は強化済みステータスに補正）
+        if (this.level > 1) {
+            const multiplier = 1 + (this.level - 1) * 0.3; // Lv2: 1.3倍, Lv3: 1.6倍
+            this.range *= multiplier;
+            this.damage *= multiplier;
+        }
     }
 
+    // アップグレードコストを返す（コストの50%、レベルが上がるごとに上昇）
+    getUpgradeCost() {
+        return Math.round(this.cost * 0.5 * this.level);
+    }
+
+    // タワーをレベルアップする（最大レベル3）
     upgrade(game) {
         if (this.level >= 3) return false;
-
-        const upgradeCost = Math.round(this.cost * 0.6);
+        const upgradeCost = this.getUpgradeCost();
         if (game.budget < upgradeCost) return false;
 
         game.budget -= upgradeCost;
         this.level++;
-        this.range = this.baseRange * (1 + (this.level - 1) * 0.15);
-        this.damage = this.baseDamage * (1 + (this.level - 1) * 0.25);
-
-        game.effects.push(new FloatingText("UPGRADE!!", this.x, this.y - 15, "#ffcc00"));
+        // ステータスをレベル適用込みで再計算
+        this.initStats(game);
         return true;
-    }
-
-    getUpgradeCost() {
-        return Math.round(this.cost * 0.6);
     }
 
     update(delta, game) {
@@ -460,8 +526,8 @@ export class Defender {
                 // 復旧ビームを照射
                 this.laserTargets.push({ x: targetNode.x, y: targetNode.y, color: "#00ffd5" });
 
-                // 復旧速度の計算 (Cloud Backup解放時は倍速)
-                const recoveryRate = game.unlockedTech.has("zerotrust") ? 15 : 8; // 技術解放で復旧力アップ
+                // 復旧速度の計算 (ゼロトラスト配置時は倍速)
+                const recoveryRate = game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d, game)) ? 15 : 8; // ゼロトラスト配置で復旧力アップ
                 targetNode.recoveryProgress += recoveryRate * (delta / 1000) * game.speed * this.level;
 
                 if (targetNode.recoveryProgress >= 100) {
@@ -474,6 +540,9 @@ export class Defender {
                     }
                     game.ui.log(`[復旧] バックアップにより ${targetNode.name} が安全に復旧しました。`, "success");
                     game.effects.push(new FloatingText("RESTORED!", targetNode.x, targetNode.y, "#39ff14"));
+
+                    // サーバー復旧に伴うタワーパッシブの再計算
+                    game.defenders.forEach(d => d.initStats(game));
                 }
             }
             return;
@@ -513,8 +582,8 @@ export class Defender {
                     const depthCount = this.calculateDefenseDepth(target, game);
                     if (depthCount >= 2) {
                         // 2種類以上のタワーが狙っている場合、ボーナス発動
-                        // XDRがアンロックされているとボーナス効果1.5倍
-                        const multiplier = game.unlockedTech.has("xdr") ? 1.5 : 1.0;
+                        // XDRが配置されているとボーナス効果1.5倍
+                        const multiplier = game.defenders.some(d => d.type === "xdr" && isTowerActive(d, game)) ? 1.5 : 1.0;
                         const depthBonus = 1 + (depthCount - 1) * 0.5 * multiplier;
                         actualDamage *= depthBonus;
 
@@ -533,6 +602,33 @@ export class Defender {
         }
     }
 
+    getTargetPriority(enemy) {
+        if (this.type === "mfa") {
+            if (enemy.type === "bruteforce") return 10;
+        }
+        if (this.type === "fido2") {
+            if (enemy.type === "bruteforce") return 10;
+        }
+        if (this.type === "waf") {
+            if (enemy.type === "sqlinjection") return 10;
+            if (enemy.type === "phishing") return -5;
+        }
+        if (this.type === "mailfilter") {
+            if (enemy.type === "phishing") return 10;
+            return -8; // フィッシング以外はダメージ0.2倍なので優先度を極めて低くする
+        }
+        if (this.type === "zerotrust") {
+            if (enemy.type === "phishing" || enemy.type === "insider") return 10;
+        }
+        if (this.type === "edr") {
+            if (enemy.type === "ransomware") return 10;
+        }
+        if (this.type === "firewall") {
+            if (enemy.type === "phishing" || enemy.bypassFirewall) return -10;
+        }
+        return 0;
+    }
+
     findTargets(game) {
         // 射程内の敵を全検索
         let candidates = game.attackers.filter(enemy => {
@@ -547,14 +643,24 @@ export class Defender {
             // WAFはWAFをバイパスする敵(内部不正など)に無効なため候補に含めない
             if (this.type === "waf" && enemy.bypassWAF) return false;
 
+            // FIDO2はブルートフォース攻撃にのみ有効なため、それ以外の敵は候補に含めない
+            if (this.type === "fido2" && enemy.type !== "bruteforce") return false;
+
             const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
             return dist <= this.range;
         });
 
         if (candidates.length === 0) return [];
 
-        // 基本は「最も進んでいる敵」をターゲットにする
-        candidates.sort((a, b) => b.progress - a.progress);
+        // 特効・効果の高さに基づき、優先度の高い敵をターゲットにする。優先度が同じなら最も進んでいる敵を選ぶ。
+        candidates.sort((a, b) => {
+            const prioA = this.getTargetPriority(a);
+            const prioB = this.getTargetPriority(b);
+            if (prioA !== prioB) {
+                return prioB - prioA;
+            }
+            return b.progress - a.progress;
+        });
 
         // SIEMは射程内の敵全員を同時攻撃可能
         if (this.type === "siem") {
@@ -581,12 +687,19 @@ export class Defender {
             }
         }
 
+        // ゼロトラスト: フィッシングや内部不正（バイパス系）に対して3倍ダメージ
+        if (this.type === "zerotrust") {
+            if (target.type === "phishing" || target.type === "insider") {
+                dmg *= 3.0;
+                game.effects.push(new FloatingText("ZERO TRUST BLOCK", target.x, target.y - 12, "#00f0ff"));
+            }
+        }
+
         // MFA: ブルートフォースに大ダメージ＆大幅減速
         if (this.type === "mfa") {
             if (target.type === "bruteforce") {
                 dmg *= 2.5;
-                // 減速効果（Multi-Factor Auth研究解放で効果大）
-                const slowFactor = game.unlockedTech.has("mfa") ? 0.3 : 0.5; // 速度を30%/50%に低下
+                const slowFactor = 0.3; // 常に30%に減速
                 target.speed = target.speed * slowFactor;
                 game.effects.push(new FloatingText("MFA DEBUFF", target.x, target.y - 12, "#ffcc00"));
             }
@@ -629,8 +742,20 @@ export class Defender {
             dmg *= 1.35; // 他のタワーの攻撃力を35%バフ
         }
 
-        // 技術ツリー「Zero Trust Core」解放：全ノードでフィッシングなどのバイパスダメージを底上げ
-        if (game.unlockedTech.has("zerotrust") && target.type === "phishing" && this.type !== "firewall" && this.type !== "mailfilter") {
+        // XDR: SIEMと同様のバフ（XDRの射程内にある他のタワーの攻撃力をアップ）
+        const hasXDRBuff = game.defenders.some(def => {
+            if (def.type !== "xdr") return false;
+            const parent = game.map.getNodeById(def.parentNodeId);
+            if (parent && (parent.status === "infected" || parent.status === "offline")) return false;
+            const dist = Math.hypot(def.x - target.x, def.y - target.y);
+            return dist <= def.range;
+        });
+        if (hasXDRBuff && !hasSIEMBuff && this.type !== "xdr" && this.type !== "siem") {
+            dmg *= 1.35; // 他のタワーの攻撃力を35%バフ (SIEMと重複不可とするため)
+        }
+
+        // ゼロトラスト配置：全ノードでフィッシングなどのバイパスダメージを底上げ
+        if (game.defenders.some(d => d.type === "zerotrust" && isTowerActive(d, game)) && target.type === "phishing" && this.type !== "firewall" && this.type !== "mailfilter") {
             dmg *= 1.3;
         }
 
@@ -641,9 +766,10 @@ export class Defender {
         // 同一ターゲットを同時に攻撃範囲に収めている「ユニークなタワータイプ」の数をカウント
         const targetingTowerTypes = new Set();
 
-        // 自分自身がターゲットをバイパスされない場合のみ追加
+        // 自分自身がターゲットをバイパスされない、または効果がない場合のみ除外
         const selfBypass = (this.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) ||
-                           (this.type === "waf" && target.bypassWAF);
+                           (this.type === "waf" && target.bypassWAF) ||
+                           (this.type === "fido2" && target.type !== "bruteforce");
         if (!selfBypass) {
             targetingTowerTypes.add(this.type);
         }
@@ -661,6 +787,8 @@ export class Defender {
                 if (def.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) return;
                 // WAFはWAFをバイパスする敵に対してカウントしない
                 if (def.type === "waf" && target.bypassWAF) return;
+                // FIDO2はブルートフォース以外の敵に対してカウントしない
+                if (def.type === "fido2" && target.type !== "bruteforce") return;
 
                 targetingTowerTypes.add(def.type);
             }
@@ -672,22 +800,22 @@ export class Defender {
     draw(ctx) {
         ctx.save();
 
-        const w = 62;
-        const h = 40;
+        const w = 64;
+        const h = 42; // ドット表示廃止に伴い高さを縮小 (54 -> 42)
         const x = this.x - w / 2;
-        const y = this.y - h / 2;
-        const r = 4;
+        const y = this.y - h / 2 - 5; // Float slightly above the tower
+        const r = 5;
 
         // ドロップシャドウ/グロー
         ctx.shadowBlur = 8;
         ctx.shadowColor = this.color;
 
         // 半透明の黒い背景
-        ctx.fillStyle = "rgba(10, 15, 30, 0.85)";
+        ctx.fillStyle = "rgba(6, 8, 20, 0.9)";
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 1.5;
 
-        // 角丸四角形描画
+        // 角丸四角形描画 (バッジの枠)
         ctx.beginPath();
         ctx.moveTo(x + r, y);
         ctx.lineTo(x + w - r, y);
@@ -702,43 +830,37 @@ export class Defender {
         ctx.fill();
         ctx.stroke();
 
-        ctx.shadowBlur = 0; // テキストはグローなしでクッキリ
+        ctx.shadowBlur = 0; // テキストやアイコンはグローなしでクッキリ
 
-        // アイコンの描画（左側）
-        ctx.fillStyle = "#fff";
-        ctx.font = "14px Arial";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText(this.icon, x + 6, y + h / 2);
+        // 英語の短縮名マッピング
+        let shortName = "TWR";
+        if (this.type === "firewall") shortName = "FW";
+        else if (this.type === "waf") shortName = "WAF";
+        else if (this.type === "mfa") shortName = "MFA";
+        else if (this.type === "fido2") shortName = "FIDO2";
+        else if (this.type === "edr") shortName = "EDR";
+        else if (this.type === "backup") shortName = "Backup";
+        else if (this.type === "mailfilter") shortName = "MailFltr";
+        else if (this.type === "education") shortName = "Edu";
+        else if (this.type === "siem") shortName = "SIEM";
+        else if (this.type === "xdr") shortName = "XDR";
+        else if (this.type === "zerotrust") shortName = "ZeroTrust";
+        else if (this.type === "password") shortName = "Passwd";
+        else if (this.type === "antivirus") shortName = "AV";
 
-        // タワー名とレベルの描画（右側）
+        // 上段のテキスト（名前のみ）
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
         ctx.font = "bold 9px 'Share Tech Mono', sans-serif";
-        ctx.fillText(this.name, x + 23, y + 13);
+        ctx.fillStyle = "#fff";
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
-        ctx.font = "9px 'Share Tech Mono', sans-serif";
-        ctx.fillText(`Lv.${this.level}`, x + 23, y + 27);
+        const textY = y + 5;
+        ctx.fillText(shortName, this.x, textY);
 
-        // 下部のレベルインジケータ（緑ドット）
-        const dotY = y + h + 6;
-        const maxDots = 5;
-        const dotSize = 2.5;
-        const dotSpacing = 7;
-        const startDotX = this.x - ((maxDots - 1) * dotSpacing) / 2;
-
-        for (let i = 0; i < maxDots; i++) {
-            ctx.beginPath();
-            ctx.arc(startDotX + i * dotSpacing, dotY, dotSize, 0, Math.PI * 2);
-            if (i < this.level) {
-                ctx.fillStyle = "#39ff14"; // 点灯
-                ctx.shadowBlur = 3;
-                ctx.shadowColor = "#39ff14";
-            } else {
-                ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; // 消灯
-                ctx.shadowBlur = 0;
-            }
-            ctx.fill();
-        }
+        // 中段のアイコン（少し下にずらす）
+        ctx.font = "16px Arial";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.icon, this.x, y + h / 2 + 2); // 縦方向に微調整
 
         ctx.restore();
     }

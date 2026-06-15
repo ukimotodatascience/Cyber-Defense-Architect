@@ -14,9 +14,15 @@
     <!-- Game Header (HUD) -->
     <header class="game-hud">
         <div class="hud-left">
-            <div class="hud-logo">🛡️</div>
+            <div class="hud-cyber-shield">
+                <svg class="hud-shield-svg" viewBox="0 0 24 24" width="32" height="32">
+                    <polygon points="12,2 20,5 20,11 12,21 4,11 4,5" fill="rgba(255, 0, 85, 0.15)" stroke="#ff0055" stroke-width="2" />
+                    <polygon points="12,5 17,7 17,11 12,17 7,11 7,7" fill="rgba(255, 0, 85, 0.4)" stroke="#ff0055" stroke-width="1" />
+                </svg>
+            </div>
             <div class="hud-stage-info">
-                <span id="current-stage-name" class="hud-stage-title">STAGE: 未選択</span>
+                <span id="current-stage-name" class="hud-stage-title">ステージ -</span>
+                <span id="current-stage-desc" class="hud-stage-desc">作戦準備完了</span>
             </div>
         </div>
         <div class="hud-center">
@@ -41,187 +47,280 @@
                 <span id="stat-budget" class="currency-val">2,000</span>
             </div>
             <div class="hud-staff" title="セキュリティ人員 (技術研究や緊急復旧に使用)">
-                <span class="staff-icon">👤</span>
+                <span class="staff-icon">👥</span>
                 <span id="stat-staff" class="staff-val">3 / 3</span>
             </div>
             <div class="hud-controls">
                 <button id="btn-speed-pause" class="btn-hud-ctrl" title="一時停止">⏸</button>
                 <button id="btn-speed-1x" class="btn-hud-ctrl active" title="倍速切替">▶▶ <span class="speed-indicator">x1</span></button>
                 <button id="btn-speed-2x" class="btn-hud-ctrl" title="2倍速">▶▶ <span class="speed-indicator">x2</span></button>
-                <button id="btn-fullscreen" class="btn-hud-ctrl" title="全画面表示">🖥️</button>
-                <button id="btn-tech-tree" class="btn-hud-ctrl settings-btn" title="設定/技術ツリー">⚙</button>
             </div>
         </div>
     </header>
 
     <!-- Main Game Workspace (Fills remaining height) -->
     <div class="game-container">
-        <!-- Main Canvas Area -->
-        <div class="canvas-wrapper">
-            <canvas id="game-canvas" width="1200" height="540"></canvas>
-
-            <!-- WAVE進捗 & 出現中の敵 (左側フローティングパネル) -->
-            <div class="floating-left-panel">
-                <!-- Wave Progress -->
-                <div class="wave-progress-box">
-                    <div class="wave-header">
-                        <span class="wave-label-main">WAVE</span>
-                        <span id="current-wave-text" class="wave-val-main">1/5</span>
-                    </div>
-                    <div class="wave-track" id="wave-track">
-                        <div class="wave-line"></div>
-                        <div class="wave-node active" data-wave="1">1</div>
-                        <div class="wave-node" data-wave="2">2</div>
-                        <div class="wave-node" data-wave="3">3</div>
-                        <div class="wave-node" data-wave="4">4</div>
-                        <div class="wave-node" data-wave="5">5</div>
-                        <div class="wave-node-end">🛡️</div>
-                    </div>
+        <!-- 独立した左サイドバー -->
+        <aside class="sidebar-left-panel" id="sidebar-left-panel">
+            <!-- WAVE制御セクション -->
+            <div class="wave-control-box" id="sidebar-wave-control">
+                <div class="wave-status-header">
+                    <span class="warning-icon">⚠</span>
+                    <span id="overlay-title" class="wave-status-title">作戦準備完了</span>
                 </div>
+                <button id="btn-start-wave" class="btn-cyber-start" disabled>ウェーブ開始</button>
+            </div>
 
-                <!-- Active Threats -->
-                <div class="threats-box">
-                    <div class="panel-section-title">出現中の敵</div>
-                    <div class="active-threats-list" id="active-threats-list">
-                        <!-- JSで動的に追加される -->
-                    </div>
+            <!-- Wave Progress -->
+            <div class="wave-progress-box">
+                <div class="wave-header">
+                    <span class="wave-label-main">WAVE</span>
+                    <span id="current-wave-text" class="wave-val-main">1/5</span>
                 </div>
-
-                <!-- Next Wave Preview -->
-                <div class="next-wave-box">
-                    <div class="panel-section-title-sm">次のウェーブ</div>
-                    <div class="next-wave-icons" id="next-wave-preview-icons">
-                        <!-- JSで動的に追加される -->
-                    </div>
-                </div>
-
-                <!-- Attack Routes -->
-                <div class="route-hint-box">
-                    <div class="panel-section-title-sm">攻撃の進行ルート</div>
-                    <div class="route-hint-arrow">➔ ➔ ➔</div>
+                <div class="wave-track" id="wave-track">
+                    <div class="wave-line"></div>
+                    <div class="wave-node active" data-wave="1">1</div>
+                    <div class="wave-node" data-wave="2">2</div>
+                    <div class="wave-node" data-wave="3">3</div>
+                    <div class="wave-node" data-wave="4">4</div>
+                    <div class="wave-node" data-wave="5">5</div>
+                    <div class="wave-node-end">🛡️</div>
                 </div>
             </div>
 
-            <!-- 中央上部の警告バナー -->
-            <div id="canvas-overlay-message" class="hidden">
-                <span class="warning-icon">⚠</span>
-                <span id="overlay-title">ランサムウェアが侵入中！</span>
-                <button id="btn-start-wave" class="btn-cyber-start">ウェーブ開始</button>
+            <!-- Active Threats -->
+            <div class="threats-box">
+                <div class="panel-section-title">出現中の敵</div>
+                <div class="active-threats-list" id="active-threats-list">
+                    <!-- JSで動的に追加される -->
+                </div>
             </div>
 
-            <!-- 右上の「脅威情報」ボタン -->
-            <button id="btn-threat-info" class="btn-threat-info-panel">💀 脅威情報</button>
+            <!-- Next Wave Preview -->
+            <div class="next-wave-box">
+                <div class="panel-section-title-sm">次のウェーブ</div>
+                <div class="next-wave-icons" id="next-wave-preview-icons">
+                    <!-- JSで動的に追加される -->
+                </div>
+            </div>
 
-            <!-- 右下詳細パネル (選択中の防御設備) -->
-            <div class="floating-detail-panel hidden" id="floating-detail-panel">
-                <div class="detail-panel-title">選択中の防御設備</div>
-                <div id="selection-details">
-                    <!-- JSで選択時に書き換えられる -->
+            <!-- Attack Routes -->
+            <div class="route-hint-box">
+                <div class="panel-section-title-sm">攻撃の進行ルート</div>
+                <div class="route-hint-arrow">➔ ➔ ➔</div>
+            </div>
+        </aside>
+
+        <!-- メインゲームエリア (キャンバス + ショップパレット) -->
+        <div class="main-game-area">
+            <!-- Canvas Area -->
+            <div class="canvas-wrapper">
+                <canvas id="game-canvas" width="1200" height="540"></canvas>
+
+                <!-- 右上の「脅威情報」ボタン -->
+                <button id="btn-threat-info" class="btn-threat-info-panel">💀 脅威情報</button>
+
+                <!-- キャンバス上部中央のWAVE警告バナー -->
+                <div class="wave-alert-banner hidden" id="wave-alert-banner">
+                    <span class="wave-alert-icon">⚠️</span>
+                    <span class="wave-alert-text" id="wave-alert-text">ランサムウェアが侵攻中！</span>
                 </div>
             </div>
 
             <!-- 下部ショップパレット -->
             <div class="bottom-palette-panel">
-                <div class="tower-palette" id="tower-palette">
-                    <!-- 8種類のタワーカード -->
-                    <button class="palette-item" data-tower-type="mailfilter" data-category="boundary">
-                        <div class="item-icon">✉️</div>
-                        <div class="item-info">
-                            <span class="item-name">メールフィルター</span>
-                            <span class="item-cost">$800</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>メールフィルター</h5>
-                            <p>メール系の攻撃（フィッシング）をブロックします。フィッシング攻撃に対して高い攻撃力を持ちます。</p>
-                        </div>
-                    </button>
-                    <button class="palette-item" data-tower-type="education" data-category="ops">
-                        <div class="item-icon">👥</div>
-                        <div class="item-info">
-                            <span class="item-name">セキュリティ教育</span>
-                            <span class="item-cost">$600</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>セキュリティ教育</h5>
-                            <p>人間に起因する攻撃（フィッシングや内部不正）を遅延させ、進行速度を低下させます。攻撃力はありません。</p>
-                        </div>
-                    </button>
-                    <button class="palette-item" data-tower-type="edr" data-category="endpoint">
-                        <div class="item-icon">🛡️</div>
-                        <div class="item-info">
-                            <span class="item-name">EDR</span>
-                            <span class="item-cost">$900</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>EDR</h5>
-                            <p>ホストPC上の挙動検知を行います。ランサムウェア等のマルウェアに対して非常に強力です。</p>
-                        </div>
-                    </button>
-                    <button class="palette-item" data-tower-type="waf" data-category="boundary">
-                        <div class="item-icon">🌐</div>
-                        <div class="item-info">
-                            <span class="item-name">WAF</span>
-                            <span class="item-cost">$1,000</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>WAF</h5>
-                            <p>Webアプリケーション保護。SQLインジェクション脆弱性攻撃を遮断します。</p>
-                        </div>
-                    </button>
-                    <button class="palette-item" data-tower-type="firewall" data-category="boundary">
-                        <div class="item-icon">🛡️</div>
-                        <div class="item-info">
-                            <span class="item-name">ファイアウォール</span>
-                            <span class="item-cost">$700</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>ファイアウォール</h5>
-                            <p>境界ポート監視。基本的な不正パケット侵入を防ぎます。フィッシング等には無効です。</p>
-                        </div>
-                    </button>
-                    <button class="palette-item" data-tower-type="mfa" data-category="auth">
-                        <div class="item-icon">🔑</div>
-                        <div class="item-info">
-                            <span class="item-name">MFA</span>
-                            <span class="item-cost">$800</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>MFA</h5>
-                            <p>多要素認証。ブルートフォース攻撃を遅延させ、進行速度を大幅に低下させます。</p>
-                        </div>
-                    </button>
-                    <button class="palette-item" data-tower-type="siem" data-category="network">
-                        <div class="item-icon">🖥️</div>
-                        <div class="item-info">
-                            <span class="item-name">SIEM</span>
-                            <span class="item-cost">$1,200</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>SIEM</h5>
-                            <p>ログの統合分析。範囲内の敵全員に持続スキャンダメージを与え、さらに周囲 of タワーの攻撃力をアップさせます。</p>
-                        </div>
-                    </button>
-                    <button class="palette-item" data-tower-type="backup" data-category="data">
-                        <div class="item-icon">💾</div>
-                        <div class="item-info">
-                            <span class="item-name">バックアップ</span>
-                            <span class="item-cost">$600</span>
-                        </div>
-                        <div class="custom-tooltip">
-                            <h5>バックアップ</h5>
-                            <p>データ復旧。ランサムウェア等で暗号化されたサーバーに復旧ビームを照射し、復旧を大幅に加速します。（攻撃力なし）</p>
-                        </div>
-                    </button>
+                <!-- 左エリア: カードリストとタブ -->
+                <div class="palette-shop-area">
+                    <div class="tower-palette" id="tower-palette">
+                        <!-- 防御モジュールカード -->
+                        <button class="palette-item" data-tower-type="mailfilter" data-category="boundary">
+                            <div class="palette-item-main">
+                                <div class="item-icon">✉️</div>
+                                <div class="item-info">
+                                    <span class="item-name">メールフィルター</span>
+                                    <span class="item-cost">🪙 800</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>✉️ メールフィルター (🪙 800)</h5>
+                                <p>メール系の攻撃（フィッシング）をブロックします。フィッシング攻撃に対して高い攻撃力を持ちます。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="education" data-category="ops">
+                            <div class="palette-item-main">
+                                <div class="item-icon">👥</div>
+                                <div class="item-info">
+                                    <span class="item-name">セキュリティ教育</span>
+                                    <span class="item-cost">🪙 600</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>👥 セキュリティ教育 (🪙 600)</h5>
+                                <p>人間に起因する攻撃（フィッシングや内部不正）を遅延させ、進行速度を低下させます。攻撃力はありません。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="antivirus" data-category="endpoint">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🛡️</div>
+                                <div class="item-info">
+                                    <span class="item-name">アンチウイルス</span>
+                                    <span class="item-cost">🪙 400</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🛡️ アンチウイルス (🪙 400)</h5>
+                                <p>パターンマッチングによるマルウェア対策。新型には無力ですが、安価にランサムウェア等へダメージを与えられます。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="edr" data-category="endpoint">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🛡️</div>
+                                <div class="item-info">
+                                    <span class="item-name">EDR</span>
+                                    <span class="item-cost">🪙 900</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🛡️ EDR (🪙 900)</h5>
+                                <p>ホストPC上の挙動検知を行います。ランサムウェア等のマルウェアに対して非常に強力です。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="waf" data-category="boundary">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🌐</div>
+                                <div class="item-info">
+                                    <span class="item-name">WAF</span>
+                                    <span class="item-cost">🪙 1,000</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🌐 WAF (🪙 1,000)</h5>
+                                <p>Webサーバの手前に配置し、SQLインジェクションなどのWeb脆弱性攻撃を検知・遮断します。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="zerotrust" data-category="boundary">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🛡️</div>
+                                <div class="item-info">
+                                    <span class="item-name">ゼロトラスト</span>
+                                    <span class="item-cost">🪙 1,200</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🛡️ ゼロトラスト (🪙 1,200)</h5>
+                                <p>境界防御に頼らない保護。フィッシングや内部不正等のバイパス攻撃に特効（3倍ダメージ）。さらにバックアップの復旧速度が向上します。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="firewall" data-category="boundary">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🛡️</div>
+                                <div class="item-info">
+                                    <span class="item-name">ファイアウォール</span>
+                                    <span class="item-cost">🪙 700</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🛡️ ファイアウォール (🪙 700)</h5>
+                                <p>もっとも基本的な境界防御。インターネットとDMZ間、または内部セグメント間の不要なポート通信を遮断します。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="password" data-category="auth">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🔑</div>
+                                <div class="item-info">
+                                    <span class="item-name">パスワード認証</span>
+                                    <span class="item-cost">🪙 300</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🔑 パスワード認証 (🪙 300)</h5>
+                                <p>標準的なパスワード認証。ブルートフォース攻撃に対して最低限のダメージを与えますが、減速効果はありません。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="mfa" data-category="auth">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🔑</div>
+                                <div class="item-info">
+                                    <span class="item-name">MFA</span>
+                                    <span class="item-cost">🪙 800</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🔑 MFA (🪙 800)</h5>
+                                <p>認証・ADノード等に設置。ブルートフォース等の認証突破試行を強力に遅延・ブロックします。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="fido2" data-category="auth">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🔑</div>
+                                <div class="item-info">
+                                    <span class="item-name">FIDO2</span>
+                                    <span class="item-cost">🪙 1,200</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🔑 FIDO2 (🪙 1,200)</h5>
+                                <p>パスワードレス認証。認証・ADノード等に設置。ブルートフォース攻撃を検知した瞬間に無効化（瞬時撃破）します。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="siem" data-category="network">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🖥️</div>
+                                <div class="item-info">
+                                    <span class="item-name">SIEM</span>
+                                    <span class="item-cost">🪙 1,200</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🖥️ SIEM (🪙 1,200)</h5>
+                                <p>全ノードからのログを集約監視し、潜伏するAPT攻撃などの検知率・撃退力を高めます。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="xdr" data-category="network">
+                            <div class="palette-item-main">
+                                <div class="item-icon">🖥️</div>
+                                <div class="item-info">
+                                    <span class="item-name">XDR</span>
+                                    <span class="item-cost">🪙 1,500</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>🖥️ XDR (🪙 1,500)</h5>
+                                <p>ログの統合・相関分析。配置されている間、すべてのタワーの射程+15%、さらに多層防御ボーナス効果が1.5倍になります。</p>
+                            </div>
+                        </button>
+                        <button class="palette-item" data-tower-type="backup" data-category="data">
+                            <div class="palette-item-main">
+                                <div class="item-icon">💾</div>
+                                <div class="item-info">
+                                    <span class="item-name">バックアップ</span>
+                                    <span class="item-cost">🪙 600</span>
+                                </div>
+                            </div>
+                            <div class="custom-tooltip">
+                                <h5>💾 バックアップ (🪙 600)</h5>
+                                <p>ランサムウェアで暗号化被害に遭ったサーバーのデータを、人員を割くことなく自動かつ安全に復旧させます。</p>
+                            </div>
+                        </button>
+                    </div>
+                    <!-- カテゴリフィルタータブ -->
+                    <div class="palette-tabs">
+                        <button class="tab-btn active" data-category="boundary">境界防御</button>
+                        <button class="tab-btn" data-category="auth">認証・ID管理</button>
+                        <button class="tab-btn" data-category="endpoint">エンドポイント</button>
+                        <button class="tab-btn" data-category="network">ネットワーク監視</button>
+                        <button class="tab-btn" data-category="data">データ保護</button>
+                        <button class="tab-btn" data-category="ops">運用・その他</button>
+                    </div>
                 </div>
-                <!-- カテゴリフィルタータブ -->
-                <div class="palette-tabs">
-                    <button class="tab-btn active" data-category="all">すべて</button>
-                    <button class="tab-btn" data-category="boundary">境界防御</button>
-                    <button class="tab-btn" data-category="endpoint">端末防御</button>
-                    <button class="tab-btn" data-category="network">NW/検知</button>
-                    <button class="tab-btn" data-category="auth">認証</button>
-                    <button class="tab-btn" data-category="ops">運用/教育</button>
-                    <button class="tab-btn" data-category="data">データ保護</button>
+
+                <!-- 右エリア: 選択中の防御設備詳細パネル -->
+                <div class="palette-detail-panel floating-detail-panel" id="floating-detail-panel">
+                    <div class="detail-panel-title">選択中の防御設備</div>
+                    <div id="selection-details">
+                        <!-- JSで選択時に書き換えられる -->
+                        <div class="empty-selection">防御設備またはサーバーを選択してください</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -284,84 +383,7 @@
         </div>
     </div>
 
-    <!-- Tech Tree Modal -->
-    <div id="modal-tech-tree" class="modal hidden">
-        <div class="modal-content cyber-box">
-            <div class="modal-close-header">
-                <h2>SECURITY TECHNOLOGY R&D (技術ツリー)</h2>
-                <button id="btn-close-tech" class="btn-close">×</button>
-            </div>
-            <p class="subtitle">人員（👨‍💻）と予算（$）を投入し、セキュリティ技術を研究・強化します。</p>
 
-            <div class="tech-tree-grid">
-                <!-- Path 1: Boundary Protection -->
-                <div class="tech-column">
-                    <h3>境界防御・Web系</h3>
-                    <div class="tech-node active" id="tech-firewall">
-                        <h4>Firewall (初期)</h4>
-                        <p>基本的な境界防御。ポートスキャン等を検知。</p>
-                        <span class="tech-status">開発済</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-waf" data-tech-id="waf" data-cost-budget="400" data-cost-staff="1" data-req="firewall">
-                        <h4>Next-Gen WAF</h4>
-                        <p>Webサーバ保護。SQLiやXSSへの攻撃力+50%、射程+20%</p>
-                        <span class="tech-cost">コスト: $400 / 👨‍💻1</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-zerotrust" data-tech-id="zerotrust" data-cost-budget="600" data-cost-staff="2" data-req="waf">
-                        <h4>Zero Trust Core</h4>
-                        <p>境界防御の概念を排し、全ノードでフィッシング等のバイパス攻撃を30%減衰。</p>
-                        <span class="tech-cost">コスト: $600 / 👨‍💻2</span>
-                    </div>
-                </div>
-
-                <!-- Path 2: Identity & Authentication -->
-                <div class="tech-column">
-                    <h3>認証・ID管理</h3>
-                    <div class="tech-node active" id="tech-password">
-                        <h4>Password (初期)</h4>
-                        <p>標準的なパスワード認証。ブルートフォースの標的になりやすい。</p>
-                        <span class="tech-status">開発済</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-mfa" data-tech-id="mfa" data-cost-budget="300" data-cost-staff="1" data-req="password">
-                        <h4>Multi-Factor Auth</h4>
-                        <p>多要素認証。ブルートフォース攻撃の進行速度を半減（鈍化効果強化）。</p>
-                        <span class="tech-cost">コスト: $300 / 👨‍💻1</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-fido2" data-tech-id="fido2" data-cost-budget="500" data-cost-staff="2" data-req="mfa">
-                        <h4>FIDO2 / Passwordless</h4>
-                        <p>パスワードレス認証。ブルートフォース攻撃を完全に無効化（瞬時撃破）。</p>
-                        <span class="tech-cost">コスト: $500 / 👨‍💻2</span>
-                    </div>
-                </div>
-
-                <!-- Path 3: Endpoint & Detection -->
-                <div class="tech-column">
-                    <h3>検知・端末防御</h3>
-                    <div class="tech-node active" id="tech-antivirus">
-                        <h4>Anti-Virus (初期)</h4>
-                        <p>パターンマッチングによるマルウェア防御。新型には無力。</p>
-                        <span class="tech-status">開発済</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-edr" data-tech-id="edr" data-cost-budget="500" data-cost-staff="1" data-req="antivirus">
-                        <h4>EDR (Endpoint Detection)</h4>
-                        <p>挙動検知。ランサムウェア等のマルウェアへの毎秒ダメージ+40%。</p>
-                        <span class="tech-cost">コスト: $500 / 👨‍💻1</span>
-                    </div>
-                    <div class="tech-arrow">↓</div>
-                    <div class="tech-node locked" id="tech-xdr" data-tech-id="xdr" data-cost-budget="800" data-cost-staff="2" data-req="edr">
-                        <h4>XDR & SIEM Integration</h4>
-                        <p>ログの統合分析。すべてのタワーの射程+15%、多層防御ボーナス効果が1.5倍。</p>
-                        <span class="tech-cost">コスト: $800 / 👨‍💻2</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Game Over / Victory Modal -->
     <div id="modal-game-end" class="modal hidden">
@@ -390,6 +412,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Global Tooltip for dynamic positioning outside overflow hidden elements -->
+    <div id="global-tooltip"></div>
 
     <!-- Load main script as module -->
     <script type="module" src="js/main.js"></script>
