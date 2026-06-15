@@ -205,7 +205,11 @@ export class GameState {
         this.effects = []; // ビジュアルエフェクトやフローティングテキスト
 
         // 技術研究アンロックリスト
-        this.unlockedTech = new Set(["firewall", "password", "antivirus"]);
+        this.unlockedTech = new Set([
+            "firewall", "waf", "zerotrust",
+            "password", "mfa", "fido2",
+            "antivirus", "edr", "xdr"
+        ]);
 
         // スパニック(敵の生成)スケジューラ
         this.spawnQueue = [];
