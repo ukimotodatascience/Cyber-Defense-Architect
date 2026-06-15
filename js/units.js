@@ -725,8 +725,8 @@ export class Defender {
             const dist = Math.hypot(def.x - target.x, def.y - target.y);
             return dist <= def.range;
         });
-        if (hasXDRBuff && this.type !== "xdr" && this.type !== "siem") {
-            dmg *= 1.35; // 他のタワーの攻撃力を35%バフ (SIEMと重複不可とするため siem 以外に)
+        if (hasXDRBuff && !hasSIEMBuff && this.type !== "xdr" && this.type !== "siem") {
+            dmg *= 1.35; // 他のタワーの攻撃力を35%バフ (SIEMと重複不可とするため)
         }
 
         // ゼロトラスト配置：全ノードでフィッシングなどのバイパスダメージを底上げ

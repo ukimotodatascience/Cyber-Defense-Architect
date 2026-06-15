@@ -42,6 +42,7 @@ export class UIManager {
         this.lastThreatWaveIndex = -1;
         this.lastThreatWaveInProgress = null;
         this.lastAttackerCount = -1;
+        this.lastAttackerTypesStr = "";
         this.attackerInfo = {
             phishing: {
                 name: "フィッシングメール",
@@ -344,14 +345,17 @@ export class UIManager {
 
         // 出現中の敵リストと次のウェーブプレビューを更新 (状態変化時のみ)
         const currentAttackerCount = this.game.attackers.length;
+        const currentAttackerTypesStr = [...new Set(this.game.attackers.map(a => a.type))].sort().join(",");
         const stateChanged = this.game.currentWaveIndex !== this.lastThreatWaveIndex ||
                              this.game.waveInProgress !== this.lastThreatWaveInProgress ||
-                             currentAttackerCount !== this.lastAttackerCount;
+                             currentAttackerCount !== this.lastAttackerCount ||
+                             currentAttackerTypesStr !== this.lastAttackerTypesStr;
 
         if (stateChanged) {
             this.lastThreatWaveIndex = this.game.currentWaveIndex;
             this.lastThreatWaveInProgress = this.game.waveInProgress;
             this.lastAttackerCount = currentAttackerCount;
+            this.lastAttackerTypesStr = currentAttackerTypesStr;
             this.updateThreatsList();
             this.updateNextWavePreview();
         }
