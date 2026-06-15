@@ -379,7 +379,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const mouseX = ((touch.clientX - rect.left) / rect.width) * canvas.width;
         const mouseY = ((touch.clientY - rect.top) / rect.height) * canvas.height;
 
-        // スロットの判定
+        // 0. 敵ユニットをタップした場合
+        let clickedEnemy = null;
+        game.attackers.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - mouseX, enemy.y - mouseY);
+            // タッチ用に判定範囲を広めに取る (size + 20)
+            if (dist <= enemy.size + 20) {
+                clickedEnemy = enemy;
+            }
+        });
+
+        if (clickedEnemy) {
+            clearPaletteSelection();
+            selectedSlot = null;
+            hoveredNode = null;
+            ui.showThreatDetails(clickedEnemy.type);
+            return;
+        }
+
+        // 1. スロットの判定
         let clickedSlot = null;
         map.slots.forEach(slot => {
             const dist = Math.hypot(slot.x - mouseX, slot.y - mouseY);
