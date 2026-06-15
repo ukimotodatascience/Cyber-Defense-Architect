@@ -635,6 +635,10 @@ export class UIManager {
                             <span class="val">${parentNode.name}</span>
                         </div>
                         <div class="detail-row">
+                            <span class="lbl">レベル:</span>
+                            <span class="val" style="color: #ffcc00;">${'★'.repeat(tower.level)}${'☆'.repeat(3 - tower.level)} Lv${tower.level}</span>
+                        </div>
+                        <div class="detail-row">
                             <span class="lbl">射程 (Range):</span>
                             <span class="val">${Math.round(tower.range)} px</span>
                         </div>
@@ -667,9 +671,34 @@ export class UIManager {
                         </div>
                     </div>
                     <div class="detail-actions">
+                        ${tower.level < 3
+                            ? `<button id="btn-tower-upgrade" class="btn-cyber-primary" ${this.game.budget < tower.getUpgradeCost() ? 'disabled' : ''}>
+                                ⬆ アップグレード (Lv${tower.level} → Lv${tower.level + 1})<br><small>費用: $${tower.getUpgradeCost()}</small>
+                               </button>`
+                            : `<button class="btn-cyber-primary" disabled style="opacity:0.5;">✨ MAX レベル</button>`
+                        }
                         <button id="btn-tower-sell" class="btn-cyber-danger">設備を売却</button>
                     </div>
                 `;
+
+                if (tower.level < 3) {
+                    const upgradeBtn = document.getElementById("btn-tower-upgrade");
+                    if (upgradeBtn) {
+                        upgradeBtn.addEventListener("click", () => {
+                            const success = tower.upgrade(this.game);
+                            if (success) {
+                                // 全タワーのパッシブを再計算
+                                this.game.defenders.forEach(d => d.initStats(this.game));
+                                this.log(`[防衛] ${tower.name} を Lv${tower.level} にアップグレードしました。`, "system");
+                                this.updateHUD();
+                                // 詳細パネルを再描画
+                                this.showSelectionDetails(slot);
+                            } else {
+                                this.log(`[防衛] 予算不足のためアップグレードできません。`, "warn");
+                            }
+                        });
+                    }
+                }
 
                 document.getElementById("btn-tower-sell").addEventListener("click", () => {
                     this.game.budget += Math.round(tower.cost * 0.5);

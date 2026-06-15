@@ -468,6 +468,31 @@ export class Defender {
 
         this.range = this.baseRange;
         this.damage = this.baseDamage;
+
+        // レベルアップ倍率の適用（レベルが上がっている場合は強化済みステータスに補正）
+        if (this.level > 1) {
+            const multiplier = 1 + (this.level - 1) * 0.3; // Lv2: 1.3倍, Lv3: 1.6倍
+            this.range *= multiplier;
+            this.damage *= multiplier;
+        }
+    }
+
+    // アップグレードコストを返す（コストの50%、レベルが上がるごとに上昇）
+    getUpgradeCost() {
+        return Math.round(this.cost * 0.5 * this.level);
+    }
+
+    // タワーをレベルアップする（最大レベル3）
+    upgrade(game) {
+        if (this.level >= 3) return false;
+        const upgradeCost = this.getUpgradeCost();
+        if (game.budget < upgradeCost) return false;
+
+        game.budget -= upgradeCost;
+        this.level++;
+        // ステータスをレベル適用込みで再計算
+        this.initStats(game);
+        return true;
     }
 
     update(delta, game) {
@@ -818,6 +843,10 @@ export class Defender {
         else if (this.type === "mailfilter") shortName = "MailFltr";
         else if (this.type === "education") shortName = "Edu";
         else if (this.type === "siem") shortName = "SIEM";
+        else if (this.type === "xdr") shortName = "XDR";
+        else if (this.type === "zerotrust") shortName = "ZeroTrust";
+        else if (this.type === "password") shortName = "Passwd";
+        else if (this.type === "antivirus") shortName = "AV";
 
         // 上段のテキスト（名前のみ）
         ctx.textAlign = "center";
