@@ -605,6 +605,9 @@ export class Defender {
             // WAFはWAFをバイパスする敵(内部不正など)に無効なため候補に含めない
             if (this.type === "waf" && enemy.bypassWAF) return false;
 
+            // FIDO2はブルートフォース攻撃にのみ有効なため、それ以外の敵は候補に含めない
+            if (this.type === "fido2" && enemy.type !== "bruteforce") return false;
+
             const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
             return dist <= this.range;
         });
@@ -725,9 +728,10 @@ export class Defender {
         // 同一ターゲットを同時に攻撃範囲に収めている「ユニークなタワータイプ」の数をカウント
         const targetingTowerTypes = new Set();
 
-        // 自分自身がターゲットをバイパスされない場合のみ追加
+        // 自分自身がターゲットをバイパスされない、または効果がない場合のみ除外
         const selfBypass = (this.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) ||
-                           (this.type === "waf" && target.bypassWAF);
+                           (this.type === "waf" && target.bypassWAF) ||
+                           (this.type === "fido2" && target.type !== "bruteforce");
         if (!selfBypass) {
             targetingTowerTypes.add(this.type);
         }
@@ -745,6 +749,8 @@ export class Defender {
                 if (def.type === "firewall" && (target.type === "phishing" || target.bypassFirewall)) return;
                 // WAFはWAFをバイパスする敵に対してカウントしない
                 if (def.type === "waf" && target.bypassWAF) return;
+                // FIDO2はブルートフォース以外の敵に対してカウントしない
+                if (def.type === "fido2" && target.type !== "bruteforce") return;
 
                 targetingTowerTypes.add(def.type);
             }
