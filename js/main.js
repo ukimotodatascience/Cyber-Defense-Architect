@@ -88,18 +88,15 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // マウスホバーで詳細を右側パネルにプレビュー表示 ＆ グローバルポップアップの表示
+        // マウスホバーでグローバルポップアップツールチップのみを表示（右下説明欄は切り替えない）
         btn.addEventListener("mouseenter", () => {
             const towerType = btn.dataset.towerType;
-            ui.showDefenderShopDetails(towerType);
-
             const info = ui.defenderInfo[towerType];
             if (info) {
                 showGlobalTooltip(btn, `${info.name} (🪙 ${info.cost.toLocaleString()})`, info.desc, info.icon);
             }
         });
         btn.addEventListener("mouseleave", () => {
-            restoreDetailPanel();
             hideGlobalTooltip();
         });
 
@@ -158,8 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const item = e.target.closest(".threat-list-item");
             if (item) {
                 const type = item.dataset.threatType;
-                ui.showThreatDetails(type);
-
                 const info = ui.attackerInfo[type];
                 if (info) {
                     showGlobalTooltip(item, info.name, info.desc, info.icon);
@@ -169,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
         activeThreatsList.addEventListener("mouseout", (e) => {
             const item = e.target.closest(".threat-list-item");
             if (item) {
-                restoreDetailPanel();
                 hideGlobalTooltip();
             }
         });
@@ -192,8 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const item = e.target.closest(".next-preview-icon");
             if (item) {
                 const type = item.dataset.threatType;
-                ui.showThreatDetails(type);
-
                 const info = ui.attackerInfo[type];
                 if (info) {
                     showGlobalTooltip(item, info.name, info.desc, info.icon);
@@ -203,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
         nextWavePreviewIcons.addEventListener("mouseout", (e) => {
             const item = e.target.closest(".next-preview-icon");
             if (item) {
-                restoreDetailPanel();
                 hideGlobalTooltip();
             }
         });
@@ -248,18 +239,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 詳細表示状態を元の選択に戻すヘルパー
-    function restoreDetailPanel() {
-        if (selectedPaletteTower) {
-            ui.showDefenderShopDetails(selectedPaletteTower);
-        } else if (selectedSlot) {
-            ui.showSelectionDetails(selectedSlot.tower || selectedSlot);
-        } else if (hoveredNode) {
-            ui.showSelectionDetails(hoveredNode);
-        } else {
-            ui.showSelectionDetails(null);
-        }
-    }
 
     // パレット選択をクリアするヘルパー
     function clearPaletteSelection() {
