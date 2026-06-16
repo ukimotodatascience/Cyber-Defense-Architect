@@ -33,13 +33,10 @@
 body.cyber-theme {
     background-color: var(--bg-dark);
     background-image:
-        linear-gradient(rgba(18, 24, 48, 0.2) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(18, 24, 48, 0.2) 1px, transparent 1px),
-        url('assets/background_view_of_main_game.png');
-    background-size: 40px 40px, 40px 40px, cover;
-    background-repeat: repeat, repeat, no-repeat;
+        linear-gradient(rgba(18, 24, 48, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(18, 24, 48, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
     background-position: center;
-    background-blend-mode: normal;
     color: var(--text-main);
     font-family: var(--font-heading);
     height: 100vh;
@@ -335,7 +332,10 @@ body.cyber-theme {
 }
 
 #game-canvas {
-    background: transparent;
+    background-image: url('assets/background_view_of_main_game.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
     border: none;
     box-shadow: none;
     border-radius: 8px;
