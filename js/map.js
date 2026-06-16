@@ -375,31 +375,6 @@ export class NetworkMap {
         for (let i = 0; i < 7; i++) {
             const zX = i * zoneW;
 
-            // ゾーン縦帯のグラデーション塗りつぶし (上部が少し濃く、下部へ向けてフェードアウト)
-            const zoneGrad = ctx.createLinearGradient(zX, 0, zX, h);
-            const baseOpacity = zones[i].color.includes("0.07") ? "0.10" : "0.08";
-            zoneGrad.addColorStop(0, zones[i].color.replace("0.07", baseOpacity).replace("0.05", baseOpacity));
-            zoneGrad.addColorStop(0.3, zones[i].color.replace("0.07", "0.03").replace("0.05", "0.02"));
-            zoneGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-            ctx.fillStyle = zoneGrad;
-            ctx.fillRect(zX, 0, zoneW, h);
-
-            // 境界線（右端のみ描画。最後のゾーンは描かない。上部が明るく下部が消えるグラデーション点線）
-            if (i < 6) {
-                const borderGrad = ctx.createLinearGradient(zX + zoneW, 0, zX + zoneW, h);
-                borderGrad.addColorStop(0, zones[i].borderColor);
-                borderGrad.addColorStop(0.7, zones[i].borderColor.replace("0.25", "0.05").replace("0.2", "0.03"));
-                borderGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-                ctx.strokeStyle = borderGrad;
-                ctx.lineWidth = 1;
-                ctx.setLineDash([4, 4]);
-                ctx.beginPath();
-                ctx.moveTo(zX + zoneW, 0);
-                ctx.lineTo(zX + zoneW, h);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
 
             // ゾーンタブの描画（画面上部）
             const tabMargin = 8;
