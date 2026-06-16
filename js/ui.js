@@ -34,8 +34,7 @@ export class UIManager {
             overlayTitle: document.getElementById("overlay-title"),
             btnStartWave: document.getElementById("btn-start-wave"),
 
-            btnFullscreen: document.getElementById("btn-fullscreen"),
-            btnThreatInfo: document.getElementById("btn-threat-info")
+            btnFullscreen: document.getElementById("btn-fullscreen")
         };
 
         this.currentEntity = null;
@@ -242,13 +241,7 @@ export class UIManager {
             });
         });
 
-        // 脅威情報ボタン
-        if (this.dom.btnThreatInfo) {
-            this.dom.btnThreatInfo.addEventListener("click", () => {
-                this.log(`[脅威インテル] 現在のステージ: ${this.game.stage ? this.game.stage.name : '未選択'}. 侵入経路を監視し、多層防御を構築してください。`, "system");
-                alert(`【現在の脅威情報】\n・フィッシングメール: 境界(FW)をスルーして直接Webや認証に到達。\n・ブルートフォース: MFAで大幅遅延可能。\n・SQLインジェクション: WebサーバーからDBへバイパス。\n・ランサムウェア: 到達するとサーバーを暗号化(停止)。EDRが特効。\n・内部不正: 境界(FW, WAF)を全てバイパスし、内部から出現。`);
-            });
-        }
+
 
 
     }

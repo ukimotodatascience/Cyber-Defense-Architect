@@ -1052,30 +1052,7 @@ body.cyber-theme {
     box-shadow: 0 0 10px rgba(0, 255, 213, 0.4);
 }
 
-/* Threat info button */
-.btn-threat-info-panel {
-    position: absolute;
-    top: 25px;
-    right: 25px;
-    background: rgba(10, 15, 30, 0.9);
-    border: 2px solid rgba(255, 0, 85, 0.6);
-    color: #ff0055;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    z-index: 5;
-    backdrop-filter: blur(8px);
-}
 
-.btn-threat-info-panel:hover {
-    background: #ff0055;
-    color: #fff;
-    box-shadow: 0 0 15px rgba(255,0,85,0.7);
-    transform: translateY(-1px);
-}
 
 /* Flashing Alert banner */
 .btn-cyber-start {
