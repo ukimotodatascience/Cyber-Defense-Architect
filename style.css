@@ -1873,8 +1873,9 @@ body.cyber-theme {
     background-size: cover;
     backdrop-filter: none;
     display: flex;
-    align-items: center;
+    align-items: flex-end; /* Pushes buttons to the bottom of the viewport */
     justify-content: center;
+    padding-bottom: 8vh; /* Safe margin from the bottom */
 }
 
 #modal-stage-select {
@@ -1892,7 +1893,7 @@ body.cyber-theme {
     justify-content: center;
     width: 100%;
     max-width: 400px;
-    margin-top: 280px; /* Shifted further down */
+    margin-top: 0; /* Removed fixed margin to support responsive layout */
 }
 
 .btn-start-fantasy {
