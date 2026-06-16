@@ -1,6 +1,7 @@
 /* Cyber Defense Architect - UI Updates & Event Management */
 
 import { FloatingText } from './units.js';
+import { STAGES } from './game.js';
 
 export class UIManager {
     constructor(game) {
@@ -27,8 +28,21 @@ export class UIManager {
             speed1x: document.getElementById("btn-speed-1x"),
             speed2x: document.getElementById("btn-speed-2x"),
 
+            modalStartMenu: document.getElementById("modal-start-menu"),
+            btnGameStart: document.getElementById("btn-game-start"),
+            btnEncyclopedia: document.getElementById("btn-encyclopedia"),
+            btnOptions: document.getElementById("btn-options"),
             modalStageSelect: document.getElementById("modal-stage-select"),
             modalGameEnd: document.getElementById("modal-game-end"),
+            btnStageBack: document.getElementById("btn-stage-back"),
+            btnStageStart: document.getElementById("btn-stage-start"),
+            infoStageTitle: document.getElementById("info-stage-title"),
+            infoStageStars: document.getElementById("info-stage-stars"),
+            infoStageGoal: document.getElementById("info-stage-goal"),
+            infoStageBudget: document.getElementById("info-stage-budget"),
+            infoStageStaff: document.getElementById("info-stage-staff"),
+            infoStageThreats: document.getElementById("info-stage-threats"),
+            stageCards: document.querySelectorAll(".stage-card-fantasy"),
 
             overlayMessage: document.getElementById("sidebar-wave-control"),
             overlayTitle: document.getElementById("overlay-title"),
@@ -547,6 +561,101 @@ export class UIManager {
     hideModal(modalEl) {
         modalEl.classList.remove("show");
         modalEl.classList.add("hidden");
+    }
+
+    updateStageBriefing(stageId) {
+        const stage = STAGES[stageId];
+        if (!stage) return;
+
+        const stageNamesMap = {
+            1: "1-1",
+            2: "1-2",
+            3: "1-3",
+            4: "1-4",
+            5: "2-1"
+        };
+        const displayId = stageNamesMap[stageId] || `Stage ${stageId}`;
+
+        if (this.dom.infoStageTitle) {
+            this.dom.infoStageTitle.textContent = displayId;
+        }
+
+        const starMap = {
+            1: "★★★",
+            2: "★★☆",
+            3: "★☆☆",
+            4: "☆☆☆",
+            5: "☆☆☆"
+        };
+        if (this.dom.infoStageStars) {
+            this.dom.infoStageStars.textContent = starMap[stageId] || "☆☆☆";
+        }
+
+        if (this.dom.infoStageGoal) {
+            this.dom.infoStageGoal.textContent = stage.description || "敵の侵入を防ぎ、機密情報を守りきれ！";
+        }
+
+        if (this.dom.infoStageBudget) {
+            this.dom.infoStageBudget.textContent = stage.initialBudget.toLocaleString();
+        }
+        if (this.dom.infoStageStaff) {
+            this.dom.infoStageStaff.textContent = stage.initialStaff;
+        }
+
+        const threatTypes = new Set();
+        if (stage.waves) {
+            stage.waves.forEach(wave => {
+                if (wave.spawnList) {
+                    wave.spawnList.forEach(spawn => {
+                        threatTypes.add(spawn.type);
+                    });
+                }
+            });
+        }
+
+        if (this.dom.infoStageThreats) {
+            this.dom.infoStageThreats.innerHTML = "";
+
+            threatTypes.forEach(type => {
+                const info = this.attackerInfo[type];
+                if (info) {
+                    const badge = document.createElement("div");
+                    badge.className = "info-threat-badge";
+
+                    let icon = info.icon;
+                    if (type === "ransomware") icon = "💀";
+
+                    badge.innerHTML = `
+                        <div class="info-threat-icon-box">
+                            ${icon}
+                        </div>
+                        <div class="info-threat-name">${info.name.split("（")[0].split("攻撃")[0]}</div>
+                    `;
+                    this.dom.infoStageThreats.appendChild(badge);
+                }
+            });
+
+            // 南京錠付きの locked 表示を1つダミーで追加して画像の雰囲気に合わせる
+            const allThreats = ["phishing", "ransomware", "bruteforce", "sqlinjection", "apt", "insider"];
+            let lockedAdded = 0;
+            allThreats.forEach(type => {
+                if (!threatTypes.has(type) && lockedAdded < 1) {
+                    const info = this.attackerInfo[type];
+                    if (info) {
+                        const badge = document.createElement("div");
+                        badge.className = "info-threat-badge";
+                        badge.innerHTML = `
+                            <div class="info-threat-icon-box locked-threat">
+                                🔒
+                            </div>
+                            <div class="info-threat-name">${info.name.split("（")[0].split("攻撃")[0]}</div>
+                        `;
+                        this.dom.infoStageThreats.appendChild(badge);
+                        lockedAdded++;
+                    }
+                }
+            });
+        }
     }
 
 

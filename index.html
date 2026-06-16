@@ -323,59 +323,139 @@
         </div>
     </div>
 
+    <!-- Start Menu Modal (Initial Screen) -->
+    <div id="modal-start-menu" class="modal show">
+        <div class="start-menu-buttons">
+            <button id="btn-game-start" class="btn-start-fantasy">
+                <span class="btn-icon">
+                    <svg class="btn-svg-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12,2L4,5v6.09c0,5.05,3.41,9.76,8,10.91c4.59-1.15,8-5.86,8-10.91V5L12,2z M18,11.09c0,4.02-2.55,7.77-6,8.79V4.12l6,2.25V11.09z"/>
+                    </svg>
+                </span>
+                <span class="btn-text">ゲーム開始</span>
+            </button>
+            <button id="btn-encyclopedia" class="btn-start-fantasy secondary">
+                <span class="btn-icon">
+                    <svg class="btn-svg-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M21 21H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5.5a4.5 4.5 0 0 1 3.5 1.73A4.5 4.5 0 0 1 15.5 3H21a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1zm-7-2h6V5h-4.5A2.5 2.5 0 0 0 13 7.5V19zm-2 0V7.5A2.5 2.5 0 0 0 9.5 5H4v14h6a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </span>
+                <span class="btn-text">図鑑</span>
+            </button>
+            <button id="btn-options" class="btn-start-fantasy secondary">
+                <span class="btn-icon">
+                    <svg class="btn-svg-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 c-0.12,0.21-0.07,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.04,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                    </svg>
+                </span>
+                <span class="btn-text">オプション</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Stage Select Modal (Initial Screen) -->
-    <div id="modal-stage-select" class="modal show">
-        <div class="modal-content large cyber-box">
-            <h1 class="neon-text-blue">MISSION BRIEFING - 作戦指令</h1>
-            <p class="subtitle">侵入してくるサイバー攻撃から組織の重要アセットを防衛せよ。</p>
+    <div id="modal-stage-select" class="modal hidden">
+        <div class="stage-select-container">
+            <!-- ヘッダー -->
+            <header class="stage-select-header">
+                <button id="btn-stage-back" class="btn-back-arrow">◀</button>
+                <h2 class="stage-select-title">ステージ選択</h2>
+            </header>
 
-            <div class="stage-grid">
-                <div class="stage-card" data-stage="1">
-                    <div class="stage-num">STAGE 01</div>
-                    <h3>初級: 基本防御演習</h3>
-                    <p class="stage-desc">SQLインジェクションとブルートフォース攻撃に対する基礎的な多層防御（WAF, MFA）を検証する。</p>
-                    <div class="stage-rewards">報酬: 予算 $1,500 / 人員 3</div>
-                    <button class="btn-cyber-select">作戦開始</button>
+            <!-- メインコンテンツ領域 -->
+            <div class="stage-select-content">
+                <!-- 左サイド: ステージリスト -->
+                <div class="stage-list-panel">
+                    <div class="stage-tabs">
+                        <button class="stage-tab active">メインステージ</button>
+                        <button class="stage-tab">チャレンジステージ</button>
+                    </div>
+                    <div class="stage-grid-fantasy">
+                        <div class="stage-card-fantasy active" data-stage="1">
+                            <span class="stage-card-num">1-1</span>
+                            <span class="stage-card-stars">★★★</span>
+                            <div class="stage-card-checkmark">✔️</div>
+                        </div>
+                        <div class="stage-card-fantasy" data-stage="2">
+                            <span class="stage-card-num">1-2</span>
+                            <span class="stage-card-stars">★★☆</span>
+                        </div>
+                        <div class="stage-card-fantasy" data-stage="3">
+                            <span class="stage-card-num">1-3</span>
+                            <span class="stage-card-stars">★☆☆</span>
+                        </div>
+                        <div class="stage-card-fantasy" data-stage="4">
+                            <span class="stage-card-num">1-4</span>
+                            <span class="stage-card-stars">☆☆☆</span>
+                        </div>
+                        <div class="stage-card-fantasy" data-stage="5">
+                            <span class="stage-card-num">2-1</span>
+                            <span class="stage-card-stars">☆☆☆</span>
+                        </div>
+                        <div class="stage-card-fantasy locked">
+                            <span class="stage-card-num">2-2</span>
+                            <span class="stage-card-stars">☆☆☆</span>
+                            <div class="stage-card-lock">🔒</div>
+                        </div>
+                        <div class="stage-card-fantasy locked dummy">
+                            <span class="stage-card-num">???</span>
+                            <div class="stage-card-lock">🔒</div>
+                        </div>
+                        <div class="stage-card-fantasy locked dummy">
+                            <span class="stage-card-num">???</span>
+                            <div class="stage-card-lock">🔒</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stage-card" data-stage="2">
-                    <div class="stage-num">STAGE 02</div>
-                    <h3>中級: ランサムウェアの脅威</h3>
-                    <p class="stage-desc">フィッシングメールとランサムウェアが登場。EDRとバックアップを適切に配置して暗号化被害を防ぐ。</p>
-                    <div class="stage-rewards">報酬: 予算 $2,000 / 人員 3</div>
-                    <button class="btn-cyber-select">作戦開始</button>
-                </div>
-                <div class="stage-card" data-stage="3">
-                    <div class="stage-num">STAGE 03</div>
-                    <h3>ステージ 3-2: ランサムウェアの脅威</h3>
-                    <p class="stage-desc">フィッシングメール、ブルートフォース、ランサムウェア、内部不正が同時に襲来。多層防御で要所を守り抜け。</p>
-                    <div class="stage-rewards">報酬: 予算 $2,450 / 人員 5</div>
-                    <button class="btn-cyber-select">作戦開始</button>
-                </div>
-                <div class="stage-card" data-stage="4">
-                    <div class="stage-num">STAGE 04</div>
-                    <h3>超級: サプライチェーン攻撃</h3>
-                    <p class="stage-desc">境界防御（Firewall）を迂回し、内部のWebサーバや認証サーバから突然出現する複合攻撃ウェーブ。</p>
-                    <div class="stage-rewards">報酬: 予算 $3,000 / 人員 4</div>
-                    <button class="btn-cyber-select">作戦開始</button>
-                </div>
-                <div class="stage-card" data-stage="5">
-                    <div class="stage-num">STAGE 05</div>
-                    <h3>最終: 国家支援型攻撃グループ</h3>
-                    <p class="stage-desc">これまでのすべての脅威が同時に、かつ圧倒的な数で襲いかかる。多層防御アーキテクトとしての真価が問われる。</p>
-                    <div class="stage-rewards">報酬: 予算 $3,500 / 人員 5</div>
-                    <button class="btn-cyber-select">作戦開始</button>
-                </div>
-            </div>
 
-            <div class="how-to-play-quick">
-                <h4>【遊び方】</h4>
-                <ul>
-                    <li>1. 左下の「防御ユニット」をクリックして選択し、マップ上の配置スロット（青い○印）をクリックしてタワーを配置します。</li>
-                    <li>2. 「ウェーブ開始」をクリックすると、左端のインターネット等から攻撃者（敵パケット）が進軍してきます。</li>
-                    <li>3. 敵は「道」に沿って進み、右端の「機密情報」に達すると信頼度が下がります。信頼度または事業継続率が0になると敗北です。</li>
-                    <li>4. 同じ敵に複数の防御ユニットが作用すると「Defense in Depth（多層防御）ボーナス」が発動し、大ダメージを与えられます。</li>
-                    <li>5. ランサムウェアにサーバを暗号化されたら、近くに「Backup」を置くか、人員を割り当てて復旧します。</li>
-                </ul>
+                <!-- 右サイド: ステージ詳細パネル -->
+                <div class="stage-info-panel">
+                    <div class="info-header">
+                        <h3 id="info-stage-title" class="fantasy-stage-title">1-1</h3>
+                        <span id="info-stage-stars" class="info-stars">★★★</span>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-label">
+                            <span class="info-icon">🛡️</span>
+                            <span>ステージ目標</span>
+                        </div>
+                        <p id="info-stage-goal" class="info-text">敵の侵入を防ぎ、機密情報を守りきれ！</p>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-label">
+                            <span class="info-icon">🪙</span>
+                            <span>初期リソース</span>
+                        </div>
+                        <div class="info-resources">
+                            <div class="res-item">
+                                <span class="res-icon">🪙</span>
+                                <span class="res-label">予算:</span>
+                                <span class="res-val" id="info-stage-budget">1,500</span>
+                            </div>
+                            <div class="res-item">
+                                <span class="res-icon">👥</span>
+                                <span class="res-label">人員:</span>
+                                <span class="res-val" id="info-stage-staff">3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-label">
+                            <span class="info-icon">👾</span>
+                            <span>出現する攻撃</span>
+                        </div>
+                        <div class="info-threats-grid" id="info-stage-threats">
+                            <!-- JSで動的に追加される -->
+                        </div>
+                    </div>
+
+                    <button id="btn-stage-start" class="btn-start-action">
+                        ステージ開始
+                    </button>
+                </div>
             </div>
         </div>
     </div>
