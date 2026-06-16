@@ -199,9 +199,6 @@ export class NetworkMap {
         this.paths = []; // 攻撃者が通るメインのパス定義
         this.dataPulses = []; // パルスアニメーション用の粒子配列
 
-        this.bgImage = new Image();
-        this.bgImage.src = "images/map_bg.png";
-
         this.initializeTopology();
     }
 
@@ -359,13 +356,8 @@ export class NetworkMap {
         const w = ctx.canvas.width;
         const h = ctx.canvas.height;
 
-        // 1. 背景画像の描画
-        if (this.bgImage.complete) {
-            ctx.drawImage(this.bgImage, 0, 0, w, h);
-        } else {
-            ctx.fillStyle = "#020308";
-            ctx.fillRect(0, 0, w, h);
-        }
+        // 1. 描画エリアのクリア
+        ctx.clearRect(0, 0, w, h);
 
         // 2. 7つのカラーゾーンとゾーンタブの描画
         const zones = [
