@@ -1885,3 +1885,451 @@ body.cyber-theme {
         font-size: 8px;
     }
 }
+
+/* ==========================================
+   Start Menu & Mode Select Styles
+   ========================================== */
+
+/* Start Menu Screen */
+#modal-start-menu {
+    background: url('assets/start_menu_img.png') no-repeat center center;
+    background-size: cover;
+    backdrop-filter: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#modal-stage-select {
+    background: radial-gradient(circle at center, #0f1c2c 0%, #070b12 100%);
+    background-size: cover;
+    backdrop-filter: none;
+}
+
+/* Start Menu Fantasy Buttons */
+.start-menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* Slightly wider gap */
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 200px; /* Shifted further down */
+}
+
+.btn-start-fantasy {
+    position: relative;
+    width: 335px;
+    height: 60px; /* Expanded height */
+    background: linear-gradient(to bottom, #192533 0%, #0c141d 100%);
+    border: 2px solid #a8884c;
+    border-radius: 4px;
+    box-shadow:
+        0 6px 15px rgba(0, 0, 0, 0.75),
+        inset 0 0 0 2px #0c141d,
+        inset 0 0 0 3px #94773f,
+        inset 0 1px 5px rgba(255, 255, 255, 0.15);
+    color: #e5c583;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.btn-start-fantasy:hover {
+    background: linear-gradient(to bottom, #213142 0%, #101924 100%);
+    border-color: #d1af66;
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.85),
+        inset 0 0 0 2px #101924,
+        inset 0 0 0 3px #bca061,
+        inset 0 1px 6px rgba(255, 255, 255, 0.25),
+        0 0 10px rgba(168, 136, 76, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-start-fantasy:active {
+    transform: translateY(1px);
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.75),
+        inset 0 0 0 2px #0c141d,
+        inset 0 0 0 3px #94773f;
+}
+
+.btn-start-fantasy.secondary {
+    opacity: 0.9;
+}
+
+.btn-start-fantasy.secondary:hover {
+    background: linear-gradient(to bottom, #192533 0%, #0c141d 100%);
+    border-color: #a8884c;
+    box-shadow:
+        0 6px 15px rgba(0, 0, 0, 0.75),
+        inset 0 0 0 2px #0c141d,
+        inset 0 0 0 3px #94773f,
+        inset 0 1px 5px rgba(255, 255, 255, 0.15);
+    transform: none;
+    cursor: not-allowed;
+}
+
+.btn-start-fantasy .btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-start-fantasy .btn-svg-icon {
+    width: 22px;
+    height: 22px;
+    color: #e5c583;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+    transition: all 0.25s ease;
+}
+
+.btn-start-fantasy .btn-text {
+    display: inline-block;
+    font-family: "Georgia", "Times New Roman", "游明朝", "Yu Mincho", "Hiragino Mincho ProN", serif;
+    font-size: 19px;
+    font-weight: bold;
+    color: #e5c583;
+    letter-spacing: 3px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    transition: all 0.25s ease;
+}
+
+.btn-start-fantasy:hover .btn-text,
+.btn-start-fantasy:hover .btn-svg-icon {
+    color: #fffbcf;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.6), 1px 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Stage Select Screen (Fantasy theme matching screenshots) */
+.stage-select-container {
+    width: 90%;
+    max-width: 1200px;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    color: #e5c583;
+}
+
+/* Header */
+.stage-select-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #5a482d;
+    padding-bottom: 15px;
+}
+
+.btn-back-arrow {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(to bottom, #1b2631, #0d131a);
+    border: 2px solid #b89748;
+    border-radius: 4px;
+    color: #e5c583;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+}
+
+.btn-back-arrow:hover {
+    filter: brightness(1.2);
+    border-color: #ffd700;
+}
+
+.stage-select-title {
+    font-family: "Georgia", "Times New Roman", "游明朝", "Yu Mincho", "Hiragino Mincho ProN", serif;
+    font-size: 26px;
+    font-weight: bold;
+    color: #e5c583;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    margin: 0;
+}
+
+/* Content Area Split */
+.stage-select-content {
+    display: flex;
+    gap: 30px;
+    flex: 1;
+    min-height: 0; /* allows child panels to scroll if needed */
+}
+
+/* Left Side: Stage Cards Panel */
+.stage-list-panel {
+    flex: 1.3;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stage-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.stage-tab {
+    padding: 10px 25px;
+    background: #0f171e;
+    border: 2px solid #3c4f5e;
+    border-radius: 4px;
+    color: #a0b2c6;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.stage-tab.active {
+    background: linear-gradient(to bottom, #16537e, #0c3350);
+    border-color: #21a1f1;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(33, 161, 241, 0.3);
+}
+
+.stage-grid-fantasy {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Stage Card (Fantasy themed) */
+.stage-card-fantasy {
+    position: relative;
+    height: 100px;
+    background: linear-gradient(135deg, rgba(30, 42, 54, 0.8) 0%, rgba(13, 19, 26, 0.9) 100%);
+    border: 2px solid #5a4b2d;
+    border-radius: 5px;
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.stage-card-fantasy:hover:not(.locked) {
+    border-color: #dfc070;
+    box-shadow: 0 6px 15px rgba(223, 192, 112, 0.2);
+    transform: translateY(-2px);
+}
+
+.stage-card-fantasy.active {
+    border-color: #21a1f1;
+    box-shadow: 0 0 15px rgba(33, 161, 241, 0.4);
+}
+
+.stage-card-num {
+    font-family: "Georgia", serif;
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.stage-card-stars {
+    font-size: 14px;
+    color: #dfc070;
+    letter-spacing: 2px;
+}
+
+.stage-card-checkmark {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    color: #21a1f1;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Locked Card State */
+.stage-card-fantasy.locked {
+    opacity: 0.6;
+    background: linear-gradient(135deg, rgba(20, 24, 30, 0.8) 0%, rgba(10, 12, 15, 0.9) 100%);
+    border-color: #3e372a;
+    cursor: not-allowed;
+}
+
+.stage-card-lock {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+/* Right Side: Stage Briefing Panel */
+.stage-info-panel {
+    flex: 1;
+    background: rgba(13, 20, 29, 0.92);
+    border: 3px double #b89748;
+    border-radius: 8px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #3c4f5e;
+    padding-bottom: 12px;
+}
+
+.fantasy-stage-title {
+    font-family: "Georgia", serif;
+    font-size: 32px;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.info-stars {
+    font-size: 18px;
+    color: #dfc070;
+}
+
+/* Sub-sections of details panel */
+.info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid rgba(60, 79, 94, 0.4);
+    padding-bottom: 15px;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #dfc070;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-text {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #ffffff;
+    margin: 0;
+}
+
+.info-resources {
+    display: flex;
+    gap: 30px;
+}
+
+.res-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.res-icon {
+    font-size: 18px;
+}
+
+.res-label {
+    color: #8fa0b5;
+    font-size: 14px;
+}
+
+.res-val {
+    font-weight: bold;
+}
+
+/* Threat Icons Grid */
+.info-threats-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.info-threat-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 68px;
+}
+
+.info-threat-icon-box {
+    width: 48px;
+    height: 48px;
+    background: #0f1722;
+    border: 2px solid #aa3838;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.info-threat-icon-box.locked-threat {
+    border-color: #555555;
+    background: #111111;
+    color: #666666;
+}
+
+.info-threat-name {
+    font-size: 10px;
+    color: #8fa0b5;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Action Start Button */
+.btn-start-action {
+    margin-top: auto; /* Pushes button to bottom of detail panel */
+    width: 100%;
+    height: 54px;
+    background: linear-gradient(to bottom, #1c4c75, #0c2d4a);
+    border: 2px solid #b89748;
+    border-radius: 4px;
+    color: #e5c583;
+    font-family: "Georgia", "游明朝", serif;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 4px 15 rgba(0, 0, 0, 0.6);
+    transition: all 0.2s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.btn-start-action:hover {
+    background: linear-gradient(to bottom, #296a9e, #144066);
+    border-color: #ffd700;
+    color: #ffffff;
+}
+
+.btn-start-action:active {
+    transform: translateY(1px);
+}

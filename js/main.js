@@ -50,14 +50,71 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---- サイドバートグルはフローティング化に伴い廃止 ----
 
+    let selectedStageId = 1;
+
+    // 1.5. スタート画面からモード選択への遷移
+    if (ui.dom.btnGameStart) {
+        ui.dom.btnGameStart.addEventListener("click", () => {
+            ui.hideModal(ui.dom.modalStartMenu);
+            ui.showModal(ui.dom.modalStageSelect);
+
+            // デフォルトでステージ1-1を選択状態にする
+            selectedStageId = 1;
+            ui.updateStageBriefing(selectedStageId);
+            if (ui.dom.stageCards) {
+                ui.dom.stageCards.forEach(c => {
+                    if (parseInt(c.dataset.stage) === 1) {
+                        c.classList.add("active");
+                    } else {
+                        c.classList.remove("active");
+                    }
+                });
+            }
+        });
+    }
+    if (ui.dom.btnEncyclopedia) {
+        ui.dom.btnEncyclopedia.addEventListener("click", () => {
+            alert("「図鑑」機能は現在準備中です。");
+        });
+    }
+    if (ui.dom.btnOptions) {
+        ui.dom.btnOptions.addEventListener("click", () => {
+            alert("「オプション」機能は現在準備中です。");
+        });
+    }
+
     // 2. ステージ選択イベントの設定
-    document.querySelectorAll(".stage-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const stageId = parseInt(card.dataset.stage);
-            if (game.loadStage(stageId)) {
+    if (ui.dom.stageCards) {
+        ui.dom.stageCards.forEach(card => {
+            card.addEventListener("click", () => {
+                if (card.classList.contains("locked") || card.classList.contains("dummy")) {
+                    return;
+                }
+
+                ui.dom.stageCards.forEach(c => c.classList.remove("active"));
+                card.classList.add("active");
+
+                const stageId = parseInt(card.dataset.stage);
+                selectedStageId = stageId;
+                ui.updateStageBriefing(stageId);
+            });
+        });
+    }
+
+    if (ui.dom.btnStageBack) {
+        ui.dom.btnStageBack.addEventListener("click", () => {
+            ui.hideModal(ui.dom.modalStageSelect);
+            ui.showModal(ui.dom.modalStartMenu);
+        });
+    }
+
+    if (ui.dom.btnStageStart) {
+        ui.dom.btnStageStart.addEventListener("click", () => {
+            if (game.loadStage(selectedStageId)) {
                 // トポロジーとスロットの初期化 (現在のキャンバスサイズにフィット)
                 map.initializeTopology(canvas.width, canvas.height);
                 ui.hideModal(ui.dom.modalStageSelect);
+                ui.hideModal(ui.dom.modalStartMenu);
                 ui.updateHUD();
                 ui.log(`[ミッション開始] 「${game.stage.name}」を開始しました。予算: $${game.budget}`, "system");
 
@@ -69,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ui.resetPaletteTabs();
             }
         });
-    });
+    }
 
     // 3. タワーパレット選択イベント
     const paletteButtons = document.querySelectorAll(".palette-item");
