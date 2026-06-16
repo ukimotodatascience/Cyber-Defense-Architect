@@ -1869,7 +1869,7 @@ body.cyber-theme {
 
 /* Start Menu Screen */
 #modal-start-menu {
-    background: url('assets/start_menu_img.png') no-repeat center center;
+    background: url('assets/start_menu_img.png') no-repeat center top;
     background-size: cover;
     backdrop-filter: none;
     display: flex;
@@ -1892,7 +1892,7 @@ body.cyber-theme {
     justify-content: center;
     width: 100%;
     max-width: 400px;
-    margin-top: 200px; /* Shifted further down */
+    margin-top: 280px; /* Shifted further down */
 }
 
 .btn-start-fantasy {
