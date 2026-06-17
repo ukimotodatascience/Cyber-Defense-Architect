@@ -141,7 +141,7 @@ export class Slot {
 
     draw(ctx, isHovered, isSelected, selectedPaletteTower) {
         ctx.save();
-        const isMobile = ctx.canvas.width < ctx.canvas.height;
+        const isMobile = (ctx.canvas.logicalWidth || ctx.canvas.width) < (ctx.canvas.logicalHeight || ctx.canvas.height);
         const currentRadius = isMobile ? 24 : this.radius;
 
         if (this.tower) {
@@ -452,8 +452,8 @@ export class NetworkMap {
 
     draw(ctx, hoveredSlot, selectedSlot, selectedPaletteTower) {
         const time = Date.now();
-        const w = ctx.canvas.width;
-        const h = ctx.canvas.height;
+        const w = ctx.canvas.logicalWidth || ctx.canvas.width;
+        const h = ctx.canvas.logicalHeight || ctx.canvas.height;
 
         // 1. 描画エリアのクリア
         ctx.clearRect(0, 0, w, h);

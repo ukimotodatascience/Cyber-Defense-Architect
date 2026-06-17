@@ -283,7 +283,7 @@ export class UIManager {
             if (this.game.loadStage(this.game.stage.id)) {
                 const canvas = document.getElementById("game-canvas");
                 if (canvas) {
-                    this.game.map.initializeTopology(canvas.width, canvas.height);
+                    this.game.map.initializeTopology(canvas.logicalWidth || canvas.width, canvas.logicalHeight || canvas.height);
                 } else {
                     this.game.map.initializeTopology();
                 }
