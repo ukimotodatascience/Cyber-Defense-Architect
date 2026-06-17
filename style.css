@@ -1804,7 +1804,7 @@ body.cyber-theme {
         box-sizing: border-box;
         border-left: 2px solid var(--border-cyber);
     }
-    
+
     .floating-detail-panel:has(.empty-selection) {
         display: none !important; /* Hide panel when no active selection */
     }
@@ -2075,7 +2075,7 @@ body.cyber-theme {
         width: 100%;
         scrollbar-width: thin; /* スクロールバーを細く */
     }
-    
+
     .bottom-palette-panel .tower-palette::-webkit-scrollbar {
         height: 4px;
     }
@@ -2144,7 +2144,7 @@ body.cyber-theme {
         font-size: 11px;
         color: #8fa0b5;
     }
-    
+
     .mobile-wave-counter .neon-text-blue {
         color: #00f0ff;
         font-weight: bold;
@@ -2292,7 +2292,7 @@ body.cyber-theme {
     .mobile-status-bar .status-item:first-child {
         margin-left: 0;
     }
-    
+
     .mobile-status-bar .status-item:last-child {
         margin-right: 0;
     }

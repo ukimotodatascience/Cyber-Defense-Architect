@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // キャンバスコンテキスト
     const canvas = document.getElementById("game-canvas");
     const ctx = canvas.getContext("2d");
+    canvas.logicalWidth = 1200;
+    canvas.logicalHeight = 540;
 
     // UIインタラクション状態
     let selectedPaletteTower = null; // パレットで選択されたタワータイプ名
@@ -28,16 +30,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // Canvasの論理解像度固定化とレイアウト初期化
     function resizeCanvas() {
         const isMobile = window.innerWidth <= 767;
+        const dpr = window.devicePixelRatio || 1;
 
         if (isMobile) {
             // モバイル縦長アスペクト比 (941x1672)
-            canvas.width = 941;
-            canvas.height = 1672;
+            canvas.logicalWidth = 941;
+            canvas.logicalHeight = 1672;
         } else {
             // PC横長アスペクト比 (1200x540)
-            canvas.width = 1200;
-            canvas.height = 540;
+            canvas.logicalWidth = 1200;
+            canvas.logicalHeight = 540;
         }
+
+        canvas.width = canvas.logicalWidth * dpr;
+        canvas.height = canvas.logicalHeight * dpr;
 
         // 表示サイズの自動調整 (アスペクト比維持の親要素へのフィッティング)
         const wrapper = canvas.parentElement;
@@ -49,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const wrapperHeight = Math.max(0, rect.height - 30);
 
             if (wrapperWidth > 0 && wrapperHeight > 0) {
-                const targetRatio = canvas.width / canvas.height;
+                const targetRatio = canvas.logicalWidth / canvas.logicalHeight;
                 const currentRatio = wrapperWidth / wrapperHeight;
 
                 if (currentRatio > targetRatio) {
@@ -64,8 +70,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        // 描画スケールの設定
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+
         // マップのレイアウト更新
-        map.updateLayout(canvas.width, canvas.height);
+        map.updateLayout(canvas.logicalWidth, canvas.logicalHeight);
 
         // 既存の敵ユニットのパス参照と座標を同期
         game.attackers.forEach(enemy => {
@@ -146,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ui.dom.btnStageStart.addEventListener("click", () => {
             if (game.loadStage(selectedStageId)) {
                 // トポロジーとスロットの初期化 (現在のキャンバスサイズにフィット)
-                map.initializeTopology(canvas.width, canvas.height);
+                map.initializeTopology(canvas.logicalWidth, canvas.logicalHeight);
                 ui.hideModal(ui.dom.modalStageSelect);
                 ui.hideModal(ui.dom.modalStartMenu);
                 ui.updateHUD();
@@ -344,11 +354,11 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("mousemove", (e) => {
         const rect = canvas.getBoundingClientRect();
         // スケール比率の考慮 (レスポンシブ対応)
-        const mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
-        const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+        const mouseX = ((e.clientX - rect.left) / rect.width) * canvas.logicalWidth;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.logicalHeight;
 
         // スロットホバー検出
-        const isMobileCanvas = canvas.width < canvas.height;
+        const isMobileCanvas = canvas.logicalWidth < canvas.logicalHeight;
         const clickRadius = isMobileCanvas ? 32 : 18;
         let foundSlot = null;
         map.slots.forEach(slot => {
@@ -383,8 +393,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     canvas.addEventListener("click", (e) => {
         const rect = canvas.getBoundingClientRect();
-        const mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
-        const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+        const mouseX = ((e.clientX - rect.left) / rect.width) * canvas.logicalWidth;
+        const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.logicalHeight;
 
         // 0. 敵ユニットをクリックした場合
         let clickedEnemy = null;
@@ -404,7 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 1. スロットをクリックした場合
-        const isMobileCanvas = canvas.width < canvas.height;
+        const isMobileCanvas = canvas.logicalWidth < canvas.logicalHeight;
         const clickRadius = isMobileCanvas ? 32 : 18;
         let clickedSlot = null;
         map.slots.forEach(slot => {
@@ -474,8 +484,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // タッチ座標をキャンバス論理座標に変換してクリックと同様に処理
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
-        const mouseX = ((touch.clientX - rect.left) / rect.width) * canvas.width;
-        const mouseY = ((touch.clientY - rect.top) / rect.height) * canvas.height;
+        const mouseX = ((touch.clientX - rect.left) / rect.width) * canvas.logicalWidth;
+        const mouseY = ((touch.clientY - rect.top) / rect.height) * canvas.logicalHeight;
 
         // 0. 敵ユニットをタップした場合
         let clickedEnemy = null;
@@ -673,7 +683,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function drawCanvas() {
         // キャンバスのクリア
         ctx.fillStyle = "#020308";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, canvas.logicalWidth, canvas.logicalHeight);
 
         // 1. マップ（ノード・スロット）および背景の描画
         map.draw(ctx, hoveredSlot, selectedSlot, selectedPaletteTower);
@@ -769,7 +779,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 画面外はみ出し防止
         if (x < 10) x = 10;
-        if (x + tooltipWidth > canvas.width - 10) x = canvas.width - tooltipWidth - 10;
+        if (x + tooltipWidth > canvas.logicalWidth - 10) x = canvas.logicalWidth - tooltipWidth - 10;
         if (y < 10) y = node.y + node.size + 15; // 上にはみ出る場合は下に表示
 
         // 背景と枠の描画
