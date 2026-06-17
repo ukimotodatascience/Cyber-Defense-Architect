@@ -48,11 +48,22 @@ export class UIManager {
             overlayTitle: document.getElementById("overlay-title"),
             btnStartWave: document.getElementById("btn-start-wave"),
 
-            btnFullscreen: document.getElementById("btn-fullscreen")
+            btnFullscreen: document.getElementById("btn-fullscreen"),
+            btnSidebarToggle: document.getElementById("btn-sidebar-toggle"),
+            sidebarPanel: document.getElementById("sidebar-left-panel"),
+
+            // モバイル専用DOM
+            mobileBudgetVal: document.getElementById("mobile-budget-val"),
+            mobileStaffVal: document.getElementById("mobile-staff-val"),
+            mobileWaveText: document.getElementById("mobile-wave-text"),
+            mobileWaveWarnText: document.getElementById("mobile-wave-warn-text"),
+            mobileNextWaveTime: document.getElementById("mobile-next-wave-time"),
+            mobileBtnSpeedPause: document.getElementById("mobile-btn-speed-pause")
         };
 
         this.currentEntity = null;
         this.lastThreatWaveIndex = -1;
+        this.prepStartTime = null;
         this.lastThreatWaveInProgress = null;
         this.lastAttackerCount = -1;
         this.lastAttackerTypesStr = "";
@@ -181,10 +192,70 @@ export class UIManager {
     }
 
     initStaticEvents() {
+        // サイドバー開閉トグル (モバイル/タブレット向け)
+        if (this.dom.btnSidebarToggle && this.dom.sidebarPanel) {
+            this.dom.btnSidebarToggle.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.dom.sidebarPanel.classList.toggle("open");
+            });
+
+            const closeSidebar = () => {
+                if (this.dom.sidebarPanel.classList.contains("open")) {
+                    this.dom.sidebarPanel.classList.remove("open");
+                }
+            };
+
+            const canvas = document.getElementById("game-canvas");
+            if (canvas) {
+                canvas.addEventListener("click", closeSidebar);
+                canvas.addEventListener("touchstart", closeSidebar);
+            }
+
+            const palette = document.getElementById("tower-palette");
+            if (palette) {
+                palette.addEventListener("click", closeSidebar);
+            }
+
+            // サイドバー内のクリックで閉じないようにバブリングを止める
+            this.dom.sidebarPanel.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+        }
+
         // スピード制御
         this.dom.speedPause.addEventListener("click", () => this.setGameSpeed(0));
         this.dom.speed1x.addEventListener("click", () => this.setGameSpeed(1));
         this.dom.speed2x.addEventListener("click", () => this.setGameSpeed(2));
+
+        // モバイル専用スピードトグル (一時停止/再生)
+        if (this.dom.mobileBtnSpeedPause) {
+            this.dom.mobileBtnSpeedPause.addEventListener("click", () => {
+                if (this.game.speed === 0) {
+                    this.setGameSpeed(1);
+                } else {
+                    this.setGameSpeed(0);
+                }
+            });
+        }
+
+        // モバイル専用予算・人員追加「＋」ボタン (イースターエッグ/ユーザープレイ補助)
+        const btnAddBudget = document.getElementById("mobile-btn-add-budget");
+        if (btnAddBudget) {
+            btnAddBudget.addEventListener("click", () => {
+                this.game.budget += 100;
+                this.updateHUD();
+                this.log("[デバッグサポート] 防御予算 +🪙100", "success");
+            });
+        }
+        const btnAddStaff = document.getElementById("mobile-btn-add-staff");
+        if (btnAddStaff) {
+            btnAddStaff.addEventListener("click", () => {
+                this.game.staffMax += 1;
+                this.game.staffAvailable += 1;
+                this.updateHUD();
+                this.log("[デバッグサポート] セキュリティ要員上限 +👥1", "success");
+            });
+        }
 
         // 全画面表示の切り替え
         if (this.dom.btnFullscreen) {
@@ -291,6 +362,17 @@ export class UIManager {
         if (speed === 0) this.dom.speedPause.classList.add("active");
         else if (speed === 1) this.dom.speed1x.classList.add("active");
         else if (speed === 2) this.dom.speed2x.classList.add("active");
+
+        // モバイル一時停止ボタンの表示更新
+        if (this.dom.mobileBtnSpeedPause) {
+            if (speed === 0) {
+                this.dom.mobileBtnSpeedPause.textContent = "▶";
+                this.dom.mobileBtnSpeedPause.classList.add("paused");
+            } else {
+                this.dom.mobileBtnSpeedPause.textContent = "⏸";
+                this.dom.mobileBtnSpeedPause.classList.remove("paused");
+            }
+        }
     }
 
     log(message, type = "normal") {
@@ -315,6 +397,14 @@ export class UIManager {
         this.dom.budgetVal.textContent = this.game.budget.toLocaleString();
         this.dom.staffVal.textContent = `${this.game.staffAvailable} / ${this.game.staffMax}`;
 
+        // モバイル用予算と人員
+        if (this.dom.mobileBudgetVal) {
+            this.dom.mobileBudgetVal.textContent = this.game.budget.toLocaleString();
+        }
+        if (this.dom.mobileStaffVal) {
+            this.dom.mobileStaffVal.textContent = `${this.game.staffAvailable} / ${this.game.staffMax}`;
+        }
+
         // ステージとウェーブ情報 (ステージ番号とタイトルを分割して2行表示)
         let stageNum = "ステージ -";
         let stageTitle = "作戦準備完了";
@@ -334,6 +424,11 @@ export class UIManager {
         const maxWave = this.game.stage.waves.length;
         const currentWave = Math.min(maxWave, this.game.currentWaveIndex + (this.game.waveInProgress ? 1 : 0));
         this.dom.currentWaveText.textContent = `${currentWave} / ${maxWave}`;
+
+        // モバイル用ウェーブ
+        if (this.dom.mobileWaveText) {
+            this.dom.mobileWaveText.textContent = `${currentWave}/${maxWave}`;
+        }
 
         // Wave進捗トラック（丸ノード）の更新
         const nodes = this.dom.waveTrack.querySelectorAll(".wave-node");
@@ -377,6 +472,60 @@ export class UIManager {
                 this.showOverlayMessage(`WAVE ${nextWaveNum} 準備完了`);
             }
         }
+
+        // モバイル専用タイマーの更新
+        if (!this.game.waveInProgress && this.game.status === "playing") {
+            if (!this.prepStartTime) {
+                this.prepStartTime = Date.now();
+            }
+            const elapsed = Math.floor((Date.now() - this.prepStartTime) / 1000);
+            const remaining = Math.max(0, 60 - elapsed);
+            const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
+            const seconds = (remaining % 60).toString().padStart(2, '0');
+            if (this.dom.mobileNextWaveTime) {
+                this.dom.mobileNextWaveTime.textContent = `${minutes}:${seconds}`;
+            }
+        } else {
+            this.prepStartTime = null;
+            if (this.dom.mobileNextWaveTime) {
+                this.dom.mobileNextWaveTime.textContent = this.game.status === "playing" ? "戦闘中" : "00:00";
+            }
+        }
+
+        // モバイル専用攻撃進行状況の更新
+        const nodeToStep = {
+            "internet": 1,
+            "dmz": 2,
+            "web": 3,
+            "db": 3,
+            "auth": 4,
+            "file": 4,
+            "data": 5
+        };
+
+        let maxStep = 1;
+        if (this.game.waveInProgress && this.game.attackers.length > 0) {
+            this.game.attackers.forEach(attacker => {
+                const node = attacker.getCurrentNode();
+                if (node && nodeToStep[node]) {
+                    maxStep = Math.max(maxStep, nodeToStep[node]);
+                }
+            });
+        } else if (this.game.status === "victory") {
+            maxStep = 5;
+        }
+
+        const steps = ["step-init", "step-exec", "step-priv", "step-lateral", "step-goal"];
+        steps.forEach((stepId, idx) => {
+            const el = document.getElementById(stepId);
+            if (el) {
+                if (idx + 1 <= maxStep) {
+                    el.classList.add("active");
+                } else {
+                    el.classList.remove("active");
+                }
+            }
+        });
 
         // ショップパレットの解放状況を更新
         this.updatePaletteUI();
@@ -516,6 +665,11 @@ export class UIManager {
         if (banner) {
             banner.classList.add("hidden");
         }
+
+        // モバイル用警告テキスト更新
+        if (this.dom.mobileWaveWarnText) {
+            this.dom.mobileWaveWarnText.textContent = title;
+        }
     }
 
     hideOverlayMessage() {
@@ -550,6 +704,11 @@ export class UIManager {
                 }
             }
             bannerText.textContent = alertMsg;
+
+            // モバイル用警告テキスト更新
+            if (this.dom.mobileWaveWarnText) {
+                this.dom.mobileWaveWarnText.textContent = alertMsg;
+            }
         }
     }
 

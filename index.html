@@ -14,6 +14,7 @@
     <!-- Game Header (HUD) -->
     <header class="game-hud">
         <div class="hud-left">
+            <button id="btn-sidebar-toggle" class="btn-sidebar-toggle" title="メニュー切替">☰</button>
             <div class="hud-cyber-shield">
                 <svg class="hud-shield-svg" viewBox="0 0 24 24" width="32" height="32">
                     <polygon points="12,2 20,5 20,11 12,21 4,11 4,5" fill="rgba(255, 0, 85, 0.15)" stroke="#ff0055" stroke-width="2" />
@@ -57,6 +58,19 @@
             </div>
         </div>
     </header>
+
+    <!-- モバイル専用サブヘッダー (PCでは非表示) -->
+    <div class="mobile-sub-hud">
+        <div class="mobile-wave-warning">
+            <span class="warn-icon">🚨</span>
+            <span id="mobile-wave-warn-text">作戦準備完了</span>
+        </div>
+        <div class="mobile-wave-counter">
+            <span>WAVE</span>
+            <span id="mobile-wave-text" class="neon-text-blue">1/5</span>
+        </div>
+        <button id="mobile-btn-speed-pause" class="mobile-btn-ctrl">⏸</button>
+    </div>
 
     <!-- Main Game Workspace (Fills remaining height) -->
     <div class="game-container">
@@ -121,6 +135,37 @@
                 <div class="wave-alert-banner hidden" id="wave-alert-banner">
                     <span class="wave-alert-icon">⚠️</span>
                     <span class="wave-alert-text" id="wave-alert-text">ランサムウェアが侵攻中！</span>
+                </div>
+            </div>
+
+            <!-- モバイル専用攻撃進行状況 (PCでは非表示) -->
+            <div class="mobile-attack-progress">
+                <div class="progress-title">
+                    <span class="progress-title-icon">💀</span>
+                    <span>攻撃の進行状況</span>
+                </div>
+                <div class="progress-steps">
+                    <div class="step-line"></div>
+                    <div class="progress-step active" id="step-init">
+                        <div class="step-dot">💀</div>
+                        <div class="step-label">初期侵入</div>
+                    </div>
+                    <div class="progress-step" id="step-exec">
+                        <div class="step-dot">💀</div>
+                        <div class="step-label">実行</div>
+                    </div>
+                    <div class="progress-step" id="step-priv">
+                        <div class="step-dot">🛡️</div>
+                        <div class="step-label">権限取得</div>
+                    </div>
+                    <div class="progress-step" id="step-lateral">
+                        <div class="step-dot">🛡️</div>
+                        <div class="step-label">横展開</div>
+                    </div>
+                    <div class="progress-step" id="step-goal">
+                        <div class="step-dot">💀</div>
+                        <div class="step-label">目的達成</div>
+                    </div>
                 </div>
             </div>
 
@@ -318,6 +363,32 @@
                         <!-- JSで選択時に書き換えられる -->
                         <div class="empty-selection">防御設備またはサーバーを選択してください</div>
                     </div>
+                </div>
+            </div>
+            <!-- モバイル専用ステータスバー (PCでは非表示) -->
+            <div class="mobile-status-bar">
+                <div class="status-item next-wave">
+                    <span class="status-icon">⌛</span>
+                    <div class="status-info">
+                        <span class="status-label">次のウェーブ</span>
+                        <span id="mobile-next-wave-time" class="status-val">00:58</span>
+                    </div>
+                </div>
+                <div class="status-item budget">
+                    <span class="status-icon">🪙</span>
+                    <div class="status-info">
+                        <span class="status-label">保有予算</span>
+                        <span id="mobile-budget-val" class="status-val">0</span>
+                    </div>
+                    <button class="btn-status-action" id="mobile-btn-add-budget">+</button>
+                </div>
+                <div class="status-item staff">
+                    <span class="status-icon">👥</span>
+                    <div class="status-info">
+                        <span class="status-label">人員</span>
+                        <span id="mobile-staff-val" class="status-val">0 / 0</span>
+                    </div>
+                    <button class="btn-status-action" id="mobile-btn-add-staff">+</button>
                 </div>
             </div>
         </div>

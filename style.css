@@ -84,6 +84,10 @@ body.cyber-theme {
     box-shadow: 0 0 8px var(--neon-blue);
 }
 
+.btn-sidebar-toggle {
+    display: none;
+}
+
 /* ==========================================================
    GAME HUD Redesign (Enlarged)
    ========================================================== */
@@ -104,6 +108,7 @@ body.cyber-theme {
     display: flex;
     align-items: center;
     gap: 22px;
+    flex-shrink: 0; /* Prevent vertical collapsing of texts */
 }
 
 .hud-logo {
@@ -127,16 +132,19 @@ body.cyber-theme {
 
 .hud-center {
     display: flex;
-    gap: 45px;
+    gap: 20px; /* Reduced gap from 45px */
     flex-grow: 1;
     justify-content: center;
     max-width: 750px;
+    min-width: 0;
 }
 
 .hud-center .stat-box {
     display: flex;
     flex-direction: column;
-    width: 280px;
+    width: 240px; /* Reduced from 280px */
+    min-width: 120px;
+    flex-shrink: 1; /* Allow shrinking to prevent pushing out peers */
 }
 
 .stat-labels {
@@ -216,7 +224,8 @@ body.cyber-theme {
 .hud-right {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 20px; /* Reduced gap from 30px */
+    flex-shrink: 0; /* Prevent squishing on narrow desktop views */
 }
 
 .hud-currency, .hud-staff {
@@ -328,7 +337,9 @@ body.cyber-theme {
     justify-content: center;
     background: transparent;
     padding: 15px;
-    overflow: auto;
+    overflow: hidden; /* Prevent scrolls inside game area */
+    min-height: 0; /* Enable flex-item shrinking */
+    min-width: 0;
 }
 
 #game-canvas {
@@ -339,9 +350,6 @@ body.cyber-theme {
     border: none;
     box-shadow: none;
     border-radius: 8px;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
     display: block;
 }
 
@@ -829,6 +837,8 @@ body.cyber-theme {
     flex-direction: column;
     gap: 12px;
     flex: 1;
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
 }
 
@@ -836,8 +846,11 @@ body.cyber-theme {
     display: flex;
     justify-content: flex-start;
     gap: 12px;
-    flex-grow: 1;
+    flex: 1;
+    min-height: 0; /* Crucial for preventing height collapse */
     overflow-x: auto;
+    overflow-y: hidden;
+    align-items: center;
 }
 
 .bottom-palette-panel .palette-item {
@@ -1025,6 +1038,9 @@ body.cyber-theme {
     gap: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 10px;
+    flex-shrink: 0; /* Never collapse this vertically */
+    height: 44px; /* Fixed height to fit tab buttons */
+    box-sizing: border-box;
 }
 
 .tab-btn {
@@ -1713,6 +1729,29 @@ body.cyber-theme {
         padding: 0 16px;
     }
 
+    .btn-sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--border-cyber);
+        color: var(--neon-blue);
+        font-size: 24px;
+        width: 44px;
+        height: 44px;
+        border-radius: 4px;
+        cursor: pointer;
+        z-index: 15;
+        transition: all 0.2s ease;
+        margin-right: 15px;
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    .btn-sidebar-toggle:hover {
+        background: rgba(0, 240, 255, 0.25);
+        box-shadow: 0 0 15px var(--border-cyber);
+    }
+
     .hud-center {
         gap: 15px;
     }
@@ -1722,32 +1761,63 @@ body.cyber-theme {
     }
 
     .game-container {
-        flex-direction: column;
-        overflow-y: auto;
+        flex-direction: row; /* Keep row so canvas is aside the drawer area */
+        overflow: hidden;
     }
 
+    /* Left Sidebar as Drawer */
     .sidebar-left-panel {
-        width: 100%;
-        min-width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 2px solid var(--border-dim);
-        padding: 15px;
+        position: fixed;
+        left: -385px;
+        top: 90px; /* HUD under */
+        bottom: 0;
+        width: 385px;
+        min-width: 385px;
+        height: calc(100vh - 90px);
+        border-right: 2px solid var(--border-cyber);
+        border-bottom: none;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+        transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        z-index: 99;
+        background: rgba(6, 8, 20, 0.95);
+    }
+
+    .sidebar-left-panel.open {
+        left: 0;
     }
 
     .floating-detail-panel {
-        width: 280px;
-        bottom: 155px;
+        position: fixed;
+        bottom: 180px; /* Positioned right above the bottom palette */
+        right: 20px;
+        width: 320px;
+        height: auto;
+        max-height: 300px;
+        background: rgba(8, 11, 26, 0.98);
+        border: 2px solid var(--border-cyber);
+        border-radius: 8px;
+        box-shadow: 0 0 25px rgba(0, 240, 255, 0.45);
+        z-index: 100;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        border-left: 2px solid var(--border-cyber);
+    }
+    
+    .floating-detail-panel:has(.empty-selection) {
+        display: none !important; /* Hide panel when no active selection */
     }
 
     .bottom-palette-panel {
-        height: 125px;
+        height: 160px; /* Restored height to accommodate cards and tabs comfortably */
         margin: 10px;
     }
 
     .bottom-palette-panel .palette-item {
-        min-width: 85px;
-        height: 64px;
+        min-width: 90px;
+        height: 72px;
+        padding: 6px;
     }
 
     .bottom-palette-panel .item-icon {
@@ -1761,48 +1831,165 @@ body.cyber-theme {
     .bottom-palette-panel .item-cost {
         font-size: 9px;
     }
+
+    /* Stage select tablet fixes */
+    .stage-select-container {
+        height: 90vh;
+        width: 95%;
+    }
+
+    .stage-select-content {
+        gap: 15px;
+    }
+}
+
+/* PC表示（デフォルト）ではモバイル用要素を完全に隠す */
+.mobile-sub-hud,
+.mobile-attack-progress,
+.mobile-status-bar {
+    display: none !important;
 }
 
 /* MOBILE: ~ 767px */
 @media (max-width: 767px) {
-    .game-hud {
-        height: auto;
-        flex-direction: column;
-        align-items: stretch;
-        padding: 10px;
-        gap: 8px;
+    .canvas-wrapper {
+        align-items: flex-start; /* 画像を上に寄せる */
+        max-height: 45vh; /* メインゲーム画面の高さを制限して上に寄せる */
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
 
-    .hud-left, .hud-right {
+    .game-hud {
+        height: 60px; /* 1行に収まる高さ */
+        flex-direction: row;
+        flex-wrap: nowrap;
         justify-content: space-between;
+        align-items: center;
+        padding: 6px 10px;
+        gap: 8px;
+        box-sizing: border-box;
+    }
+
+    .btn-sidebar-toggle {
+        margin-right: 4px;
+        display: block !important;
+    }
+
+    .hud-left {
+        gap: 4px;
+        flex: 0 1 auto;
+        display: flex;
+        align-items: center;
+    }
+
+    .hud-cyber-shield {
+        display: none !important; /* Hide icon for extra space on mobile */
+    }
+
+    .hud-stage-title {
+        font-size: 11px;
+        white-space: nowrap;
+    }
+    .hud-stage-desc {
+        font-size: 9px;
+        color: #8fa0b5;
+        white-space: nowrap;
+        display: block !important; /* モバイルでも小さく表示 */
     }
 
     .hud-center {
-        max-width: none;
-        flex-direction: row;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .hud-center .stat-box {
-        flex: 1;
+        max-width: 140px;
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
         width: auto;
+        order: unset;
+        border-top: none;
+        padding-top: 0;
+        margin-top: 0;
     }
 
-    .hud-currency, .hud-staff {
-        font-size: 14px;
-        padding: 4px 8px;
+    .hud-center .stat-box:first-child {
+        display: block;
     }
 
-    .btn-hud-ctrl {
-        padding: 4px 8px;
+    .hud-center .stat-box:last-child {
+        display: none !important; /* モバイルでは事業継続率は非表示に */
+    }
+
+    .hud-center .stat-label {
+        font-size: 8px;
+        margin-bottom: 1px;
+    }
+
+    .hud-center .stat-value {
+        font-size: 10px;
+    }
+
+    .hud-center .stat-bar {
+        height: 4px;
+    }
+
+    .hud-right {
+        order: unset;
+        gap: 6px;
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+    }
+
+    .hud-currency {
         font-size: 11px;
+        padding: 2px 4px;
+        gap: 2px;
+    }
+
+    .hud-staff {
+        display: none !important; /* モバイルでは人員は上部ヘッダーから非表示 */
+    }
+
+    .currency-icon {
+        font-size: 12px;
+    }
+
+    .hud-controls {
+        display: flex;
+        align-items: center;
+    }
+
+    /* フルスクリーンボタンを設定ギアボタン風に見せる */
+    .hud-controls button:not(#btn-fullscreen) {
+        display: none !important; /* スピード調整ボタンは非表示 */
+    }
+
+    #btn-fullscreen {
+        padding: 3px 6px;
+        font-size: 12px;
+        background: transparent;
+        border: none;
+        color: #8fa0b5;
+    }
+    #btn-fullscreen::before {
+        content: "⚙️"; /* ギアマークを表示 */
+    }
+    #btn-fullscreen span {
+        display: none; /* テキストは非表示 */
     }
 
     .sidebar-left-panel {
         font-size: 11px;
-        padding: 10px;
-        gap: 10px;
+        padding: 15px;
+        gap: 12px;
+        width: 300px;
+        min-width: 300px;
+        left: -300px;
+        top: 60px; /* HUDの下にピッタリくっつく */
+        height: calc(100vh - 60px);
+    }
+
+    .sidebar-left-panel.open {
+        left: 0;
     }
 
     .wave-val-main {
@@ -1833,33 +2020,457 @@ body.cyber-theme {
     }
 
     .floating-detail-panel {
-        width: 200px;
-        bottom: 135px;
+        position: fixed;
+        width: calc(100% - 20px);
+        left: 10px;
+        right: 10px;
+        top: 105px;
+        bottom: auto; /* HUDの下に表示してスロットの邪魔にならないようにする */
         font-size: 11px;
-        padding: 10px;
+        padding: 12px;
+        height: auto;
+        max-height: 220px;
+        background: rgba(8, 11, 26, 0.98);
+        border: 2px solid var(--border-cyber);
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+
+    .floating-detail-panel:has(.empty-selection) {
+        display: none !important;
     }
 
     .bottom-palette-panel {
         left: 5px;
         right: 5px;
-        bottom: 5px;
-        height: 115px;
+        bottom: 45px; /* Sits right above the status bar */
+        height: 220px; /* Restored height to fit tabs and items */
         padding: 6px 10px;
         margin: 5px;
+        gap: 4px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .palette-shop-area {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+        overflow: hidden;
     }
 
     .bottom-palette-panel .tower-palette {
-        gap: 4px;
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto; /* 横スクロール可能にする */
+        white-space: nowrap;
+        gap: 6px;
+        padding-bottom: 4px;
+        width: 100%;
+        scrollbar-width: thin; /* スクロールバーを細く */
+    }
+    
+    .bottom-palette-panel .tower-palette::-webkit-scrollbar {
+        height: 4px;
+    }
+    .bottom-palette-panel .tower-palette::-webkit-scrollbar-thumb {
+        background: rgba(0, 240, 255, 0.3);
+        border-radius: 2px;
     }
 
     .bottom-palette-panel .palette-item {
-        min-width: 70px;
-        height: 58px;
+        min-width: 110px;
+        max-width: 110px;
+        height: 125px; /* カードの縦幅を劇的に大きく (125px) */
+        padding: 8px;
+        flex-shrink: 0; /* 縮まないようにする */
+    }
+
+    .bottom-palette-panel .palette-item .item-icon {
+        font-size: 18px;
+    }
+
+    .palette-tabs {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto; /* カテゴリタブも横スクロール可能にする */
+        white-space: nowrap;
+        gap: 4px;
+        width: 100%;
+        scrollbar-width: none;
+    }
+    .palette-tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .tab-btn {
-        padding: 3px 6px;
+        padding: 4px 8px;
+        font-size: 9px;
+        flex-shrink: 0;
+    }
+
+    /* モバイル専用サブHUD */
+    .mobile-sub-hud {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(14, 20, 41, 0.95);
+        border-bottom: 2px solid var(--border-cyber);
+        padding: 8px 15px;
+        color: #fff;
+        font-family: 'Share Tech Mono', monospace;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        z-index: 10;
+        box-sizing: border-box;
+    }
+
+    .mobile-wave-warning {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #ff0055;
+        font-size: 11px;
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(255, 0, 85, 0.6);
+    }
+
+    .mobile-wave-counter {
+        font-size: 11px;
+        color: #8fa0b5;
+    }
+    
+    .mobile-wave-counter .neon-text-blue {
+        color: #00f0ff;
+        font-weight: bold;
+        margin-left: 4px;
+        text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+    }
+
+    .mobile-btn-ctrl {
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--border-cyber);
+        color: #00f0ff;
+        border-radius: 4px;
+        width: 32px;
+        height: 24px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-btn-ctrl:active {
+        background: rgba(0, 240, 255, 0.3);
+    }
+
+    /* モバイル専用攻撃進行状況 */
+    .mobile-attack-progress {
+        display: flex !important;
+        flex-direction: column;
+        background: rgba(6, 8, 20, 0.9);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin: 5px;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .mobile-attack-progress .progress-title {
+        font-size: 11px;
+        color: #8fa0b5;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .mobile-attack-progress .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        padding: 5px 0;
+    }
+
+    .mobile-attack-progress .step-line {
+        position: absolute;
+        top: 15px;
+        left: 20px;
+        right: 20px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.15);
+        z-index: 1;
+    }
+
+    .mobile-attack-progress .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 2;
+        width: 60px;
+        position: relative;
+    }
+
+    .mobile-attack-progress .step-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #151d35;
+        border: 2px solid #3c4f6e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #5d7494;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-attack-progress .step-label {
         font-size: 8px;
+        color: #5d7494;
+        margin-top: 5px;
+        text-align: center;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+    }
+
+    /* アクティブなステップのスタイル */
+    .mobile-attack-progress .progress-step.active .step-dot {
+        background: #ff0055;
+        border-color: #ff0055;
+        color: #fff;
+        box-shadow: 0 0 10px rgba(255, 0, 85, 0.8);
+    }
+
+    .mobile-attack-progress .progress-step.active .step-label {
+        color: #ff0055;
+        font-weight: bold;
+        text-shadow: 0 0 5px rgba(255, 0, 85, 0.5);
+    }
+
+    /* モバイル専用最下部ステータスバー */
+    .mobile-status-bar {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(4, 6, 15, 0.98);
+        border-top: 2px solid var(--border-cyber);
+        padding: 8px 12px;
+        font-family: 'Share Tech Mono', monospace;
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.8);
+        box-sizing: border-box;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 45px;
+        z-index: 10;
+    }
+
+    .mobile-status-bar .status-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(0, 240, 255, 0.1);
+        border-radius: 6px;
+        padding: 4px 8px;
+        flex: 1;
+        margin: 0 4px;
+        position: relative;
+    }
+
+    .mobile-status-bar .status-item:first-child {
+        margin-left: 0;
+    }
+    
+    .mobile-status-bar .status-item:last-child {
+        margin-right: 0;
+    }
+
+    .mobile-status-bar .status-icon {
+        font-size: 14px;
+    }
+
+    .mobile-status-bar .status-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-status-bar .status-label {
+        font-size: 7px;
+        color: #8fa0b5;
+        text-transform: uppercase;
+    }
+
+    .mobile-status-bar .status-val {
+        font-size: 10px;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .mobile-status-bar .budget .status-val {
+        color: #ffd700;
+        text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+
+    .mobile-status-bar .staff .status-val {
+        color: #a3e635;
+        text-shadow: 0 0 5px rgba(163, 230, 53, 0.5);
+    }
+
+    .mobile-status-bar .btn-status-action {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        background: rgba(0, 240, 255, 0.2);
+        border: 1px solid var(--border-cyber);
+        color: #00f0ff;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-status-bar .btn-status-action:active {
+        background: rgba(0, 240, 255, 0.5);
+    }
+
+    /* 背景画像のモバイル用切り替え */
+    #game-canvas {
+        background-image: url('assets/background_view_of_main_game_for_mobile.png') !important;
+        background-size: 100% 100% !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+    }
+
+    .tab-btn {
+        padding: 4px 8px;
+        font-size: 9px;
+    }
+
+    /* Stage select mobile adjustments */
+    .stage-select-container {
+        height: 95vh;
+        width: 95%;
+        font-size: 13px;
+    }
+
+    .stage-select-header {
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+
+    .stage-select-title {
+        font-size: 20px;
+    }
+
+    .btn-back-arrow {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .stage-select-content {
+        flex-direction: column;
+        overflow-y: auto;
+        gap: 15px;
+        padding-bottom: 20px;
+    }
+
+    .stage-list-panel {
+        flex: none;
+    }
+
+    .stage-grid-fantasy {
+        grid-template-columns: repeat(2, 1fr);
+        max-height: 220px;
+    }
+
+    .stage-card-fantasy {
+        height: 70px;
+        padding: 8px;
+    }
+
+    .stage-card-num {
+        font-size: 16px;
+    }
+
+    .stage-card-stars {
+        font-size: 11px;
+    }
+
+    .stage-info-panel {
+        flex: none;
+        padding: 15px;
+        gap: 12px;
+        border-width: 2px;
+    }
+
+    .fantasy-stage-title {
+        font-size: 22px;
+    }
+
+    .info-stars {
+        font-size: 14px;
+    }
+
+    .info-section {
+        padding-bottom: 8px;
+    }
+
+    .info-text {
+        font-size: 13px;
+    }
+
+    .res-item {
+        font-size: 13px;
+    }
+
+    .info-threats-grid {
+        gap: 8px;
+    }
+
+    .info-threat-badge {
+        width: 50px;
+    }
+
+    .info-threat-icon-box {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .btn-start-action {
+        height: 44px;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    /* Start menu buttons mobile scaling */
+    .btn-start-fantasy {
+        width: 260px;
+        height: 50px;
+    }
+
+    .btn-start-fantasy .btn-text {
+        font-size: 16px;
     }
 }
 
