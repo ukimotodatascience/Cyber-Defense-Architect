@@ -238,22 +238,17 @@ export class UIManager {
             });
         }
 
-        // モバイル専用予算・人員追加「＋」ボタン (イースターエッグ/ユーザープレイ補助)
+        // モバイル専用予算・人員追加「＋」ボタン (ストアや技術ツリーへ誘導)
         const btnAddBudget = document.getElementById("mobile-btn-add-budget");
         if (btnAddBudget) {
             btnAddBudget.addEventListener("click", () => {
-                this.game.budget += 100;
-                this.updateHUD();
-                this.log("[デバッグサポート] 防御予算 +🪙100", "success");
+                this.log("[情報] ストア画面または技術ツリーで防御予算を増やすことができます。", "system");
             });
         }
         const btnAddStaff = document.getElementById("mobile-btn-add-staff");
         if (btnAddStaff) {
             btnAddStaff.addEventListener("click", () => {
-                this.game.staffMax += 1;
-                this.game.staffAvailable += 1;
-                this.updateHUD();
-                this.log("[デバッグサポート] セキュリティ要員上限 +👥1", "success");
+                this.log("[情報] 技術ツリーの研究を進めることで要員を解放できます。", "system");
             });
         }
 
