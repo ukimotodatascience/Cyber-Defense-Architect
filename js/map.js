@@ -139,28 +139,39 @@ export class Slot {
         }
     }
 
-    draw(ctx, isHovered, isSelected) {
+    draw(ctx, isHovered, isSelected, selectedPaletteTower) {
         ctx.save();
+        const isMobile = ctx.canvas.width < ctx.canvas.height;
+        const currentRadius = isMobile ? 24 : this.radius;
 
         if (this.tower) {
             this.tower.draw(ctx);
         } else {
             // 空きスロットの描画
-            ctx.setLineDash([4, 2]);
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = isMobile ? 2.5 : 1.5;
 
-            if (isHovered) {
+            if (selectedPaletteTower) {
+                // 配置可能モード時の強調（明るい緑でパルス明滅、目立つ実線）
+                const pulse = 0.5 + Math.sin(Date.now() / 200) * 0.3;
+                ctx.strokeStyle = `rgba(57, 255, 20, ${pulse + 0.2})`;
+                ctx.shadowBlur = isMobile ? 12 : 8;
+                ctx.shadowColor = "#39ff14";
+                ctx.fillStyle = `rgba(57, 255, 20, ${pulse * 0.15})`;
+                ctx.setLineDash([]);
+            } else if (isHovered) {
                 ctx.strokeStyle = "#00ffd5"; // neon-cyan
                 ctx.shadowBlur = 8;
                 ctx.shadowColor = "#00ffd5";
                 ctx.fillStyle = "rgba(0, 255, 213, 0.1)";
+                ctx.setLineDash([4, 2]);
             } else {
-                ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
-                ctx.fillStyle = "rgba(0, 240, 255, 0.02)";
+                ctx.strokeStyle = isMobile ? "rgba(0, 240, 255, 0.8)" : "rgba(0, 240, 255, 0.4)";
+                ctx.fillStyle = isMobile ? "rgba(0, 240, 255, 0.08)" : "rgba(0, 240, 255, 0.02)";
+                ctx.setLineDash([4, 2]);
             }
 
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
@@ -261,74 +272,162 @@ export class NetworkMap {
     }
 
     updateLayout(width, height) {
-        // ノード座標を参照するヘルパー
         const getP = (id) => this.getNodeById(id);
+        const isMobile = width < height;
 
-        // 1. ノード座標を比率で更新
-        this.nodes.forEach(node => {
-            switch (node.id) {
-                case "internet":
-                    node.x = width * 0.07;
-                    node.y = height * 0.5;
-                    break;
-                case "dmz":
-                    node.x = width * 0.21;
-                    node.y = height * 0.5;
-                    break;
-                case "web":
-                    node.x = width * 0.38;
-                    node.y = height * 0.3;
-                    break;
-                case "auth":
-                    node.x = width * 0.52;
-                    node.y = height * 0.6;
-                    break;
-                case "db":
-                    node.x = width * 0.67;
-                    node.y = height * 0.3;
-                    break;
-                case "file":
-                    node.x = width * 0.81;
-                    node.y = height * 0.6;
-                    break;
-                case "data":
-                    node.x = width * 0.93;
-                    node.y = height * 0.5;
-                    break;
-            }
-        });
+        // 1. ノード座標の更新
+        if (isMobile) {
+            // モバイル縦長レイアウト：上から下へ (941x1672 の実サイズに合わせた比率)
+            this.nodes.forEach(node => {
+                // 右側の建物の中心に重ねる
+                node.x = width * 0.88;
+
+                switch (node.id) {
+                    case "internet":
+                        node.y = height * 0.171;
+                        break;
+                    case "dmz":
+                        node.y = height * 0.299;
+                        break;
+                    case "web":
+                        node.y = height * 0.426;
+                        break;
+                    case "db": // アプリサーバー (4番目の位置)
+                        node.y = height * 0.553;
+                        break;
+                    case "auth": // 認証・AD (5番目の位置)
+                        node.y = height * 0.681;
+                        break;
+                    case "file":
+                        node.y = height * 0.808;
+                        break;
+                    case "data":
+                        node.y = height * 0.936;
+                        break;
+                }
+            });
+        } else {
+            // PC横長レイアウト
+            this.nodes.forEach(node => {
+                switch (node.id) {
+                    case "internet":
+                        node.x = width * 0.07;
+                        node.y = height * 0.5;
+                        break;
+                    case "dmz":
+                        node.x = width * 0.21;
+                        node.y = height * 0.5;
+                        break;
+                    case "web":
+                        node.x = width * 0.38;
+                        node.y = height * 0.3;
+                        break;
+                    case "auth":
+                        node.x = width * 0.52;
+                        node.y = height * 0.6;
+                        break;
+                    case "db":
+                        node.x = width * 0.67;
+                        node.y = height * 0.3;
+                        break;
+                    case "file":
+                        node.x = width * 0.81;
+                        node.y = height * 0.6;
+                        break;
+                    case "data":
+                        node.x = width * 0.93;
+                        node.y = height * 0.5;
+                        break;
+                }
+            });
+        }
 
         // 2. スロット座標の更新
         this.slots.forEach(slot => {
             const parentNode = getP(slot.parentNodeId);
             if (parentNode) {
-                slot.updatePosition(parentNode.x, parentNode.y);
+                if (isMobile) {
+                    // モバイル縦長：ノードの左側（進路上）に一直線に並べる (941幅に合わせる)
+                    const slotIndex = parseInt(slot.id.split("-").pop()); // 1, 2, 3
+                    const offset = -125 - (slotIndex - 1) * 125; // -125, -250, -375
+                    slot.x = parentNode.x + offset;
+                    slot.y = parentNode.y; // スロットを道の真ん中に重ねる
+                    if (slot.tower) {
+                        slot.tower.x = slot.x;
+                        slot.tower.y = slot.y;
+                    }
+                } else {
+                    // PC横長：通常位置更新
+                    slot.updatePosition(parentNode.x, parentNode.y);
+                }
             }
         });
 
         // 3. パス(経路)の更新
-        this.paths.webRoute = [
-            { x: getP("internet").x, y: getP("internet").y, node: "internet" },
-            { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
-            { x: getP("web").x, y: getP("web").y, node: "web" },
-            { x: getP("db").x, y: getP("db").y, node: "db" },
-            { x: getP("data").x, y: getP("data").y, node: "data" }
-        ];
-        this.paths.authRoute = [
-            { x: getP("internet").x, y: getP("internet").y, node: "internet" },
-            { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
-            { x: getP("auth").x, y: getP("auth").y, node: "auth" },
-            { x: getP("file").x, y: getP("file").y, node: "file" },
-            { x: getP("data").x, y: getP("data").y, node: "data" }
-        ];
-        this.paths.crossRoute = [
-            { x: getP("internet").x, y: getP("internet").y, node: "internet" },
-            { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
-            { x: getP("web").x, y: getP("web").y, node: "web" },
-            { x: getP("auth").x, y: getP("auth").y, node: "auth" },
-            { x: getP("file").x, y: getP("file").y, node: "file" },
-            { x: getP("data").x, y: getP("data").y, node: "data" }
-        ];
+        if (isMobile) {
+            // モバイル縦長：各レイヤーを左から右に進み、次のレイヤーに斜めに侵入するジグザグパス (941x1672)
+            this.paths.webRoute = [
+                { x: width * 0.28, y: getP("internet").y, node: "internet" },
+                { x: getP("internet").x, y: getP("internet").y, node: "internet" },
+                { x: width * 0.28, y: getP("dmz").y, node: "dmz" },
+                { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
+                { x: width * 0.28, y: getP("web").y, node: "web" },
+                { x: getP("web").x, y: getP("web").y, node: "web" },
+                { x: width * 0.28, y: getP("db").y, node: "db" },
+                { x: getP("db").x, y: getP("db").y, node: "db" },
+                { x: getP("data").x, y: getP("data").y, node: "data" }
+            ];
+            this.paths.authRoute = [
+                { x: width * 0.28, y: getP("internet").y, node: "internet" },
+                { x: getP("internet").x, y: getP("internet").y, node: "internet" },
+                { x: width * 0.28, y: getP("dmz").y, node: "dmz" },
+                { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
+                { x: width * 0.28, y: getP("auth").y, node: "auth" },
+                { x: getP("auth").x, y: getP("auth").y, node: "auth" },
+                { x: width * 0.28, y: getP("file").y, node: "file" },
+                { x: getP("file").x, y: getP("file").y, node: "file" },
+                { x: getP("data").x, y: getP("data").y, node: "data" }
+            ];
+            this.paths.crossRoute = [
+                { x: width * 0.28, y: getP("internet").y, node: "internet" },
+                { x: getP("internet").x, y: getP("internet").y, node: "internet" },
+                { x: width * 0.28, y: getP("dmz").y, node: "dmz" },
+                { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
+                { x: width * 0.28, y: getP("web").y, node: "web" },
+                { x: getP("web").x, y: getP("web").y, node: "web" },
+                { x: width * 0.28, y: getP("db").y, node: "db" },
+                { x: getP("db").x, y: getP("db").y, node: "db" },
+                { x: width * 0.28, y: getP("auth").y, node: "auth" },
+                { x: getP("auth").x, y: getP("auth").y, node: "auth" },
+                { x: width * 0.28, y: getP("file").y, node: "file" },
+                { x: getP("file").x, y: getP("file").y, node: "file" },
+                { x: getP("data").x, y: getP("data").y, node: "data" }
+            ];
+        } else {
+            // PC横長
+            this.paths.webRoute = [
+                { x: getP("internet").x, y: getP("internet").y, node: "internet" },
+                { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
+                { x: getP("web").x, y: getP("web").y, node: "web" },
+                { x: getP("db").x, y: getP("db").y, node: "db" },
+                { x: getP("data").x, y: getP("data").y, node: "data" }
+            ];
+            this.paths.authRoute = [
+                { x: getP("internet").x, y: getP("internet").y, node: "internet" },
+                { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
+                { x: getP("auth").x, y: getP("auth").y, node: "auth" },
+                { x: getP("file").x, y: getP("file").y, node: "file" },
+                { x: getP("data").x, y: getP("data").y, node: "data" }
+            ];
+            this.paths.crossRoute = [
+                { x: getP("internet").x, y: getP("internet").y, node: "internet" },
+                { x: getP("dmz").x, y: getP("dmz").y, node: "dmz" },
+                { x: getP("web").x, y: getP("web").y, node: "web" },
+                { x: getP("auth").x, y: getP("auth").y, node: "auth" },
+                { x: getP("file").x, y: getP("file").y, node: "file" },
+                { x: getP("data").x, y: getP("data").y, node: "data" }
+            ];
+        }
     }
 
     getNodeById(id) {
@@ -351,7 +450,7 @@ export class NetworkMap {
         });
     }
 
-    draw(ctx, hoveredSlot, selectedSlot) {
+    draw(ctx, hoveredSlot, selectedSlot, selectedPaletteTower) {
         const time = Date.now();
         const w = ctx.canvas.width;
         const h = ctx.canvas.height;
@@ -359,54 +458,56 @@ export class NetworkMap {
         // 1. 描画エリアのクリア
         ctx.clearRect(0, 0, w, h);
 
-        // 2. 7つのカラーゾーンとゾーンタブの描画
-        const zones = [
-            { name: "インターネット", color: "rgba(189, 0, 255, 0.07)", borderColor: "rgba(189, 0, 255, 0.25)", textColor: "#bd00ff" },
-            { name: "DMZ", color: "rgba(0, 70, 255, 0.07)", borderColor: "rgba(0, 70, 255, 0.25)", textColor: "#00a2ff" },
-            { name: "Webサーバー", color: "rgba(0, 200, 255, 0.07)", borderColor: "rgba(0, 200, 255, 0.25)", textColor: "#00f0ff" },
-            { name: "アプリサーバー", color: "rgba(57, 255, 20, 0.05)", borderColor: "rgba(57, 255, 20, 0.2)", textColor: "#39ff14" },
-            { name: "認証・AD", color: "rgba(255, 204, 0, 0.05)", borderColor: "rgba(255, 204, 0, 0.2)", textColor: "#ffcc00" },
-            { name: "社内ネットワーク", color: "rgba(255, 120, 0, 0.05)", borderColor: "rgba(255, 120, 0, 0.2)", textColor: "#ff7800" },
-            { name: "機密情報・データ", color: "rgba(255, 0, 85, 0.07)", borderColor: "rgba(255, 0, 85, 0.25)", textColor: "#ff0055" }
-        ];
+        // 2. 7つのカラーゾーンとゾーンタブの描画 (モバイル縦長時はスキップ)
+        const isMobile = w < h;
+        if (!isMobile) {
+            const zones = [
+                { name: "インターネット", color: "rgba(189, 0, 255, 0.07)", borderColor: "rgba(189, 0, 255, 0.25)", textColor: "#bd00ff" },
+                { name: "DMZ", color: "rgba(0, 70, 255, 0.07)", borderColor: "rgba(0, 70, 255, 0.25)", textColor: "#00a2ff" },
+                { name: "Webサーバー", color: "rgba(0, 200, 255, 0.07)", borderColor: "rgba(0, 200, 255, 0.25)", textColor: "#00f0ff" },
+                { name: "アプリサーバー", color: "rgba(57, 255, 20, 0.05)", borderColor: "rgba(57, 255, 20, 0.2)", textColor: "#39ff14" },
+                { name: "認証・AD", color: "rgba(255, 204, 0, 0.05)", borderColor: "rgba(255, 204, 0, 0.2)", textColor: "#ffcc00" },
+                { name: "社内ネットワーク", color: "rgba(255, 120, 0, 0.05)", borderColor: "rgba(255, 120, 0, 0.2)", textColor: "#ff7800" },
+                { name: "機密情報・データ", color: "rgba(255, 0, 85, 0.07)", borderColor: "rgba(255, 0, 85, 0.25)", textColor: "#ff0055" }
+            ];
 
-        const zoneW = w / 7;
-        ctx.save();
-        for (let i = 0; i < 7; i++) {
-            const zX = i * zoneW;
+            const zoneW = w / 7;
+            ctx.save();
+            for (let i = 0; i < 7; i++) {
+                const zX = i * zoneW;
 
+                // ゾーンタブの描画（画面上部）
+                const tabMargin = 8;
+                const tabH = 25;
+                const tabY = 12;
+                const tabW = zoneW - tabMargin * 2;
+                const tabX = zX + tabMargin;
 
-            // ゾーンタブの描画（画面上部）
-            const tabMargin = 8;
-            const tabH = 25;
-            const tabY = 12;
-            const tabW = zoneW - tabMargin * 2;
-            const tabX = zX + tabMargin;
+                // 斜めのタブ（平行四辺形風）
+                ctx.fillStyle = "rgba(10, 15, 30, 0.85)";
+                ctx.strokeStyle = zones[i].textColor;
+                ctx.lineWidth = 1.5;
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = zones[i].textColor;
+                ctx.beginPath();
+                ctx.moveTo(tabX + 8, tabY);
+                ctx.lineTo(tabX + tabW, tabY);
+                ctx.lineTo(tabX + tabW - 8, tabY + tabH);
+                ctx.lineTo(tabX, tabY + tabH);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.shadowBlur = 0;
 
-            // 斜めのタブ（平行四辺形風）
-            ctx.fillStyle = "rgba(10, 15, 30, 0.85)";
-            ctx.strokeStyle = zones[i].textColor;
-            ctx.lineWidth = 1.5;
-            ctx.shadowBlur = 4;
-            ctx.shadowColor = zones[i].textColor;
-            ctx.beginPath();
-            ctx.moveTo(tabX + 8, tabY);
-            ctx.lineTo(tabX + tabW, tabY);
-            ctx.lineTo(tabX + tabW - 8, tabY + tabH);
-            ctx.lineTo(tabX, tabY + tabH);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            // タブのテキスト
-            ctx.fillStyle = "#fff";
-            ctx.font = "bold 11px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(zones[i].name, tabX + tabW / 2, tabY + tabH / 2 + 1);
+                // タブのテキスト
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 11px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(zones[i].name, tabX + tabW / 2, tabY + tabH / 2 + 1);
+            }
+            ctx.restore();
         }
-        ctx.restore();
 
         // 2.5 攻撃の進行ルートの描画 (グロー効果＋流れるような赤い点線レーザー)
         ctx.save();
@@ -440,48 +541,50 @@ export class NetworkMap {
         drawPathRoute(this.paths.crossRoute);
         ctx.restore();
 
-        // 3. パス(接続線)の描画
-        ctx.save();
-        ctx.lineWidth = 1.5;
+        // 3. パス(接続線)の描画 (モバイル縦長時は背景画像に道が描かれているため不要)
+        if (!isMobile) {
+            ctx.save();
+            ctx.lineWidth = 1.5;
 
-        // ネットワーク接続関係の線を描画
-        const drawLink = (n1, n2) => {
-            const grad = ctx.createLinearGradient(n1.x, n1.y, n2.x, n2.y);
-            let c1 = "rgba(0, 240, 255, 0.15)";
-            let c2 = "rgba(0, 240, 255, 0.15)";
+            // ネットワーク接続関係の線を描画
+            const drawLink = (n1, n2) => {
+                const grad = ctx.createLinearGradient(n1.x, n1.y, n2.x, n2.y);
+                let c1 = "rgba(0, 240, 255, 0.15)";
+                let c2 = "rgba(0, 240, 255, 0.15)";
 
-            if (n1.status === "infected" || n2.status === "infected") {
-                c1 = "rgba(255, 0, 85, 0.25)";
-                c2 = "rgba(255, 0, 85, 0.25)";
-            }
-            grad.addColorStop(0, c1);
-            grad.addColorStop(1, c2);
+                if (n1.status === "infected" || n2.status === "infected") {
+                    c1 = "rgba(255, 0, 85, 0.25)";
+                    c2 = "rgba(255, 0, 85, 0.25)";
+                }
+                grad.addColorStop(0, c1);
+                grad.addColorStop(1, c2);
 
-            ctx.strokeStyle = grad;
-            ctx.beginPath();
-            ctx.moveTo(n1.x, n1.y);
-            ctx.lineTo(n2.x, n2.y);
-            ctx.stroke();
-        };
+                ctx.strokeStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(n1.x, n1.y);
+                ctx.lineTo(n2.x, n2.y);
+                ctx.stroke();
+            };
 
-        const internetNode = this.getNodeById("internet");
-        const dmzNode = this.getNodeById("dmz");
-        const webNode = this.getNodeById("web");
-        const authNode = this.getNodeById("auth");
-        const dbNode = this.getNodeById("db");
-        const fileNode = this.getNodeById("file");
-        const dataNode = this.getNodeById("data");
+            const internetNode = this.getNodeById("internet");
+            const dmzNode = this.getNodeById("dmz");
+            const webNode = this.getNodeById("web");
+            const authNode = this.getNodeById("auth");
+            const dbNode = this.getNodeById("db");
+            const fileNode = this.getNodeById("file");
+            const dataNode = this.getNodeById("data");
 
-        drawLink(internetNode, dmzNode);
-        drawLink(dmzNode, webNode);
-        drawLink(dmzNode, authNode);
-        drawLink(webNode, dbNode);
-        drawLink(authNode, fileNode);
-        drawLink(dbNode, dataNode);
-        drawLink(fileNode, dataNode);
-        drawLink(dbNode, fileNode); // クロス接続
+            drawLink(internetNode, dmzNode);
+            drawLink(dmzNode, webNode);
+            drawLink(dmzNode, authNode);
+            drawLink(webNode, dbNode);
+            drawLink(authNode, fileNode);
+            drawLink(dbNode, dataNode);
+            drawLink(fileNode, dataNode);
+            drawLink(dbNode, fileNode); // クロス接続
 
-        ctx.restore();
+            ctx.restore();
+        }
 
         // 2. パルス粒子の描画 (データの流れを視覚化)
         ctx.save();
@@ -508,7 +611,7 @@ export class NetworkMap {
         this.slots.forEach(slot => {
             const isHovered = hoveredSlot && hoveredSlot.id === slot.id;
             const isSelected = selectedSlot && selectedSlot.id === slot.id;
-            slot.draw(ctx, isHovered, isSelected);
+            slot.draw(ctx, isHovered, isSelected, selectedPaletteTower);
         });
     }
 }

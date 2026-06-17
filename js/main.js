@@ -27,9 +27,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Canvasの論理解像度固定化とレイアウト初期化
     function resizeCanvas() {
-        // 論理サイズは 1200x540 で固定！
-        canvas.width = 1200;
-        canvas.height = 540;
+        const isMobile = window.innerWidth <= 767;
+
+        if (isMobile) {
+            // モバイル縦長アスペクト比 (941x1672)
+            canvas.width = 941;
+            canvas.height = 1672;
+        } else {
+            // PC横長アスペクト比 (1200x540)
+            canvas.width = 1200;
+            canvas.height = 540;
+        }
+
+        // 表示サイズの自動調整 (アスペクト比維持の親要素へのフィッティング)
+        const wrapper = canvas.parentElement;
+        if (wrapper) {
+            const rect = wrapper.getBoundingClientRect();
+            // パディング等（15px * 2 ＝ 30px）を考慮した利用可能な最大幅と高さ
+            // ただし、値が0以下のときは無視する
+            const wrapperWidth = Math.max(0, rect.width - 30);
+            const wrapperHeight = Math.max(0, rect.height - 30);
+
+            if (wrapperWidth > 0 && wrapperHeight > 0) {
+                const targetRatio = canvas.width / canvas.height;
+                const currentRatio = wrapperWidth / wrapperHeight;
+
+                if (currentRatio > targetRatio) {
+                    // 親要素が横長：高さいっぱいに合わせる
+                    canvas.style.height = `${wrapperHeight}px`;
+                    canvas.style.width = `${wrapperHeight * targetRatio}px`;
+                } else {
+                    // 親要素が縦長：幅いっぱいに合わせる
+                    canvas.style.width = `${wrapperWidth}px`;
+                    canvas.style.height = `${wrapperWidth / targetRatio}px`;
+                }
+            }
+        }
 
         // マップのレイアウト更新
         map.updateLayout(canvas.width, canvas.height);
@@ -47,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 初期起動時のレイアウト初期化
     resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
     // ---- サイドバートグルはフローティング化に伴い廃止 ----
 
@@ -314,10 +348,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
 
         // スロットホバー検出
+        const isMobileCanvas = canvas.width < canvas.height;
+        const clickRadius = isMobileCanvas ? 32 : 18;
         let foundSlot = null;
         map.slots.forEach(slot => {
             const dist = Math.hypot(slot.x - mouseX, slot.y - mouseY);
-            if (dist <= slot.radius) {
+            if (dist <= clickRadius) {
                 foundSlot = slot;
             }
         });
@@ -368,10 +404,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 1. スロットをクリックした場合
+        const isMobileCanvas = canvas.width < canvas.height;
+        const clickRadius = isMobileCanvas ? 32 : 18;
         let clickedSlot = null;
         map.slots.forEach(slot => {
             const dist = Math.hypot(slot.x - mouseX, slot.y - mouseY);
-            if (dist <= slot.radius) {
+            if (dist <= clickRadius) {
                 clickedSlot = slot;
             }
         });
@@ -638,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // 1. マップ（ノード・スロット）および背景の描画
-        map.draw(ctx, hoveredSlot, selectedSlot);
+        map.draw(ctx, hoveredSlot, selectedSlot, selectedPaletteTower);
 
         // 2. タワー配置プレビュー射程円の描画
         // パレットで選択されており、かつ空きスロットにホバーしている場合
