@@ -352,6 +352,10 @@ export class NetworkMap {
                     const offset = -125 - (slotIndex - 1) * 125; // -125, -250, -375
                     slot.x = parentNode.x + offset;
                     slot.y = parentNode.y; // スロットを道の真ん中に重ねる
+                    if (slot.tower) {
+                        slot.tower.x = slot.x;
+                        slot.tower.y = slot.y;
+                    }
                 } else {
                     // PC横長：通常位置更新
                     slot.updatePosition(parentNode.x, parentNode.y);
