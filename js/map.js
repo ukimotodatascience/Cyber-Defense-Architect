@@ -84,19 +84,19 @@ export class Node {
         ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
         ctx.fill();
 
-        // ノードの名前
+        // ノードの名前 - 座標を整数値に丸める
         ctx.shadowBlur = 5;
         ctx.shadowColor = color;
         ctx.fillStyle = "#fff";
         ctx.font = "16px 'Share Tech Mono'";
         ctx.textAlign = "center";
-        ctx.fillText(this.name, this.x, this.y - this.size - 10);
+        ctx.fillText(this.name, Math.round(this.x), Math.round(this.y - this.size - 10));
 
         // ステータス表示
         if (this.status === "infected") {
             ctx.fillStyle = varColor("neon-red");
             ctx.font = "13px 'Share Tech Mono'";
-            ctx.fillText("⚠️ CRITICAL INFECTED", this.x, this.y + this.size + 18);
+            ctx.fillText("⚠️ CRITICAL INFECTED", Math.round(this.x), Math.round(this.y + this.size + 18));
 
             // 復旧プログレスバー
             if (this.recoveryProgress > 0) {
@@ -105,7 +105,7 @@ export class Node {
         } else if (this.status === "offline") {
             ctx.fillStyle = "#64748b";
             ctx.font = "13px 'Share Tech Mono'";
-            ctx.fillText("❌ OFFLINE", this.x, this.y + this.size + 18);
+            ctx.fillText("❌ OFFLINE", Math.round(this.x), Math.round(this.y + this.size + 18));
         } else {
             // シールド値（NOMINAL時）
             if (this.shield < this.maxShield) {
@@ -476,12 +476,12 @@ export class NetworkMap {
             for (let i = 0; i < 7; i++) {
                 const zX = i * zoneW;
 
-                // ゾーンタブの描画（画面上部）
+                // ゾーンタブの描画（画面上部）- 座標を整数値に丸める
                 const tabMargin = 8;
                 const tabH = 25;
                 const tabY = 12;
-                const tabW = zoneW - tabMargin * 2;
-                const tabX = zX + tabMargin;
+                const tabW = Math.round(zoneW - tabMargin * 2);
+                const tabX = Math.round(zX + tabMargin);
 
                 // 斜めのタブ（平行四辺形風）
                 ctx.fillStyle = "rgba(10, 15, 30, 0.85)";
@@ -499,12 +499,12 @@ export class NetworkMap {
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // タブのテキスト
+                // タブのテキスト - 座標を整数値に丸める
                 ctx.fillStyle = "#fff";
                 ctx.font = "bold 11px sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText(zones[i].name, tabX + tabW / 2, tabY + tabH / 2 + 1);
+                ctx.fillText(zones[i].name, Math.round(tabX + tabW / 2), Math.round(tabY + tabH / 2 + 1));
             }
             ctx.restore();
         }
@@ -651,12 +651,16 @@ function varColor(name) {
 
 // プログレスバー描画
 export function drawProgressBar(ctx, x, y, w, h, ratio, color) {
+    const rx = Math.round(x);
+    const ry = Math.round(y);
+    const rw = Math.round(w);
+    const rh = Math.round(h);
     ctx.save();
     ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-    ctx.fillRect(x, y, w, h);
+    ctx.fillRect(rx, ry, rw, rh);
     ctx.fillStyle = color;
     ctx.shadowBlur = 4;
     ctx.shadowColor = color;
-    ctx.fillRect(x, y, w * Math.max(0, Math.min(1, ratio)), h);
+    ctx.fillRect(rx, ry, Math.round(rw * Math.max(0, Math.min(1, ratio))), rh);
     ctx.restore();
 }
