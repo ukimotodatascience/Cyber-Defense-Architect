@@ -6,10 +6,8 @@ import { UIManager } from './ui.js';
 import { Attacker, Defender, FloatingText } from './units.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-    // フォント読み込み完了を待ってから初期化と描画ループを開始
-    document.fonts.ready.then(() => {
-        // 1. 各システムのインスタンス化
-        const game = new GameState();
+    // 1. 各システムのインスタンス化
+    const game = new GameState();
     const map = new NetworkMap();
     game.map = map;
     const ui = new UIManager(game);
@@ -858,5 +856,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ゲームループ開始
     requestAnimationFrame(gameLoop);
+
+    // フォント読み込み完了後にキャンバスを再描画してレイアウトを最適化
+    document.fonts.ready.then(() => {
+        resizeCanvas();
     });
 });
