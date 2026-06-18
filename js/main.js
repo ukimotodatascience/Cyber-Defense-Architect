@@ -42,10 +42,10 @@ document.addEventListener("DOMContentLoaded", () => {
             canvas.logicalHeight = 540;
         }
 
-        canvas.width = canvas.logicalWidth * dpr;
-        canvas.height = canvas.logicalHeight * dpr;
+        // 1. まず表示上のサイズ (CSSピクセルサイズ) を決定する
+        let displayWidth = canvas.logicalWidth;
+        let displayHeight = canvas.logicalHeight;
 
-        // 表示サイズの自動調整 (アスペクト比維持の親要素へのフィッティング)
         const wrapper = canvas.parentElement;
         if (wrapper) {
             const rect = wrapper.getBoundingClientRect();
@@ -60,19 +60,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (currentRatio > targetRatio) {
                     // 親要素が横長：高さいっぱいに合わせる
-                    canvas.style.height = `${wrapperHeight}px`;
-                    canvas.style.width = `${wrapperHeight * targetRatio}px`;
+                    displayHeight = wrapperHeight;
+                    displayWidth = wrapperHeight * targetRatio;
                 } else {
                     // 親要素が縦長：幅いっぱいに合わせる
-                    canvas.style.width = `${wrapperWidth}px`;
-                    canvas.style.height = `${wrapperWidth / targetRatio}px`;
+                    displayWidth = wrapperWidth;
+                    displayHeight = wrapperWidth / targetRatio;
                 }
             }
         }
 
-        // 描画スケールの設定
+        // 2. CSS表示サイズを設定
+        canvas.style.width = `${displayWidth}px`;
+        canvas.style.height = `${displayHeight}px`;
+
+        // 3. キャンバスの物理解像度（解像度）を表示サイズに完全に合わせる（DPRを掛ける）
+        // これにより、画面上の1CSSピクセルに対して物理デバイスピクセルが等倍マッピングされ、ぼやけが無くなる
+        canvas.width = displayWidth * dpr;
+        canvas.height = displayHeight * dpr;
+
+        // 4. 論理座標 (1200x540) から物理ピクセルサイズへのスケール比率を計算
+        const scaleX = (displayWidth * dpr) / canvas.logicalWidth;
+        const scaleY = (displayHeight * dpr) / canvas.logicalHeight;
+
+        // 描画スケールの設定（dprだけでなく、画面スケーリング比率も掛ける）
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(dpr, dpr);
+        ctx.scale(scaleX, scaleY);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
 
         // マップのレイアウト更新
         map.updateLayout(canvas.logicalWidth, canvas.logicalHeight);
@@ -773,14 +788,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const lineHeight = 16;
         const tooltipHeight = 35 + lines.length * lineHeight;
 
-        // 表示位置（ノードの真上）
-        let x = node.x - tooltipWidth / 2;
-        let y = node.y - node.size - tooltipHeight - 15;
+        // 表示位置（ノードの真上）- 座標を整数値に丸める
+        let x = Math.round(node.x - tooltipWidth / 2);
+        let y = Math.round(node.y - node.size - tooltipHeight - 15);
 
         // 画面外はみ出し防止
         if (x < 10) x = 10;
-        if (x + tooltipWidth > canvas.logicalWidth - 10) x = canvas.logicalWidth - tooltipWidth - 10;
-        if (y < 10) y = node.y + node.size + 15; // 上にはみ出る場合は下に表示
+        if (x + tooltipWidth > canvas.logicalWidth - 10) x = Math.round(canvas.logicalWidth - tooltipWidth - 10);
+        if (y < 10) y = Math.round(node.y + node.size + 15); // 上にはみ出る場合は下に表示
 
         // 背景と枠の描画
         ctx.fillStyle = "rgba(8, 10, 24, 0.95)";
@@ -798,20 +813,20 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillStyle = "#00f0ff";
         ctx.font = "bold 13px 'Share Tech Mono', sans-serif";
         ctx.textAlign = "left";
-        ctx.fillText(title, x + padding, y + padding + 10);
+        ctx.fillText(title, Math.round(x + padding), Math.round(y + padding + 10));
 
         // 区切り線
         ctx.strokeStyle = "rgba(0, 240, 255, 0.25)";
         ctx.beginPath();
-        ctx.moveTo(x + padding, y + 26);
-        ctx.lineTo(x + tooltipWidth - padding, y + 26);
+        ctx.moveTo(Math.round(x + padding), Math.round(y + 26));
+        ctx.lineTo(Math.round(x + tooltipWidth - padding), Math.round(y + 26));
         ctx.stroke();
 
         // 本文の描画
         ctx.fillStyle = "#e2e8f0";
         ctx.font = "11px 'Outfit', sans-serif";
         lines.forEach((line, index) => {
-            ctx.fillText(line, x + padding, y + 43 + index * lineHeight);
+            ctx.fillText(line, Math.round(x + padding), Math.round(y + 43 + index * lineHeight));
         });
 
         ctx.restore();
@@ -819,16 +834,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 角丸四角形描画ユーティリティ
     function drawRoundRect(ctx, x, y, w, h, r) {
+        const rx = Math.round(x);
+        const ry = Math.round(y);
+        const rw = Math.round(w);
+        const rh = Math.round(h);
+        const rr = Math.round(r);
         ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.moveTo(rx + rr, ry);
+        ctx.lineTo(rx + rw - rr, ry);
+        ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+        ctx.lineTo(rx + rw, ry + rh - rr);
+        ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+        ctx.lineTo(rx + rr, ry + rh);
+        ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rr);
+        ctx.lineTo(rx, ry + rr);
+        ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
@@ -836,4 +856,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ゲームループ開始
     requestAnimationFrame(gameLoop);
+
+    // フォント読み込み完了後にキャンバスを再描画してレイアウトを最適化
+    document.fonts.ready.then(() => {
+        resizeCanvas();
+    });
 });

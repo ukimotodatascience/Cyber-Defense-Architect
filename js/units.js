@@ -802,8 +802,8 @@ export class Defender {
 
         const w = 64;
         const h = 42; // ドット表示廃止に伴い高さを縮小 (54 -> 42)
-        const x = this.x - w / 2;
-        const y = this.y - h / 2 - 5; // Float slightly above the tower
+        const x = Math.round(this.x - w / 2);
+        const y = Math.round(this.y - h / 2 - 5); // Float slightly above the tower
         const r = 5;
 
         // ドロップシャドウ/グロー
@@ -855,12 +855,12 @@ export class Defender {
         ctx.fillStyle = "#fff";
 
         const textY = y + 5;
-        ctx.fillText(shortName, this.x, textY);
+        ctx.fillText(shortName, Math.round(this.x), Math.round(textY));
 
         // 中段のアイコン（少し下にずらす）
         ctx.font = "16px Arial";
         ctx.textBaseline = "middle";
-        ctx.fillText(this.icon, this.x, y + h / 2 + 2); // 縦方向に微調整
+        ctx.fillText(this.icon, Math.round(this.x), Math.round(y + h / 2 + 2)); // 縦方向に微調整
 
         ctx.restore();
     }
